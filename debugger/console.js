@@ -20,3 +20,16 @@ $(document).ready(function(){
         promptHistory:true,
     });
 });
+
+var eval = function(expr) {
+    var tabId = debuggeeId.tabId;
+
+    chrome.debugger.sendCommand(
+        tabId,
+        "Runtime.evaluate",
+        { expression: expr },
+        function(response) {
+            alert(response.result);                    
+        }
+    );
+}
