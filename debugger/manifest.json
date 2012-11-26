@@ -10,7 +10,7 @@
         "scripts": ["background.js"]
     },
     "browser_action": {
-        "default_icon":"debug.jpeg",
+        "default_icon":"images/debug.jpeg",
         "default_title":"Debugging"
     },
     "manifest_version":2
