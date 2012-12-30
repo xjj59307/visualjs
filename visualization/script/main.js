@@ -1,17 +1,26 @@
-require(["lib/d3.v3", "graph"], function (d3, graph) {
+require(["graph", "acyclic", "lib/d3.v3"], function (graph, acyclic, d3) {
 
     // test for graph.js
     g_graph = graph.newGraph();
 
-    g_graph.addNode(1, 'A');
-    g_graph.addNode(2, 'B');
-    g_graph.addNode(3, 'C');
-    g_graph.addNode(4, 'D');
+    g_graph.addNode(1, { name: 'A' });
+    g_graph.addNode(2, { name: 'B' });
+    g_graph.addNode(3, { name: 'C' });
+    g_graph.addNode(4, { name: 'D' });
 
-    g_graph.addEdge(1, 1, 2, 'AB');
-    g_graph.addEdge(2, 1, 3, 'AC');
-    g_graph.addEdge(3, 2, 4, 'BD');
-    g_graph.addEdge(4, 3, 4, 'CD');
+    g_graph.addEdge(1, 1, 2, { name: 'AB' });
+    g_graph.addEdge(2, 1, 3, { name: 'AC' });
+    g_graph.addEdge(3, 2, 4, { name: 'BD' });
+    g_graph.addEdge(4, 3, 4, { name: 'CD' });
+    g_graph.addEdge(5, 4, 1, { name: 'DA1' });
+    g_graph.addEdge(6, 4, 1, { name: 'DA2' });
+    console.log(g_graph.toString());
+
+    acyclic.run(g_graph);
+    console.log(g_graph.toString());
+
+    acyclic.undo(g_graph);
+    console.log(g_graph.toString());
 
     var json = {
         nodes: [

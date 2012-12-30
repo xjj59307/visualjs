@@ -59,8 +59,20 @@ define(["lib/underscore"], function (_) {
             return _.union(graph.getSuccessors(id), graph.getPredecessors(id));
         };
 
+        graph.getSource = function (id) {
+            var edge = graph.getEdge(id);
+
+            return edge.source;
+        };
+
+        graph.getTarget = function (id) {
+            var edge = graph.getEdge(id);
+
+            return edge.target;
+        };
+
         graph.hasNode = function (id) {
-            return id in nodes;
+            return _.has(nodes, id);
         };
 
         graph.addEdge = function (id, source, target, value) {
@@ -114,7 +126,7 @@ define(["lib/underscore"], function (_) {
                 graph.getNode(secondId);
 
                 var entries = outEdges[firstId];
-                return (secondId in entries) ? _.keys(entries[secondId].edges) : [];
+                return _.has(entries, secondId) ? _.keys(entries[secondId].edges) : [];
             }
         };
 
@@ -135,10 +147,10 @@ define(["lib/underscore"], function (_) {
         };
 
         graph.hasEdge = function (id) {
-            return id in edges;
+            return _.has(edges, id);
         };
 
-        graph.getSubgraph = function(subNodes) {
+        graph.getSubgraph = function (subNodes) {
             var subgraph = newGraph();
 
             subNodes.forEach(function (nodeId) {
@@ -151,6 +163,23 @@ define(["lib/underscore"], function (_) {
             });
 
             return subgraph;
+        };
+
+        graph.toString = function () {
+            var string = "Graph:\n";
+
+            string += "Nodes:\n";
+            _.keys(nodes).forEach(function (id) {
+                string += id + ": " + JSON.stringify(nodes[id].value) + "\n";
+            });
+
+            string += "Edges:\n";
+            _.keys(edges).forEach(function (id) {
+                var edge = edges[id];
+                string += id + "(" + edge.source + " -> " + edge.target + "): " + JSON.stringify(edges[id].value) + "\n";
+            });
+
+            return string;
         };
 
         function addEdgeToMap (map, nodeId, edgeId) {
@@ -177,6 +206,6 @@ define(["lib/underscore"], function (_) {
 
     return {
         newGraph: newGraph
-    }
+    };
 
 });
