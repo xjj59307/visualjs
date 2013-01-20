@@ -1,7 +1,7 @@
-define(["../graph", "../rank"], function(graph, rank) {
+define(["../graph", "../rank"], function (graph, rank) {
 
-    describe("rank", function() {
-        it("assigns the minimum rank that satisfies all in-edges", function() {
+    describe("rank", function () {
+        it("assigns the minimum rank that satisfies all in-edges", function () {
             var g = graph();
 
             g.addNode(1, { name: 'A' });
