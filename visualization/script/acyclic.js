@@ -5,7 +5,7 @@ define(["lib/underscore"], function (_) {
         var visited = {};
         var reverseCount = 0;
 
-        function dfs (nodeId) {
+        var dfs = function (nodeId) {
             if (_.has(visited, nodeId)) {
                 return;
             }
