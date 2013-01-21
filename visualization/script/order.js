@@ -70,7 +70,7 @@ define(["lib/underscore"], function (_) {
 		return crossCount;
 	};
 
-	var crossCount = function (graph, layering) {
+	var getCrossCount = function (graph, layering) {
 		var result = 0;
 		var prevLayer;
 		layering.forEach(function (layer) {
@@ -145,21 +145,48 @@ define(["lib/underscore"], function (_) {
 	};
 
 	var sweep = function (graph, iter, layering) {
-		if (iter % 2 == 0) {}
+		if (iter % 2 == 0) {
+			for (var i = 1; i < layering.length; ++i) {
+				barycenterLayer(layering[i - 1], layering[i], getMultiPredecessors(graph));
+			} 
+		} else {
+			for (var i = layering.length - 2; i >= 0; --i) {
+				barycenterLayer(layering[i + 1], layering[i], getMultiSuccessors(graph));
+			}
+		}
+
+		return getCrossCount(graph, layering);
 	};
 
 	var run = function (graph) {
 		var layering = initOrder(graph);
 		var bestLayering = copyLayering(layering);
-		var bestCrossCount = crossCount(graph, layering);
+		var bestCrossCount = getCrossCount(graph, layering);
 
+		for (var i = 0, lastBest = 0; lastBest < 4 && i < config.iterations; ++i, ++lastBest) {
+			var crossCount = sweep(graph, i, layering);
+			if (crossCount < bestCrossCount) {
+				bestLayering = copyLayering(layering);
+				bestCrossCount = crossCount;
+				lastBest = 0;
+			}
+		}
+
+		bestLayering.forEach(function (layer) {
+			layer.forEach(function (value, index) {
+				graph.getNode(value).value.order = index;
+			});
+		});
+
+		return bestLayering;
 	};
 
+	// expose methods except for run() for test
 	return {
 		run: run,
-		crossCount: crossCount,
-		bilayerCrossCount: bilayerCrossCount,
-		barycenterLayer: barycenterLayer
+		_getCrossCount: getCrossCount,
+		_bilayerCrossCount: bilayerCrossCount,
+		_barycenterLayer: barycenterLayer
 	};
 
 });

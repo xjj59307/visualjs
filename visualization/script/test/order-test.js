@@ -7,7 +7,7 @@ define(["../graph", "../order"], function (Graph, order) {
                 var upperLayer = [];
                 var lowerLayer = [];
 
-                expect(order.bilayerCrossCount(graph, upperLayer, lowerLayer)).toEqual(0);
+                expect(order._bilayerCrossCount(graph, upperLayer, lowerLayer)).toEqual(0);
             });
 
             it("calculates the correct number of crossings", function () {
@@ -24,7 +24,7 @@ define(["../graph", "../order"], function (Graph, order) {
                 var upperLayer = [11, 12, 13];
                 var lowerLayer = [21, 22, 23];
 
-                expect(order.bilayerCrossCount(graph, upperLayer, lowerLayer)).toEqual(0);
+                expect(order._bilayerCrossCount(graph, upperLayer, lowerLayer)).toEqual(0);
             });
 
             it("calculates the correct number of crossings", function () {
@@ -42,7 +42,7 @@ define(["../graph", "../order"], function (Graph, order) {
                 var upperLayer = [11, 12, 13];
                 var lowerLayer = [21, 22];
 
-                expect(order.bilayerCrossCount(graph, upperLayer, lowerLayer)).toEqual(3);
+                expect(order._bilayerCrossCount(graph, upperLayer, lowerLayer)).toEqual(3);
             });
         });
 
@@ -60,9 +60,20 @@ define(["../graph", "../order"], function (Graph, order) {
                 var upperLayer = [11, 12];
                 var lowerLayer = [21, 22, 23];
 
-                order.barycenterLayer(upperLayer, lowerLayer, graph.getPredecessors);
+                order._barycenterLayer(upperLayer, lowerLayer, graph.getPredecessors);
                 expect(lowerLayer).toEqual([21, 22, 23]);
             });
+        });
+
+        it("sets order = 0 for 2 connected nodes on different ranks", function () {
+            var graph = Graph();
+            graph.addNode(11, {rank: 0});
+            graph.addNode(12, {rank: 0});
+            // graph.addEdge("A", 11, 12);
+
+            order.run(graph);
+            expect(graph.getNode(11).value.order).toEqual(0);
+            expect(graph.getNode(12).value.order).toEqual(1);
         });
     });
 
