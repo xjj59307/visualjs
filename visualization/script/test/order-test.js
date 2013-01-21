@@ -45,6 +45,25 @@ define(["../graph", "../order"], function (Graph, order) {
                 expect(order.bilayerCrossCount(graph, upperLayer, lowerLayer)).toEqual(3);
             });
         });
+
+        describe("barycenterLayer", function () {
+            it("Leaves nodes with no adjancencies in the same position", function () {
+                var graph = Graph();
+                graph.addNode(11);
+                graph.addNode(12);
+                graph.addNode(21);
+                graph.addNode(22);
+                graph.addNode(23);
+                graph.addEdge("A", 11, 21);
+                graph.addEdge("B", 11, 23);
+                // graph.addEdge("C", 12, 22);
+                var upperLayer = [11, 12];
+                var lowerLayer = [21, 22, 23];
+
+                order.barycenterLayer(upperLayer, lowerLayer, graph.getPredecessors);
+                expect(lowerLayer).toEqual([21, 22, 23]);
+            });
+        });
     });
 
 });

@@ -1,5 +1,9 @@
 define(["lib/underscore"], function (_) {
 
+	var config = {
+		iterations: 24
+	};
+
 	var initOrder = function (graph) {
 		var layering = [];
 		_.values(graph.getNodes()).forEach(function (node) {
@@ -67,18 +71,95 @@ define(["lib/underscore"], function (_) {
 	};
 
 	var crossCount = function (graph, layering) {
-		
+		var result = 0;
+		var prevLayer;
+		layering.forEach(function (layer) {
+			if (prevLayer) {
+				result += bilayerCrossCount(graph, prevLayer, layer);
+			}
+			prevLayer = layer;
+		});	
+
+		return result;
+	};
+
+	// This function differs with graph.getPredecessors(nodeId). Here returns predecessors of every incident edge which can be repeated
+	var getMultiPredecessors = function (graph) {
+		return function (nodeId) {
+			var predecessors = [];
+			graph.getInEdges(nodeId).forEach(function (edgeId) {
+				predecessors.push(graph.getEdge(edgeId).source);
+			});
+
+			return predecessors;
+		};
+	};
+
+	var getMultiSuccessors = function (graph) {
+		return function (nodeId) {
+			var successors = [];
+			graph.getOutEdges(nodeId).forEach(function (edgeId) {
+				successors.push(graph.getEdge(edgeId).target);
+			});
+
+			return successors;
+		}
+	}
+
+	var barycenterLayer = function (fixed, movable, getOpposites) {
+		var position = layerPosition(movable);
+		var centers = barycenters(fixed, movable, getOpposites);
+
+		var newOrder = movable.filter(function (nodeId) {
+			return centers[nodeId] !== -1;
+		});
+		newOrder.sort(function (left, right) {
+			return centers[left] - centers[right] || position[left] - position[right];
+		});
+
+		for (var i = movable.length - 1; i >= 0; --i) {
+			if (centers[movable[i]] !== -1) {
+				movable[i] = newOrder.pop();
+			}
+		}
+	};
+
+	var barycenters = function (fixed, movable, getOpposites) {
+		var position = layerPosition(fixed);
+		var centers = {};
+
+		movable.forEach(function (nodeId) {
+			var average = -1;
+			var opposites = getOpposites(nodeId);
+			if (opposites.length > 0) {
+				average = 0;
+				opposites.forEach(function (opposite) {
+					average += position[opposite];
+				});
+				average /= opposites.length;
+			}
+			centers[nodeId] = average;
+		});
+
+		return centers;
+	};
+
+	var sweep = function (graph, iter, layering) {
+		if (iter % 2 == 0) {}
 	};
 
 	var run = function (graph) {
 		var layering = initOrder(graph);
 		var bestLayering = copyLayering(layering);
+		var bestCrossCount = crossCount(graph, layering);
+
 	};
 
 	return {
 		run: run,
 		crossCount: crossCount,
-		bilayerCrossCount: bilayerCrossCount
+		bilayerCrossCount: bilayerCrossCount,
+		barycenterLayer: barycenterLayer
 	};
 
 });
