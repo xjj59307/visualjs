@@ -64,6 +64,45 @@ define(["lib/underscore"], function (_) {
 		return conflicts;
 	};
 
+	var verticalAlignment = function (graph, layering, conflicts, getOpposites) {
+		var position = {};
+		var root = {}; // Root of the block that the node participates in
+		var align = {}; // Points to the next node in the block or, if the last element in the block, points to the first block's root
+
+		layering.forEach(function (layer) {
+			layer.forEach(function (value, index) {
+				root[value] = value;
+				align[value] = value;
+				position[value] = index;
+			});
+		});
+
+		layering.forEach(function (layer) {
+			var prevPos = -1;
+			layer.forEach(function (value, index) {
+				var opposites = graph[getOpposites](value);
+
+				if (opposites.length > 0) {
+					opposites.sort(function (left, right) {
+						return position[left] - position[right];
+					});
+					var midIndex = (opposites.length - 1) / 2;
+					opposites.slice(Math.floor(midIndex), Math.ceil(midIndex) + 1).forEach(function (midId) {
+						if (align[value] === value) {
+							if (!conflicts[nodePairId(midId, value)] && prevPos < position[midId]) {
+								align[midId] = value;
+								align[value] = root[value] = root[midId];
+								predPos = position[midId];
+							}
+						}
+					});
+				}
+			});
+		});
+
+		return { position: position, root: root, align: align };
+	}; 
+
 	var run = function (graph) {
 		var layering = [];
 		_.values(graph.getNodes()).forEach(function (node) {
@@ -71,11 +110,14 @@ define(["lib/underscore"], function (_) {
 			var layer = layering[rank] || (layering[rank] = []);
 			layer[node.value.order] = node.id;
 		});
+
+		var conflicts = findConflicts(graph, layering);
 	};
 
 	return {
 		run: run,
-		_findConflicts: findConflicts
+		_findConflicts: findConflicts,
+		_verticalAlignment: verticalAlignment
 	};
 
 });

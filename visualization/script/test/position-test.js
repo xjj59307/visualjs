@@ -22,6 +22,7 @@ define(["../graph", "../position"], function (Graph, position) {
             var layering = [[11], [21, 22, 23, 24, 25], [31, 32, 33, 34, 35]];
 
             var conflicts = position._findConflicts(graph, layering);
+            var align = position._verticalAlignment(graph, layering, conflicts, "getPredecessors");
 
             expect(conflicts["21-32"]).toEqual(true);
             expect(conflicts["21-35"]).toEqual(true);
