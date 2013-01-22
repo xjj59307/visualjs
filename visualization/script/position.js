@@ -103,6 +103,80 @@ define(["lib/underscore"], function (_) {
 		return { position: position, root: root, align: align };
 	}; 
 
+	var getWidth = function (graph, nodeId) {
+		switch (config.rankDir) {
+			case "LR": return graph.getNode(nodeId).value.height;
+			default: return graph.getNode(nodeId).value.width;
+		}
+	};
+
+	var getSeparation = function (graph, nodeId) {
+		if (config.universalSep !== null) {
+			return config.universalSep;
+		}
+
+		var width = getWidth(graph, nodeId);
+		var separation = graph.getNode(nodeId).value.dummy ? config.edgeSep : config.nodeSep;
+		return (width + separation) / 2;
+	};
+
+	var horizontalCompacting = function (graph, layering, position, root, align) {
+		var sink = {};
+		var shift = {};
+		var prevId = {};
+		var xCoordinates = {};
+
+		layering.forEach(function (layer) {
+			layer.forEach(function (value, index) {
+				sink[value] = value;
+				if (index > 0) {
+					prevId[value] = layer[index - 1];
+				}
+			});
+		});
+
+		// Root coordinates relative to sink
+		var placeBlock = function (rootId) {
+			if (!_.has(xCoordinates, rootId)) {
+				xCoordinates[rootId] = 0;
+				var nodeId = rootId;
+				do {
+					if (position[nodeId] > 0) {
+						var rootOfPrev = root[prevId[nodeId]];
+						placeBlock(rootOfPrev);
+						if (sink[rootId] === rootId) {
+							sink[rootId] = sink[rootOfPrev];
+						}
+						var delta = getSeparation(graph, prevId[nodeId]) + getSeparation(graph, nodeId);
+						if (sink[rootId] !== sink[rootOfPrev]) {
+							shift[sink[rootOfPrev]] = Math.min(shift[sink[rootOfPrev]] || Number.POSITIVE_INFINITY, xCoordinates[rootId] - xCoordinates[rootOfPrev] - delta);
+						} else {
+							xCoordinates[rootId] = Math.max(xCoordinates[rootId], xCoordinates[rootOfPrev] + delta);
+						}
+					}
+					nodeId = align[nodeId];
+				} while (nodeId !== rootId);
+			}
+		};
+
+		_.values(root).forEach(function (rootId) {
+			placeBlock(rootId);
+		});
+
+		// Absolute coordinates
+		layering.forEach(function (layer) {
+			layer.forEach(function (nodeId) {
+				xCoordinates[nodeId] = xCoordinates[root[nodeId]];
+				var xDelta = shift[sink[nodeId]];
+				if (root[nodeId] === nodeId && xDelta < Number.POSITIVE_INFINITY) {
+					xCoordinates[nodeId] += xDelta;
+				}
+			});
+		});
+
+		return xCoordinates;
+	};
+
 	var run = function (graph) {
 		var layering = [];
 		_.values(graph.getNodes()).forEach(function (node) {
@@ -117,7 +191,8 @@ define(["lib/underscore"], function (_) {
 	return {
 		run: run,
 		_findConflicts: findConflicts,
-		_verticalAlignment: verticalAlignment
+		_verticalAlignment: verticalAlignment,
+		_horizontalCompacting: horizontalCompacting
 	};
 
 });
