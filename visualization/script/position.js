@@ -110,6 +110,13 @@ define(["lib/underscore"], function (_) {
 		}
 	};
 
+	var getHeight = function (graph, nodeId) {
+		switch (config.rankDir) {
+			case "LR": return graph.getNode(nodeId).value.width;
+			default: return graph.getNode(nodeId).value.height;
+		}
+	}
+
 	var getSeparation = function (graph, nodeId) {
 		if (config.universalSep !== null) {
 			return config.universalSep;
@@ -119,6 +126,30 @@ define(["lib/underscore"], function (_) {
 		var separation = graph.getNode(nodeId).value.dummy ? config.edgeSep : config.nodeSep;
 		return (width + separation) / 2;
 	};
+
+	var setX = function (graph, nodeId, value) {
+		var node = graph.getNode(nodeId);
+
+		switch (config.rankDir) {
+			case "LR":
+				node.value.y = value;
+				break;
+			default:
+				node.value.x = value;
+		}	
+	};
+
+	var setY = function (graph, nodeId, value) {
+		var node = graph.getNode(nodeId);
+
+		switch (config.rankDir) {
+			case "LR":
+				node.value.x = value;
+				break;
+			default:
+				node.value.y = value;
+		}	
+	}
 
 	var horizontalCompacting = function (graph, layering, position, root, align) {
 		var sink = {};
@@ -177,6 +208,62 @@ define(["lib/underscore"], function (_) {
 		return xCoordinates;
 	};
 
+	var findMinCoord = function (graph, layering, xCoordinates) {
+		return _.min(layering.map(function (layer) {
+			return xCoordinates[layer[0]];
+		}));
+	};
+
+	var findMaxCoord = function (graph, layering, xCoordinates) {
+		return _.max(layering.map(function (layer) {
+			return xCoordinates[layer[layer.length - 1]];
+		}));
+	};
+
+	var balance = function (graph, layering, allXCoordinates) {
+		var min = {}; // Min coordinate for the alignment
+		var max = {}; // Max coordinate for the alignment
+		var minAlignment; 
+		var shift = {}; // Amount to shift a given alignment
+
+		var minDiff = Number.POSITIVE_INFINITY;
+		for (var alignment in allXCoordinates) {
+			var xCoordinates = allXCoordinates[alignment];
+			min[alignment] = findMinCoord(graph, layering, xCoordinates);
+			max[alignment] = findMinCoord(graph, layering, xCoordinates);
+			var diff = max[alignment] - min[alignment];
+			if (diff < minDiff) {
+				minDiff = diff;
+				minAlignment = alignment;
+			}
+		}
+
+		["up", "down"].forEach(function (vertDir) {
+			["left", "right"].forEach(function (horDir) {
+				var alignment = vertDir + horDir;
+				shift[alignment] = horDir === "left" ? min[minAlignment] - min[alignment] : max[minAlignment] - max[alignment];
+			});
+		});
+
+		for (alignment in allXCoordinates) {
+			_.values(graph.getNodes()).forEach(function (node) {
+				allXCoordinates[alignment][node.id] += shift[alignment];
+			});
+		}
+	};
+
+	var reverseInnerOrder = function (layering) {
+		layering.forEach(function (layer) {
+			layer.reverse();
+		});
+	};
+
+	var flipHorizontally = function (xCoordinates) {
+		for (var nodeId in xCoordinates) {
+			xCoordinates[nodeId] = -xCoordinates[nodeId];
+		}
+	};
+
 	var run = function (graph) {
 		var layering = [];
 		_.values(graph.getNodes()).forEach(function (node) {
@@ -186,6 +273,65 @@ define(["lib/underscore"], function (_) {
 		});
 
 		var conflicts = findConflicts(graph, layering);
+
+		var allXCoordinates = {};
+		["up", "down"].forEach(function (vertDir) {
+			if (vertDir === "down") {
+				layering.reverse();
+			}
+
+			["left", "right"].forEach(function (horDir) {
+				if (horDir === "right") {
+					reverseInnerOrder(layering);
+				}
+
+				var dir = vertDir + horDir;
+				var align = verticalAlignment(graph, layering, conflicts, vertDir === "up" ? "getPredecessors": "getSuccessors");
+				allXCoordinates[dir] = horizontalCompacting(graph, layering, align.position, align.root, align.align);
+				if (horDir === "right") {
+					flipHorizontally(allXCoordinates[dir]);
+				}
+
+				if (horDir === "right") {
+					reverseInnerOrder(layering);
+				}
+			});
+
+			if (vertDir === "down") {
+				layering.reverse();
+			}
+		});
+
+		balance(graph, layering, allXCoordinates);
+		_.values(graph.getNodes()).forEach(function (node) {
+			var xCoordinates = [];
+			for (var alignment in allXCoordinates) {
+				xCoordinates.push(allXCoordinates[alignment][node.id]);
+			}
+			xCoordinates.sort();
+			setX(graph, node.id, (xCoordinates[1] + xCoordinates[2]) / 2);
+		});
+
+		// Translate layout so left edge of bounding rectangle has coordinate 0
+		var minX = _.min(_.values(graph.getNodes()).map(function (node) {
+			return node.value.x - getWidth(graph, node.id) / 2;
+		}));
+		_.values(graph.getNodes()).forEach(function (node) {
+			setX(graph, node.id, node.value.x - minX); 
+		});
+
+		// Align y coordinates with ranks
+		var yCoord = 0;
+		layering.forEach(function (layer) {
+			var maxHeight = _.max(layer.map(function (nodeId) {
+				return getHeight(graph, nodeId);
+			}));
+			yCoord += maxHeight / 2;
+			layer.forEach(function (nodeId) {
+				setY(graph, nodeId, yCoord);
+			});
+			yCoord += maxHeight / 2 + config.rankSep;
+		});
 	};
 
 	return {
