@@ -5,7 +5,7 @@ define(["lib/underscore"], function (_) {
 		edgeSep: 10,
 		universalSep: null,
 		rankSep: 30,
-		rankDir: "TB",
+		rankDir: "TD",
 	};
 
 	var nodePairId = function (source, target) {
@@ -151,7 +151,11 @@ define(["lib/underscore"], function (_) {
 		}	
 	}
 
-	var horizontalCompacting = function (graph, layering, position, root, align) {
+	var horizontalCompacting = function (graph, layering, align) {
+		var position = align.position;
+		var root = align.root;
+		var align = align.align;
+
 		var sink = {};
 		var shift = {};
 		var prevId = {};
@@ -287,7 +291,7 @@ define(["lib/underscore"], function (_) {
 
 				var dir = vertDir + horDir;
 				var align = verticalAlignment(graph, layering, conflicts, vertDir === "up" ? "getPredecessors": "getSuccessors");
-				allXCoordinates[dir] = horizontalCompacting(graph, layering, align.position, align.root, align.align);
+				allXCoordinates[dir] = horizontalCompacting(graph, layering, align);
 				if (horDir === "right") {
 					flipHorizontally(allXCoordinates[dir]);
 				}
@@ -336,6 +340,7 @@ define(["lib/underscore"], function (_) {
 
 	return {
 		run: run,
+		config: config,
 		_findConflicts: findConflicts,
 		_verticalAlignment: verticalAlignment,
 		_horizontalCompacting: horizontalCompacting
