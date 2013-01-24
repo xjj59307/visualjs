@@ -132,9 +132,15 @@ define(["lib/underscore"], function (_) {
 
 		switch (config.rankDir) {
 			case "LR":
+				if (arguments.length < 3) {
+					return node.value.y;
+				}
 				node.value.y = value;
 				break;
 			default:
+				if (arguments.length < 3) {
+					return node.value.x;
+				}
 				node.value.x = value;
 		}	
 	};
@@ -144,9 +150,15 @@ define(["lib/underscore"], function (_) {
 
 		switch (config.rankDir) {
 			case "LR":
+				if (arguments.length < 3) {
+					return node.value.x;
+				}
 				node.value.x = value;
 				break;
 			default:
+				if (arguments.length < 3) {
+					return node.value.y;
+				}
 				node.value.y = value;
 		}	
 	}
@@ -318,10 +330,10 @@ define(["lib/underscore"], function (_) {
 
 		// Translate layout so left edge of bounding rectangle has coordinate 0
 		var minX = _.min(_.values(graph.getNodes()).map(function (node) {
-			return node.value.x - getWidth(graph, node.id) / 2;
+			return setX(graph, node.id) - getWidth(graph, node.id) / 2;
 		}));
 		_.values(graph.getNodes()).forEach(function (node) {
-			setX(graph, node.id, node.value.x - minX); 
+			setX(graph, node.id, setX(graph, node.id) - minX); 
 		});
 
 		// Align y coordinates with ranks
