@@ -6,6 +6,7 @@ define(["lib/underscore"], function (_) {
         var inEdges = {};
         var outEdges = {};
         var self = {};
+        var idCounter = 0;
 
         self.addNode = function (id, value) {
             if (self.hasNode(id)) {
@@ -79,6 +80,9 @@ define(["lib/underscore"], function (_) {
             self.getNode(source);
             self.getNode(target);
 
+            if (id === null) {
+                id = "_ANON-" + (++idCounter);
+            }
             if (self.hasEdge(id)) {
                 throw new Error("Graph already has edge '" + id + "':\n" + self.toString());
             }

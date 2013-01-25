@@ -30,7 +30,7 @@ define(["lib/underscore"], function (_) {
 				}
 
 				graph.addEdge(null, sourceId, edge.target, {});
-				graph.deleteEdge(edge);
+				graph.deleteEdge(edge.id);
 			}
 		});
 	};
@@ -39,7 +39,7 @@ define(["lib/underscore"], function (_) {
 		_.values(graph.getNodes()).forEach(function (node) {
 			if (node.value.dummy && _.has(node.value, "index")) {
 				var edge = node.value.edge;
-				if (graph.hasEdge(edge.id)) {
+				if (!graph.hasEdge(edge.id)) {
 					graph.addEdge(edge.id, edge.source, edge.target, edge.value);
 				}
 
@@ -48,10 +48,11 @@ define(["lib/underscore"], function (_) {
 					x: node.value.x,
 					y: node.value.y,
 				};
+				graph.deleteNode(node.id);
 			}
 
 			if (node.value.dummy) {
-				graph.deleteNode(node.id);
+				// graph.deleteNode(node.id);
 			}
 		});
 	};

@@ -12,7 +12,7 @@ define(["lib/underscore", "graph", "acyclic", "rank", "order", "normalize", "pos
 				if (_.isUndefined(edge.value.height)) {
 					edge.value.height = 0;
 				}
-				if (_.isUndefined(edge.value.height)) {
+				if (_.isUndefined(edge.value.points)) {
 					edge.value.points = [];
 				}
 			}
