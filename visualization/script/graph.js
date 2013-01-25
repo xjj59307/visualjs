@@ -5,8 +5,8 @@ define(["lib/underscore"], function (_) {
         var edges = {};
         var inEdges = {};
         var outEdges = {};
-        var self = {};
         var idCounter = 0;
+        var self = {};
 
         self.addNode = function (id, value) {
             if (self.hasNode(id)) {

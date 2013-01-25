@@ -1,44 +1,102 @@
-define(["lib/underscore", "graph", "acyclic", "rank", "order", "normalize", "position"], function (_, Graph, acyclic, rank, order, normalize, position) {
+define(["lib/underscore", "utility", "graph", "acyclic", "rank", "order", "normalize", "position"], function (_, util, Graph, acyclic, rank, order, normalize, position) {
 
-	var init = function (graph) {
-		_.values(graph.getEdges()).forEach(function (edge) {
-			if (edge.source !== edge.target) {
-				if(_.isUndefined(edge.value.minLen)) {
-					edge.value.minLen = 1;
-				};
-				if (_.isUndefined(edge.value.width)) {
-					edge.value.width = 0;
+	var config = {
+		nodeSep: 50,
+		edgeSep: 10,
+		universalSep: null,
+		rankSep: 30,
+		rankDir: "TD",
+
+		// Nodes to lay out, at least must have "width" and "height" properties
+		nodes: [],
+
+		// Edges to lay out, at least must have "source" and "target" properties
+		edges: []
+	};
+
+	var self = {};
+
+	self.nodes = util.propertyAccessor(self, config, "nodes");
+	self.edges = util.propertyAccessor(self, config, "edges");
+	
+	self.nodeSep = util.delegateProperty(position.nodeSep);
+	self.edgeSep = util.delegateProperty(position.edgeSep);
+	self.universalSep = util.delegateProperty(position.universalSep);
+	self.rankSep = util.delegateProperty(position.rankSep);
+	self.rankDir = util.delegateProperty(position.rankDir);
+
+	var init = function () {
+		var graph = Graph();
+		var nextId = 0;
+
+		config.nodes.forEach(function (node) {
+			var id = (_.has(node, "id") ? node.id: "_N" + nextId++);
+			node.content = {
+				id: id,
+				width: node.width,
+				height: node.height,
+			}
+			graph.addNode(id, node.content);
+		});
+
+		config.edges.forEach(function (edge) {
+			var source = edge.source.content.id;
+			if (!graph.hasNode(source)) {
+				throw new Error("Source node for '" + edge + "'not in node list");
+			}
+
+			var target = edge.target.content.id;
+			if (!graph.hasNode(target)) {
+				throw new Error("Target node for '" + edge + "'not in node list");
+			}
+
+			if (source !== target) {
+				var id = (_.has(edge, "id") ? edge.id : "_E" + nextId++);
+				edge.content = {
+					id: id,
+					minLen: edge.minLen || 1,
+					width: edge.width || 0,
+					height: edge.height || 0,
+					points: []
 				}
-				if (_.isUndefined(edge.value.height)) {
-					edge.value.height = 0;
-				}
-				if (_.isUndefined(edge.value.points)) {
-					edge.value.points = [];
-				}
+				graph.addEdge(id, source, target, edge.content);
 			}
 		});
+
+		return graph;
 	};
 
-	var run = function (graph) {
-		init(graph);
+	var run = function () {
+		var rankSep = self.rankSep();
+		try {
+			if (!config.nodes.length) {
+				return;
+			}
 
-		// Make space for edge labels
-		// _.values(graph.getEdges()).forEach(function (edge) {
-		// 	edge.value.minLen *= 2;
-		// });
-		// position.config.rankSep /= 2;
+			var graph = init();
 
-		acyclic.run(graph);
-		rank(graph);
-		normalize.run(graph);
-		order.run(graph);
-		position.run(graph);
-		normalize.undo(graph);
-		acyclic.undo(graph);
+			// Make space for edge labels
+			_.values(graph.getEdges()).forEach(function (edge) {
+				edge.value.minLen *= 2;
+			});
+			self.rankSep(rankSep / 2);
+
+			acyclic.run(graph);
+			rank.run(graph);
+			normalize.run(graph);
+			order.run(graph);
+			position.run(graph);
+			normalize.undo(graph);
+			acyclic.undo(graph);
+		} finally {
+			self.rankSep(rankSep);
+		}
+
+		return self;
 	};
 
-	return {
-		run: run
-	};
+	self.run = run;
+
+	return self;
 	
 });

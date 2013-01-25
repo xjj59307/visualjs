@@ -1,4 +1,4 @@
-define(["lib/underscore", "lib/buckets", "lib/priority-queue", "prim"], function (_, buckets, PriorityQueue, prim) {
+define(["lib/underscore", "lib/priority-queue", "prim"], function (_, PriorityQueue, prim) {
 
     var initRank = function (graph) {
         var minRank = {};
@@ -70,7 +70,7 @@ define(["lib/underscore", "lib/buckets", "lib/priority-queue", "prim"], function
         });
     };
 
-    return function rank (graph) {
+    var run = function (graph) {
         initRank(graph); 
 
         graph.getComponents().forEach(function (component) {
@@ -78,6 +78,10 @@ define(["lib/underscore", "lib/buckets", "lib/priority-queue", "prim"], function
             feasibleTree(subgraph);
             normalize(subgraph);
         });
+    };
+
+    return {
+        run: run
     };
 
 });

@@ -12,7 +12,7 @@ define(["../graph", "../rank"], function (Graph, rank) {
             graph.addEdge(2, 2, 3, { name: 'BC' });
             graph.addEdge(3, 1, 3, { name: 'AC' });
 
-            rank(graph);
+            rank.run(graph);
 
             expect(graph.getNode(1).value.rank).toEqual(0);
             expect(graph.getNode(2).value.rank).toEqual(1);

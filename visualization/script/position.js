@@ -1,4 +1,4 @@
-define(["lib/underscore"], function (_) {
+define(["lib/underscore", "utility"], function (_, util) {
 
 	var config = {
 		nodeSep: 50,
@@ -7,6 +7,14 @@ define(["lib/underscore"], function (_) {
 		rankSep: 30,
 		rankDir: "TD",
 	};
+
+	var self = {};
+
+	self.nodeSep = util.propertyAccessor(self, config, "nodeSep");
+	self.edgeSep = util.propertyAccessor(self, config, "edgeSep");
+	self.universalSep = util.propertyAccessor(self, config, "universalSep");
+	self.rankSep = util.propertyAccessor(self, config, "rankSep");
+	self.rankDir = util.propertyAccessor(self, config, "rankDir");
 
 	var nodePairId = function (source, target) {
 		var sourceName = source.toString();
@@ -350,12 +358,11 @@ define(["lib/underscore"], function (_) {
 		});
 	};
 
-	return {
-		run: run,
-		config: config,
-		_findConflicts: findConflicts,
-		_verticalAlignment: verticalAlignment,
-		_horizontalCompacting: horizontalCompacting
-	};
+	self.run = run;
+	self._findConflicts = findConflicts;
+	self._verticalAlignment = verticalAlignment;
+	self._horizontalCompacting = horizontalCompacting;
+
+	return self;
 
 });
