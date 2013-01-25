@@ -17,6 +17,13 @@ define(["lib/underscore"], function (_) {
 						dummy: true
 					};
 
+					// If this node represents a bend then we will use it as a control point. For edges with 2 segments this will be the center dummy node. For edges with more than 2 segments, this will be the first and last dummy node
+					if (i === 0) {
+						node.index = 0;
+					} else if (rank + 1 === targetRank) {
+						node.index = 1;
+					}
+
 					graph.addNode(dummyNodeId, node);
 					graph.addEdge(null, sourceId, dummyNodeId, {});
 					sourceId = dummyNodeId;
@@ -29,15 +36,21 @@ define(["lib/underscore"], function (_) {
 	};
 
 	var undo = function (graph) {
-		var visited = {};
-
 		_.values(graph.getNodes()).forEach(function (node) {
-			if (node.value.dummy) {
+			if (node.value.dummy && _.has(node.value, "index")) {
 				var edge = node.value.edge;
 				if (graph.hasEdge(edge.id)) {
 					graph.addEdge(edge.id, edge.source, edge.target, edge.value);
 				}
 
+				var points = graph.getEdge(edge.id).value.points;
+				points[node.value.index] = {
+					x: node.value.x,
+					y: node.value.y,
+				};
+			}
+
+			if (node.value.dummy) {
 				graph.deleteNode(node.id);
 			}
 		});

@@ -1,19 +1,4 @@
-require(["graph", "acyclic", "rank", "lib/d3.v3"], function (Graph, acyclic, rank, d3) {
-
-    // test for graph.js
-    g_graph = Graph();
-
-    g_graph.addNode(1, { name: 'A' });
-    g_graph.addNode(2, { name: 'B' });
-    g_graph.addNode(3, { name: 'C' });
-
-    g_graph.addEdge(1, 1, 2, { name: 'AB' });
-    g_graph.addEdge(2, 2, 3, { name: 'BC' });
-    g_graph.addEdge(3, 1, 3, { name: 'AC' });
-
-    acyclic.run(g_graph);
-
-    rank(g_graph);
+require(["lib/d3.v3", "graph", "layout"], function (d3, Graph, layout) {
 
     var json = {
         nodes: [
