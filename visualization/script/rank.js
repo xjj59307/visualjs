@@ -20,7 +20,7 @@ define(["lib/underscore", "lib/priority-queue", "prim"], function (_, PriorityQu
 
             graph.getOutEdges(nodeId).forEach(function (id) {
                 var target = graph.getEdge(id).target;
-                minRank[target] = Math.max(minRank[target], rank + (graph.getEdge(id).minLen || 1));
+                minRank[target] = Math.max(minRank[target], rank + (graph.getEdge(id).value.minLen || 1));
                 priorityQueue.decrease(target, priorityQueue.priority(target) - 1);
             });
         }
@@ -36,7 +36,7 @@ define(["lib/underscore", "lib/priority-queue", "prim"], function (_, PriorityQu
         var minLen = {};
         _.values(graph.getEdges()).forEach(function (edge) {
             var id = nodePairId(edge.source, edge.target);
-            minLen[id] = Math.max(minLen[id] || 1, edge.minLen || 1);
+            minLen[id] = Math.max(minLen[id] || 1, edge.value.minLen || 1);
         });
 
         var tree = prim(graph, function (left, right) {
