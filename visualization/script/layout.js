@@ -19,11 +19,11 @@ define(["lib/underscore", "utility", "graph", "acyclic", "rank", "order", "norma
 	self.nodes = util.propertyAccessor(self, config, "nodes");
 	self.edges = util.propertyAccessor(self, config, "edges");
 	
-	self.nodeSep = util.delegateProperty(position.nodeSep);
-	self.edgeSep = util.delegateProperty(position.edgeSep);
-	self.universalSep = util.delegateProperty(position.universalSep);
-	self.rankSep = util.delegateProperty(position.rankSep);
-	self.rankDir = util.delegateProperty(position.rankDir);
+	self.nodeSep = util.delegateProperty(self, position.nodeSep);
+	self.edgeSep = util.delegateProperty(self, position.edgeSep);
+	self.universalSep = util.delegateProperty(self, position.universalSep);
+	self.rankSep = util.delegateProperty(self, position.rankSep);
+	self.rankDir = util.delegateProperty(self, position.rankDir);
 
 	var init = function () {
 		var graph = Graph();

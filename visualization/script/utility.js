@@ -13,7 +13,7 @@ define([], function () {
 	};
 
 	// For d3 style chain-coding
-	var delegateProperty = function (accessor) {
+	var delegateProperty = function (self, accessor) {
 		return function () {
 			if (!arguments.length) {
 				return accessor();
