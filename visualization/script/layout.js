@@ -34,8 +34,8 @@ define(["lib/underscore", "utility", "graph", "acyclic", "rank", "order", "norma
 			node.content = {
 				id: id,
 				width: node.width,
-				height: node.height,
-			}
+				height: node.height
+			};
 			graph.addNode(id, node.content);
 		});
 
@@ -58,7 +58,7 @@ define(["lib/underscore", "utility", "graph", "acyclic", "rank", "order", "norma
 					width: edge.width || 0,
 					height: edge.height || 0,
 					points: []
-				}
+				};
 				graph.addEdge(id, source, target, edge.content);
 			}
 		});

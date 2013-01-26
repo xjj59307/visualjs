@@ -46,7 +46,7 @@ define(["lib/underscore"], function (_) {
 				var points = graph.getEdge(edge.id).value.points;
 				points[node.value.index] = {
 					x: node.value.x,
-					y: node.value.y,
+					y: node.value.y
 				};
 				graph.deleteNode(node.id);
 			}

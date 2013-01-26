@@ -5,7 +5,7 @@ define(["lib/underscore", "utility"], function (_, util) {
 		edgeSep: 10,
 		universalSep: null,
 		rankSep: 30,
-		rankDir: "TD",
+		rankDir: "TD"
 	};
 
 	var self = {};
@@ -43,7 +43,7 @@ define(["lib/underscore", "utility"], function (_, util) {
 			for (var j = 0; j < currLayer.length; ++j) {
 				var nodeId = currLayer[j];
 				position[nodeId] = j;
-				var rInnerPos = undefined; // Position of the next inner segment in the previous layer or the position of the last element in the previous layer
+				var rInnerPos = null; // Position of the next inner segment in the previous layer or the position of the last element in the previous layer
 
 				if (graph.getNode(nodeId).value.dummy) {
 					var predId = graph.getPredecessors(nodeId)[0];
@@ -51,11 +51,11 @@ define(["lib/underscore", "utility"], function (_, util) {
 						rInnerPos = position[predId];
 					}
 				}
-				if (rInnerPos === undefined && j === currLayer.length - 1) {
+				if (rInnerPos === null && j === currLayer.length - 1) {
 					rInnerPos = prevLayer.length - 1;
 				}
 
-				if (rInnerPos !== undefined) {
+				if (rInnerPos !== null) {
 					for(; currPos <= j; ++currPos) {
 						graph.getPredecessors(currLayer[currPos]).forEach(function (predId) {
 							var predPos = position[predId];
@@ -109,21 +109,23 @@ define(["lib/underscore", "utility"], function (_, util) {
 		});
 
 		return { position: position, root: root, align: align };
-	}; 
+	};
 
 	var getWidth = function (graph, nodeId) {
-		switch (config.rankDir) {
-			case "LR": return graph.getNode(nodeId).value.height;
-			default: return graph.getNode(nodeId).value.width;
+		if (config.rankDir === "LR") {
+			return graph.getNode(nodeId).value.height;
+		} else {
+			return graph.getNode(nodeId).value.width;
 		}
 	};
 
 	var getHeight = function (graph, nodeId) {
-		switch (config.rankDir) {
-			case "LR": return graph.getNode(nodeId).value.width;
-			default: return graph.getNode(nodeId).value.height;
+		if (config.rankDir === "LR") {
+			return graph.getNode(nodeId).value.width;
+		} else {
+			return graph.getNode(nodeId).value.height;
 		}
-	}
+	};
 
 	var getSeparation = function (graph, nodeId) {
 		if (config.universalSep !== null) {
@@ -138,43 +140,39 @@ define(["lib/underscore", "utility"], function (_, util) {
 	var setX = function (graph, nodeId, value) {
 		var node = graph.getNode(nodeId);
 
-		switch (config.rankDir) {
-			case "LR":
-				if (arguments.length < 3) {
-					return node.value.y;
-				}
-				node.value.y = value;
-				break;
-			default:
-				if (arguments.length < 3) {
-					return node.value.x;
-				}
-				node.value.x = value;
-		}	
+		if (config.rankDir === "LR") {
+			if (arguments.length < 3) {
+				return node.value.y;
+			}
+			node.value.y = value;
+		} else {
+			if (arguments.length < 3) {
+				return node.value.x;
+			}
+			node.value.x = value;
+		}
 	};
 
 	var setY = function (graph, nodeId, value) {
 		var node = graph.getNode(nodeId);
 
-		switch (config.rankDir) {
-			case "LR":
-				if (arguments.length < 3) {
-					return node.value.x;
-				}
-				node.value.x = value;
-				break;
-			default:
-				if (arguments.length < 3) {
-					return node.value.y;
-				}
-				node.value.y = value;
-		}	
-	}
+		if (config.rankDir === "LR") {
+			if (arguments.length < 3) {
+				return node.value.x;
+			}
+			node.value.x = value;
+		} else {
+			if (arguments.length < 3) {
+				return node.value.y;
+			}
+			node.value.y = value;
+		}
+	};
 
-	var horizontalCompacting = function (graph, layering, align) {
-		var position = align.position;
-		var root = align.root;
-		var align = align.align;
+	var horizontalCompacting = function (graph, layering, alignment) {
+		var position = alignment.position;
+		var root = alignment.root;
+		var align = alignment.align;
 
 		var sink = {};
 		var shift = {};
@@ -247,14 +245,14 @@ define(["lib/underscore", "utility"], function (_, util) {
 	var balance = function (graph, layering, allXCoordinates) {
 		var min = {}; // Min coordinate for the alignment
 		var max = {}; // Max coordinate for the alignment
-		var minAlignment; 
+		var minAlignment;
 		var shift = {}; // Amount to shift a given alignment
 
 		var minDiff = Number.POSITIVE_INFINITY;
 		for (var alignment in allXCoordinates) {
 			var xCoordinates = allXCoordinates[alignment];
 			min[alignment] = findMinCoord(graph, layering, xCoordinates);
-			max[alignment] = findMinCoord(graph, layering, xCoordinates);
+			max[alignment] = findMaxCoord(graph, layering, xCoordinates);
 			var diff = max[alignment] - min[alignment];
 			if (diff < minDiff) {
 				minDiff = diff;
@@ -269,7 +267,7 @@ define(["lib/underscore", "utility"], function (_, util) {
 			});
 		});
 
-		for (alignment in allXCoordinates) {
+		for (var alignment in allXCoordinates) {
 			_.values(graph.getNodes()).forEach(function (node) {
 				allXCoordinates[alignment][node.id] += shift[alignment];
 			});
@@ -332,7 +330,9 @@ define(["lib/underscore", "utility"], function (_, util) {
 			for (var alignment in allXCoordinates) {
 				xCoordinates.push(allXCoordinates[alignment][node.id]);
 			}
-			xCoordinates.sort();
+			xCoordinates.sort(function (left, right) {
+				return left - right;
+			});
 			setX(graph, node.id, (xCoordinates[1] + xCoordinates[2]) / 2);
 		});
 
@@ -341,7 +341,7 @@ define(["lib/underscore", "utility"], function (_, util) {
 			return setX(graph, node.id) - getWidth(graph, node.id) / 2;
 		}));
 		_.values(graph.getNodes()).forEach(function (node) {
-			setX(graph, node.id, setX(graph, node.id) - minX); 
+			setX(graph, node.id, setX(graph, node.id) - minX);
 		});
 
 		// Align y coordinates with ranks

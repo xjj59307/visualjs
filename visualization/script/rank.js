@@ -63,7 +63,7 @@ define(["lib/underscore", "lib/priority-queue", "prim"], function (_, PriorityQu
 
     var normalize = function (graph) {
         var minRank = _.min(_.values(graph.getNodes()).map(function (node) {
-            return node.value.rank; 
+            return node.value.rank;
         }));
         _.values(graph.getNodes()).forEach(function (node) {
             node.value.rank -= minRank;
@@ -71,7 +71,7 @@ define(["lib/underscore", "lib/priority-queue", "prim"], function (_, PriorityQu
     };
 
     var run = function (graph) {
-        initRank(graph); 
+        initRank(graph);
 
         graph.getComponents().forEach(function (component) {
             var subgraph = graph.getSubgraph(component);

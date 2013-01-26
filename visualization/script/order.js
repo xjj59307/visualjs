@@ -28,7 +28,7 @@ define(["lib/underscore"], function (_) {
 		return position;
 	};
 
-	// use accumulator tree to counting inversions 
+	// use accumulator tree to counting inversions
 	var bilayerCrossCount = function (graph, upperLayering, lowerLayering) {
 		var lowerLayeringPosition = layerPosition(lowerLayering);
 
@@ -39,7 +39,9 @@ define(["lib/underscore"], function (_) {
 				var target = graph.getEdge(edgeId).target;
 				nodeSouthSequence.push(lowerLayeringPosition[target]);
 			});
-			nodeSouthSequence.sort();
+			nodeSouthSequence.sort(function (left, right) {
+				return left - right;
+			});
 			southSequence = southSequence.concat(nodeSouthSequence);
 		});
 
@@ -78,7 +80,7 @@ define(["lib/underscore"], function (_) {
 				result += bilayerCrossCount(graph, prevLayer, layer);
 			}
 			prevLayer = layer;
-		});	
+		});
 
 		return result;
 	};
@@ -103,8 +105,8 @@ define(["lib/underscore"], function (_) {
 			});
 
 			return successors;
-		}
-	}
+		};
+	};
 
 	var barycenterLayer = function (fixed, movable, getOpposites) {
 		var position = layerPosition(movable);
@@ -145,10 +147,10 @@ define(["lib/underscore"], function (_) {
 	};
 
 	var sweep = function (graph, iter, layering) {
-		if (iter % 2 == 0) {
+		if (iter % 2 === 0) {
 			for (var i = 1; i < layering.length; ++i) {
 				barycenterLayer(layering[i - 1], layering[i], getMultiPredecessors(graph));
-			} 
+			}
 		} else {
 			for (var i = layering.length - 2; i >= 0; --i) {
 				barycenterLayer(layering[i + 1], layering[i], getMultiSuccessors(graph));

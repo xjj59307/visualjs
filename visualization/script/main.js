@@ -18,7 +18,7 @@ require(["lib/d3.v3", "layout"], function (d3, layout) {
         { source: "FINWAIT-2", target: "TIME WAIT" },
         { source: "CLOSING", target: "TIME WAIT" },
         { source: "LAST-ACK", target: "CLOSED" },
-        { source: "TIME WAIT", target: "CLOSED" },
+        { source: "TIME WAIT", target: "CLOSED" }
     ];
 
     var getSpline = function (edge) {

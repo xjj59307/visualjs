@@ -32,13 +32,15 @@ define(["lib/underscore"], function (_) {
         _.keys(graph.getNodes()).forEach(function (id) {
             dfs(id);
         });
-    };   
+    };
 
     var undo = function (graph) {
         _.each(graph.getEdges(), function (edge, id) {
             if (edge.value.reversed) {
                 delete edge.value.reversed;
                 graph.deleteEdge(id);
+
+                edge.value.points.reverse();
                 graph.addEdge(id, edge.target, edge.source, edge.value);
             }
         });
