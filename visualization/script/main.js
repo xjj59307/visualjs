@@ -5,20 +5,20 @@ require(["lib/d3.v3", "layout"], function (d3, layout) {
         { source: "LISTEN", target: "SYN RCVD" },
         { source: "LISTEN", target: "SYN SENT" },
         { source: "LISTEN", target: "CLOSED" },
-        { source: "SYN RCVD", target: "FINWAIT-1" },
-        { source: "SYN RCVD", target: "ESTAB" },
-        { source: "SYN SENT", target: "SYN RCVD" },
-        { source: "SYN SENT", target: "ESTAB" },
-        { source: "SYN SENT", target: "CLOSED" },
-        { source: "ESTAB", target: "FINWAIT-1" },
-        { source: "ESTAB", target: "CLOSE WAIT" },
-        { source: "FINWAIT-1", target: "FINWAIT-2" },
-        { source: "FINWAIT-1", target: "CLOSING" },
-        { source: "CLOSE WAIT", target: "LAST-ACK" },
-        { source: "FINWAIT-2", target: "TIME WAIT" },
-        { source: "CLOSING", target: "TIME WAIT" },
-        { source: "LAST-ACK", target: "CLOSED" },
-        { source: "TIME WAIT", target: "CLOSED" },
+        // { source: "SYN RCVD", target: "FINWAIT-1" },
+        // { source: "SYN RCVD", target: "ESTAB" },
+        // { source: "SYN SENT", target: "SYN RCVD" },
+        // { source: "SYN SENT", target: "ESTAB" },
+        // { source: "SYN SENT", target: "CLOSED" },
+        // { source: "ESTAB", target: "FINWAIT-1" },
+        // { source: "ESTAB", target: "CLOSE WAIT" },
+        // { source: "FINWAIT-1", target: "FINWAIT-2" },
+        // { source: "FINWAIT-1", target: "CLOSING" },
+        // { source: "CLOSE WAIT", target: "LAST-ACK" },
+        // { source: "FINWAIT-2", target: "TIME WAIT" },
+        // { source: "CLOSING", target: "TIME WAIT" },
+        // { source: "LAST-ACK", target: "CLOSED" },
+        // { source: "TIME WAIT", target: "CLOSED" },
     ];
 
     var getSpline = function (edge) {
@@ -31,6 +31,14 @@ require(["lib/d3.v3", "layout"], function (d3, layout) {
             x: edge.target.content.x,
             y: edge.target.content.y
         };
+        if (edge.source.content.rank < edge.target.content.rank) {
+            source.y += edge.source.bbox.height;
+            target.y -= edge.target.bbox.height;
+        } else {
+            source.y -= edge.source.bbox.height;
+            target.y += edge.target.bbox.height;
+        }
+
         points.unshift(source);
         points.push(target);
 
@@ -114,10 +122,10 @@ require(["lib/d3.v3", "layout"], function (d3, layout) {
 
     rects
         .attr("x", function (d) {
-            return -(d.bbox.x / 2 + nodePadding);
+            return -(d.bbox.width / 2 + nodePadding);
         })
         .attr("y", function (d) {
-            return -(d.bbox.y / 2 + nodePadding); 
+            return -(d.bbox.height / 2 + nodePadding); 
         })
         .attr("width", function (d) {
             return d.width;
