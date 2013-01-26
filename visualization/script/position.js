@@ -87,7 +87,7 @@ define(["lib/underscore", "utility"], function (_, util) {
 
 		layering.forEach(function (layer) {
 			var prevPos = -1;
-			layer.forEach(function (value, index) {
+			layer.forEach(function (value) {
 				var opposites = graph[getOpposites](value);
 
 				if (opposites.length > 0) {
@@ -100,7 +100,7 @@ define(["lib/underscore", "utility"], function (_, util) {
 							if (!conflicts[nodePairId(midId, value)] && prevPos < position[midId]) {
 								align[midId] = value;
 								align[value] = root[value] = root[midId];
-								predPos = position[midId];
+								prevPos = position[midId];
 							}
 						}
 					});
