@@ -5,7 +5,7 @@ VisualJS
 
 ##Object Graph
 
-idea来自于[Learning Javascript with Object Graphs - How To Node - NodeJS][0], Object Graph在结构上是图, 总体上成层级分布, 故采用Hierarchical Drawing Algorithm来绘制改图, 算法总共分为4大部分
+idea来自于[Learning Javascript with Object Graphs][0], Object Graph在结构上是图, 总体上成层级分布, 故采用Hierarchical Drawing Algorithm来绘制改图, 算法总共分为4大部分
 
 **acyclic** 消除图中的回路
 
