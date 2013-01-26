@@ -52,7 +52,7 @@ define(["lib/underscore", "utility"], function (_, util) {
 					}
 				}
 				if (rInnerPos === undefined && j === currLayer.length - 1) {
-					rInnerPos = currLayer.length - 1;
+					rInnerPos = prevLayer.length - 1;
 				}
 
 				if (rInnerPos !== undefined) {
