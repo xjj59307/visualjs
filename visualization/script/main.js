@@ -81,7 +81,7 @@ require(["lib/d3.v3", "layout"], function (d3, layout) {
             .append("g")
             .attr("class", "node")
             .attr("id", function (d) {
-                return "node-" + d.label; 
+                return "node-" + d.label;
             });
 
     var edges = svgGroup
@@ -125,7 +125,7 @@ require(["lib/d3.v3", "layout"], function (d3, layout) {
             return -(d.bbox.width / 2 + nodePadding);
         })
         .attr("y", function (d) {
-            return -(d.bbox.height / 2 + nodePadding); 
+            return -(d.bbox.height / 2 + nodePadding);
         })
         .attr("width", function (d) {
             return d.width;
@@ -161,7 +161,7 @@ require(["lib/d3.v3", "layout"], function (d3, layout) {
         if (!points.length) {
             var source = d.source.content;
             var target = d.target.content;
-            points.push({ 
+            points.push({
                 x: (source.x + target.x) / 2,
                 y: (source.y + target.y) / 2
             });
