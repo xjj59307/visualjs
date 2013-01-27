@@ -17,14 +17,14 @@ var sys = {
             chrome.debugger.sendCommand(
                 this.debuggee,
                 'Debugger.evaluateOnCallFrame',
-                { 
+                {
                     callFrameId: sys.callFrame.callFrameId,
-                    expression: cmd,
+                    expression: cmd
                 },
                 function(response) {
                     async_response = response;
                 }
-            ); 
+            );
 
             var value = async_response.result.value;
 
@@ -44,18 +44,18 @@ var sys = {
             var controller1 = console.console({
                 promptLabel: 'debug> ',
                 commandValidate: function(line) {
-                    if(line == "") return false;
+                    if(line === "") return false;
                     else return true;
                 },
                 commandHandle: function(cmd) {
-                    try { 
+                    try {
                         return self.parse(cmd);
                     }
                     catch (e) { return e.toString(); }
                 },
                 autofocus: true,
                 animateScroll: true,
-                promptHistory: true,
+                promptHistory: true
             });
         });
     },
@@ -67,7 +67,7 @@ var sys = {
         this.createConsole();
     }
 
-}
+};
 
 chrome.debugger.onEvent.addListener(function(debuggee, method, params) {
     switch (method) {
