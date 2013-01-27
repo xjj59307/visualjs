@@ -19,7 +19,7 @@
         }
 
         chrome.windows.create(
-            {url: "console.html?" + tabId, type: "normal", width: 900, height: 500}
+            { url: "console.html?" + tabId, type: "normal", width: 1024, height: 980 }
         );
     }
 })();
