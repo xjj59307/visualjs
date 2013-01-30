@@ -1,16 +1,25 @@
-from pyv8 import PyV8
+from pyv8 import _PyV8
+import json
 
-class Global(PyV8.JSClass):
-	def hello(self):
-		print "Hello World"
+def processDebugEvent(event):
+	print "receive debug event %s" % repr(event)
 
-context = PyV8.JSContext(Global())
-context.enter()
-context.eval("hello()")
+def processDebugMessage(msg):
+	print repr(msg)
 
-engine = PyV8.JSEngine()
+_PyV8.debug().enabled = True
+_PyV8.debug().context.enter()
 file = open("source.js", "r").read()
-script = engine.compile(file)
-print script.run()
-	
-		
+script = _PyV8.JSEngine().compile(file)
+script.run()
+
+_PyV8.debug().onDebugMessage = processDebugMessage
+_PyV8.debug().onDebugEvent = processDebugEvent
+request = json.dumps({
+	"sep": 0,
+	"type": "request",
+	"command": "evaluate",
+	"arguments": { "expression": "1+2", "global": True }
+})
+_PyV8.debug().sendCommand(request)
+_PyV8.debug().enabled = False
