@@ -14,7 +14,7 @@ debug.connect(function() {
         command: 'setbreakpoint',
         arguments: {
             type: 'script',
-            target: '/Users/junjianxu/Dropbox/projects/visualjs/debugger/source.js',
+            target: '/Users/junjianxu/Dropbox/projects/visualjs/debugger/debuggee.js',
             line: 1
         }
     };
