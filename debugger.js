@@ -1,57 +1,36 @@
 var pDebug = require('pDebug').pDebug;
+var Command = require('./command');
 
-var debug = new pDebug({
-    eventHandler: function(event) {
-        console.log('Event');
-        console.log(event);
-    }
-});
+var addScript = function (response) {
+    console.log(response);
+};
 
-debug.connect(function() { 
-    console.log('connect!'); 
+var eventHandler = function (event) {
+    console.log('Event');
+    console.log(event);
+};
 
-    var brkMsg = {
-        command: 'setbreakpoint',
-        arguments: {
-            type: 'script',
-            target: '/Users/junjianxu/Dropbox/projects/visualjs/debugger/debuggee.js',
-            line: 1
-        }
-    };
-    debug.send(brkMsg, function(req, resp) {
-        console.log('REQ: ');
-        console.log(req);
-
-        console.log('RES: ');
-        console.log(resp);
+var Debug = function () {
+    this.debug = new pDebug({
+        eventHandler: eventHandler
     });
+};
 
-    var ctnMsg = {
-        command: 'continue'
-    };
-    debug.send(ctnMsg, function(req, resp) {
-        console.log('REQ: ');
-        console.log(req);
+Debug.prototype.connect = function () {
+    var self = this;
 
-        console.log('RES: ');
-        console.log(resp);
-    });
+    this.debug.connect(function() { 
+        console.log('connect!'); 
 
-    setTimeout(function () {
-        var evalMsg = {
-            command: 'evaluate',
-            arguments: { 
-                expression: 'greet("xu")'
+        var command = new Command(self.debug);
+        command.requireScripts(function (request, response) {
+            console.log(response.length);
+            for (var i = 0; i < response.body.length; ++i) {
+                addScript(response.body[i]);
             }
-        };
-        debug.send(evalMsg, function(req, resp) {
-            console.log('REQ: ');
-            console.log(req);
-
-            console.log('RES: ');
-            console.log(resp);
         });
-    }, 3000);
-});
+    });
+};
 
-
+var debug = new Debug();
+debug.connect();
