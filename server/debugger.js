@@ -1,19 +1,24 @@
 var pDebug = require('pDebug').pDebug;
 var Command = require('./command');
 
-var addScript = function (response) {
-    console.log(response);
-};
-
 var eventHandler = function (event) {
-    console.log('Event');
-    console.log(event);
+    // console.log("Event: " + event);
 };
 
 var Debug = function () {
     this.debug = new pDebug({
         eventHandler: eventHandler
     });
+    this.scripts = {};
+};
+
+var natives = process.binding('natives');
+
+Debug.prototype._addScript = function (script) {
+    this.scripts[script.id] = script;
+    if (script.name) {
+        script.isNative = (script.name.replace('.js', '') in natives) || script.name === 'node.js';
+    }
 };
 
 Debug.prototype.connect = function () {
@@ -24,13 +29,11 @@ Debug.prototype.connect = function () {
 
         var command = new Command(self.debug);
         command.requireScripts(function (request, response) {
-            console.log(response.length);
             for (var i = 0; i < response.body.length; ++i) {
-                addScript(response.body[i]);
+                self._addScript(response.body[i]);
             }
         });
     });
 };
 
-var debug = new Debug();
-debug.connect();
+module.exports = Debug;
