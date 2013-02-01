@@ -15,7 +15,7 @@ debug.connect(function() {
         arguments: {
             type: 'script',
             target: '/Users/junjianxu/Dropbox/projects/visualjs/debugger/source.js',
-            line: 4
+            line: 1
         }
     };
     debug.send(brkMsg, function(req, resp) {
