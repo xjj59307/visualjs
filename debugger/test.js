@@ -1,4 +1,5 @@
-var pDebug = require('./index.js').pDebug;
+var pDebug = require('pDebug').pDebug;
+
 var debug = new pDebug({
     eventHandler: function(event) {
         console.log('Event');
