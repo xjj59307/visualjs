@@ -1,4 +1,7 @@
-var Debug = require('./debugger');
+var Interface = require('./interface');
 
-var debug = new Debug();
-debug.connect();
+stdin = process.stdin;
+stdout = process.stdout;
+
+var interface = new Interface(stdin, stdout);
+interface.connect();
