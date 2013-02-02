@@ -1,7 +1,7 @@
 var pDebug = require('pDebug').pDebug;
 
-var Client = function () {
-	var eventHandler = function (event) {
+var Client = function() {
+	var eventHandler = function(event) {
 	    console.log("Event: " + event);
 	};
 
@@ -13,31 +13,29 @@ var Client = function () {
     this.currentScript = null;
 };
 
-Client.prototype.connect = function () {
+Client.prototype.connect = function() {
 	var self = this;
 
     this.debug.connect(function() { 
-        console.log('connect!'); 
-
         self.requireScripts();
     });
 }
 
-Client.prototype.requireScripts = function () {
+Client.prototype.requireScripts = function() {
 	var request = {
 		command: 'scripts'
 	};
 
 	var self = this;
 
-	this.debug.send(request, function (request, response) {
+	this.debug.send(request, function(request, response) {
         for (var i = 0; i < response.body.length; ++i) {
             self._addScript(response.body[i]);
         }
     });											
 };
 
-Client.prototype.setBreakpoint = function (scriptName, line, condition) {
+Client.prototype.setBreakpoint = function(scriptName, line, condition) {
 	var request = {
 		command: 'script',
 		target: scriptName,
@@ -48,7 +46,7 @@ Client.prototype.setBreakpoint = function (scriptName, line, condition) {
 	this.debug.send(request);
 };
 
-Client.prototype.continue = function () {
+Client.prototype.continue = function() {
 	var request = {
 		command: 'continue'
 	};
@@ -58,7 +56,7 @@ Client.prototype.continue = function () {
 
 var natives = process.binding('natives');
 
-Client.prototype._addScript = function (script) {
+Client.prototype._addScript = function(script) {
     this.scripts[script.id] = script;
     if (script.name) {
         script.isNative = (script.name.replace('.js', '') in natives) || script.name === 'node.js';
