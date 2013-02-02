@@ -1,23 +1,35 @@
 var pDebug = require('pDebug').pDebug;
 
-var Client = function() {
-	var eventHandler = function(event) {
-	    console.log("Event: " + event);
-	};
+var NO_FRAME = -1;
 
+var Client = function() {
     this.debug = new pDebug({
-        eventHandler: eventHandler
+        eventHandler: this._onResponse
     });
 
+    this.currentSource = null;
     this.scripts = {};
-    this.currentScript = null;
+};
+
+var natives = process.binding('natives');
+
+Client.prototype._addScript = function(script) {
+    this.scripts[script.id] = script;
+    if (script.name) {
+        script.isNative = (script.name.replace('.js', '') in natives) || script.name === 'node.js';
+        this.currentSource = !script.isNative && script;
+    }
+};
+
+Client.prototype._onResponse = function(event) {
+	console.log("Event: " + event);
 };
 
 Client.prototype.connect = function() {
 	var self = this;
 
     this.debug.connect(function() { 
-        self.requireScripts();
+        // self.requireScripts();
     });
 }
 
@@ -52,16 +64,6 @@ Client.prototype.continue = function() {
 	};
 
 	this.debug.send(request);
-};
-
-var natives = process.binding('natives');
-
-Client.prototype._addScript = function(script) {
-    this.scripts[script.id] = script;
-    if (script.name) {
-        script.isNative = (script.name.replace('.js', '') in natives) || script.name === 'node.js';
-        this.currentScript = !script.isNative && script;
-    }
 };
 
 module.exports = Client;

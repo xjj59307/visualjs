@@ -25,6 +25,11 @@ var Interface = function(stdin, stdout) {
     }
     this.repl = repl.start(opts);
 
+    // Kill process when main repl dies
+    this.repl.on('exit', function() {
+    	process.exit(0);
+    });
+
     this.paused = 0;
     this.waiting = null;
 
@@ -77,7 +82,7 @@ Interface.prototype.connect = function() {
 };
 
 Interface.prototype.setBreakPoint = function(line) {
-    this.client.setBreakpoint(this.client.currentScript.name, line);
-}
+    this.client.setBreakpoint(this.client.currentSource.name, line);
+};
 
 module.exports = Interface;
