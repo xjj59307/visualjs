@@ -7,7 +7,6 @@ var Client = function() {
         eventHandler: this._onResponse
     });
 
-    this.currentSource = null;
     this.scripts = {};
 };
 
@@ -17,7 +16,11 @@ Client.prototype._addScript = function(script) {
     this.scripts[script.id] = script;
     if (script.name) {
         script.isNative = (script.name.replace('.js', '') in natives) || script.name === 'node.js';
-        this.currentSource = !script.isNative && script;
+
+        // Here is some bad smell when debugging multiple scripts
+        if (script.isNative === false) {
+        	this.currentScript = script.name;
+        }
     }
 };
 
@@ -29,17 +32,16 @@ Client.prototype.connect = function() {
 	var self = this;
 
     this.debug.connect(function() { 
-        // self.requireScripts();
+        self.requireScripts();
     });
 }
 
 Client.prototype.requireScripts = function() {
+	var self = this;
+
 	var request = {
 		command: 'scripts'
 	};
-
-	var self = this;
-
 	this.debug.send(request, function(request, response) {
         for (var i = 0; i < response.body.length; ++i) {
             self._addScript(response.body[i]);

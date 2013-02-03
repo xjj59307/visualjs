@@ -1,6 +1,8 @@
-var Client = require('./client');
-var repl = require('repl');
-var vm = require('vm');
+var Client = require('./client'),
+	repl = require('repl'),
+	vm = require('vm'),
+	path = require('path'),
+	util = require('util');
 
 var Interface = function(stdin, stdout) {
 	var self = this;
@@ -17,12 +19,6 @@ var Interface = function(stdin, stdout) {
     	useGlobal: false,
     	ignoreUndefined: true
     };
-    // Emulate Ctrl+C
-    if (!this.stdout.isTTY) {
-    	process.on('SIGINT', function() {
-    		self.repl.rli.emit('SIGINT');
-    	});
-    }
     this.repl = repl.start(opts);
 
     // Kill process when main repl dies
@@ -30,13 +26,72 @@ var Interface = function(stdin, stdout) {
     	process.exit(0);
     });
 
+    var proto = Interface.prototype,
+    	ignored = ['clearline', 'print', 'error', 'requireConnection', 'controlEval', 'pause', 'resume'],
+    	shortcut = {
+    		'setBreakpoint': 'sb'
+    	};	
+
+    var defineProperty = function(key, protoKey) {
+    	var func = proto[protoKey].bind(self);
+
+    	// Setup prototype methods with no parameters as getters
+    	if (proto[protoKey].length === 0) {
+    		Object.defineProperty(self.repl.context, key, {
+    			get: func,
+    			enumerable: true,
+    			configurable: false
+    		});
+    	} else {
+    		self.repl.context[key] = func;
+    	}
+    };
+
+    // Copy all prototype methods in repl context
+    for (var i in proto) {
+    	if (Object.prototype.hasOwnProperty.call(proto, i) &&
+    		ignored.indexOf(i) === -1) {
+    		defineProperty(i, i);
+    		if (shortcut[i]) defineProperty(shortcut[i], i);
+    	}
+    }
+
     this.paused = 0;
     this.waiting = null;
 
-    // Run script automatically
+    // Connect to debugger automatically
     this.pause();
     this.client = new Client();
+    this.client.connect();
     this.resume();
+};
+
+Interface.prototype.clearline = function() {
+	this.stdout.cursorTo(0);
+	this.stdout.clearLine(1);
+}
+
+Interface.prototype.print = function(text, oneline) {
+	this.clearline();
+
+	this.stdout.write(typeof text === 'string' ? text : util.inspect(text));
+
+	if (oneline !== true) {
+		this.stdout.write('\n');
+	}
+};
+
+Interface.prototype.error = function(text) {
+	this.print(text);
+	this.resume();
+};
+
+Interface.prototype.requireConnection = function() {
+	if (!this.client) {
+		this.error('Connection isn\'t established');
+		return false;
+	}
+	return true;
 };
 
 Interface.prototype.controlEval = function(code, context, filename, callback) {
@@ -77,11 +132,33 @@ Interface.prototype.resume = function(silent) {
 	}
 };
 
-Interface.prototype.connect = function() {
-    this.client.connect();
-};
+Interface.prototype.scripts = function() {
+	if (!this.requireConnection()) return;
 
-Interface.prototype.setBreakPoint = function(line) {
+	var client = this.client,
+		displayNatives = arguments[0] || false,
+		scripts = [];
+
+	this.pause();
+	for (var id in client.scripts) {
+		var script = client.scripts[id];
+		if (typeof script === 'object' && script.name) {
+			if (displayNatives === true ||
+				script.name === client.currentScript ||
+				script.isNative === false) {
+				scripts.push(
+					(script.name === client.currentScript ? '* ' : '  ') +
+					id + ': ' + 
+					path.basename(script.name)
+				);
+			}
+		}
+	}
+	this.print(scripts.join('\n'));
+	this.resume();
+}
+
+Interface.prototype.setBreakpoint = function(line) {
     this.client.setBreakpoint(this.client.currentSource.name, line);
 };
 
