@@ -7,6 +7,7 @@ var Client = function() {
         eventHandler: this._onResponse
     });
 
+    this.currentFrame = NO_FRAME;
     this.scripts = {};
     this.breakpoints = [];
 };
