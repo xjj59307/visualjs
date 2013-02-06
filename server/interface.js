@@ -62,8 +62,9 @@ var Interface = function(stdin, stdout) {
     // Connect to debugger automatically
     this.pause();
     this.client = new Client();
-    this.client.connect();
-    this.resume();
+    this.client.connect(function() {
+        self.resume();
+    });
 };
 
 Interface.prototype.clearline = function() {
@@ -156,9 +157,11 @@ Interface.prototype.scripts = function() {
 	}
 	this.print(scripts.join('\n'));
 	this.resume();
-}
+};
 
 Interface.prototype.setBreakpoint = function(script, line, condition) {
+    if (!this.requireConnection()) return;
+
 	var self = this,
 		scriptId,
 		ambiguous;
@@ -221,6 +224,17 @@ Interface.prototype.setBreakpoint = function(script, line, condition) {
 
 		self.resume();
 	});
+};
+
+Interface.prototype.breakpoints = function() {
+    if (!this.requireConnection()) return;
+
+    this.pause();
+    var self = this;
+    this.client.listBreakpoints(function(resquest, response) {
+        self.print(response.body);
+        self.resume();
+    });
 };
 
 module.exports = Interface;

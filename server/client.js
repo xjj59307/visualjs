@@ -29,15 +29,15 @@ Client.prototype._onResponse = function(event) {
 	console.log("Event: " + event);
 };
 
-Client.prototype.connect = function() {
+Client.prototype.connect = function(callback) {
 	var self = this;
 
-    this.debug.connect(function() { 
-        self.requireScripts();
+    this.debug.connect(function() {
+        self.requireScripts(callback);
     });
-}
+};
 
-Client.prototype.requireScripts = function() {
+Client.prototype.requireScripts = function(callback) {
 	var self = this;
 
 	var request = {
@@ -47,7 +47,8 @@ Client.prototype.requireScripts = function() {
         for (var i = 0; i < response.body.length; ++i) {
             self._addScript(response.body[i]);
         }
-    });											
+        callback();
+    });
 };
 
 Client.prototype.setBreakpoint = function(request, callback) {
@@ -59,12 +60,20 @@ Client.prototype.setBreakpoint = function(request, callback) {
 	this.debug.send(request, callback);
 };
 
-Client.prototype.continue = function() {
+Client.prototype.continue = function(callback) {
 	var request = {
 		command: 'continue'
 	};
 
-	this.debug.send(request);
+	this.debug.send(request, callback);
+};
+
+Client.prototype.listBreakpoints = function(callback) {
+    var request = {
+        command: 'listbreakpoints'
+    };
+
+    this.debug.send(request, callback);
 };
 
 module.exports = Client;
