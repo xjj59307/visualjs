@@ -8,6 +8,7 @@ var Client = function() {
     });
 
     this.scripts = {};
+    this.breakpoints = [];
 };
 
 var natives = process.binding('natives');
@@ -49,15 +50,13 @@ Client.prototype.requireScripts = function() {
     });											
 };
 
-Client.prototype.setBreakpoint = function(scriptName, line, condition) {
+Client.prototype.setBreakpoint = function(request, callback) {
 	var request = {
-		command: 'script',
-		target: scriptName,
-		line: line,
-		condition: condition
+        command: 'setbreakpoint',
+        arguments: request
 	};
 
-	this.debug.send(request);
+	this.debug.send(request, callback);
 };
 
 Client.prototype.continue = function() {

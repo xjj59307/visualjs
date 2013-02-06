@@ -30,7 +30,7 @@ var Interface = function(stdin, stdout) {
     	ignored = ['clearline', 'print', 'error', 'requireConnection', 'controlEval', 'pause', 'resume'],
     	shortcut = {
     		'setBreakpoint': 'sb'
-    	};	
+    	};
 
     var defineProperty = function(key, protoKey) {
     	var func = proto[protoKey].bind(self);
@@ -96,7 +96,7 @@ Interface.prototype.requireConnection = function() {
 
 Interface.prototype.controlEval = function(code, context, filename, callback) {
 	try {
-		var result = vm.runInContext(code, context, filename);	
+		var result = vm.runInContext(code, context, filename);
 
 		// Repl should not ask for next command
 		// if current one was asynchronous
@@ -148,7 +148,7 @@ Interface.prototype.scripts = function() {
 				script.isNative === false) {
 				scripts.push(
 					(script.name === client.currentScript ? '* ' : '  ') +
-					id + ': ' + 
+					id + ': ' +
 					path.basename(script.name)
 				);
 			}
@@ -158,8 +158,69 @@ Interface.prototype.scripts = function() {
 	this.resume();
 }
 
-Interface.prototype.setBreakpoint = function(line) {
-    this.client.setBreakpoint(this.client.currentSource.name, line);
+Interface.prototype.setBreakpoint = function(script, line, condition) {
+	var self = this,
+		scriptId,
+		ambiguous;
+
+	// TODO: setBreakpoint() should insert breakpoint on current line when parameter is undefined
+
+	if (/\(\)$/.test(script)) {
+		// setBreakpoint('functionname()');
+		var request = {
+			type: 'function',
+			target: script.replace(/\(\)$/, ''),
+			condition: condition
+		};
+	} else {
+		// setBreakpoint('scriptname');
+		if (typeof script === 'string' && !this.client.scripts[script]) {
+			var scripts = this.client.scripts;
+			Object.keys(scripts).forEach(function(id) {
+				if (scripts[id] && scripts[id].name.indexOf(script) !== -1) {
+					if (scriptId) {
+						ambiguous = true;
+					}
+					scriptId = id;
+				}
+			});
+		} else {
+			scriptId = script;
+		}
+
+		if (!scriptId) return this.error('Script: ' + script + ' not found');
+		if (ambiguous) return this.error('Script name is ambiguous');
+		if (line <= 0) return this.error('Line should be a positive value');
+
+		var request = {
+			type: 'scriptId',
+			target: scriptId,
+			line: line - 1,
+			condition: condition
+		};
+	}
+
+	self.pause();
+	self.client.setBreakpoint(request, function(request, response) {
+		// Load scriptId and line when function breakpoint is set
+		if (!scriptId) {
+			scriptId = response.body.script_id;
+			line = response.body.line;
+		}
+
+		// If we finally have one, remember this breakpoint
+		if (scriptId) {
+            self.client.breakpoints.push({
+                id: response.body.breakpoint,
+                scriptId: scriptId,
+                script: (self.client.scripts[scriptId] || {}).name,
+                line: line,
+                condition: condition
+            });
+		}
+
+		self.resume();
+	});
 };
 
 module.exports = Interface;
