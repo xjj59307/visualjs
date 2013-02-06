@@ -21,6 +21,7 @@ Client.prototype._addScript = function(script) {
         // Here is some bad smell when debugging multiple scripts
         if (script.isNative === false) {
         	this.currentScript = script.name;
+            this.currentLine = 0;
         }
     }
 };

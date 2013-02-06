@@ -166,7 +166,17 @@ Interface.prototype.setBreakpoint = function(script, line, condition) {
 		scriptId,
 		ambiguous;
 
-	// TODO: setBreakpoint() should insert breakpoint on current line when parameter is undefined
+	// setBreakpoint() should insert breakpoint on current line
+    if (script === undefined) {
+        script = this.client.currentScript;
+        line = this.client.currentLine + 1;
+    }
+
+    // setBreakpoint(line-number) should insert breakpoint in current script
+    if (line === undefined && typeof script === 'number') {
+        line = script;
+        script = this.client.currentScript;
+    }
 
 	if (/\(\)$/.test(script)) {
 		// setBreakpoint('functionname()');
