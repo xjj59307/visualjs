@@ -1,16 +1,34 @@
 var pDebug = require('pDebug').pDebug;
+var EventEmitter = require('events').EventEmitter;
+var util = require('util');
 
 var NO_FRAME = -1;
 
+// Client inherits from pDebug
 var Client = function() {
-    this.debug = new pDebug({
-        eventHandler: this._onResponse
+    pDebug.call(this, {
+        eventHandler: function(response) {
+            switch (response.event) {
+                case 'break':
+                    this.emitter.emit('break', response.body);
+                    break;
+                case 'afterCompile':
+                    console.log('Event: afterCompile');
+                    break;
+                default:
+                    this.emitter.emit('exception', response.body);
+                    break;
+            }
+        }
     });
+
+    this.emitter = new EventEmitter();
 
     this.currentFrame = NO_FRAME;
     this.scripts = {};
     this.breakpoints = [];
 };
+util.inherits(Client, pDebug);
 
 var natives = process.binding('natives');
 
@@ -27,25 +45,14 @@ Client.prototype._addScript = function(script) {
     }
 };
 
-Client.prototype._onResponse = function(event) {
-	console.log("Event: " + event);
-};
-
-Client.prototype.connect = function(callback) {
-	var self = this;
-
-    this.debug.connect(function() {
-        self.requireScripts(callback);
-    });
-};
-
 Client.prototype.requireScripts = function(callback) {
 	var self = this;
+    callback = callback || function() {};
 
 	var request = {
 		command: 'scripts'
 	};
-	this.debug.send(request, function(request, response) {
+	this.send(request, function(request, response) {
         for (var i = 0; i < response.body.length; ++i) {
             self._addScript(response.body[i]);
         }
@@ -59,7 +66,7 @@ Client.prototype.requireContinue = function(callback) {
     var request = {
         command: 'continue'
     };
-    this.debug.send(request, callback);
+    this.send(request, callback);
 };
 
 Client.prototype.setBreakpoint = function(request, callback) {
@@ -68,7 +75,7 @@ Client.prototype.setBreakpoint = function(request, callback) {
         arguments: request
 	};
 
-	this.debug.send(request, callback);
+	this.send(request, callback);
 };
 
 Client.prototype.continue = function(callback) {
@@ -76,7 +83,7 @@ Client.prototype.continue = function(callback) {
 		command: 'continue'
 	};
 
-	this.debug.send(request, callback);
+	this.send(request, callback);
 };
 
 Client.prototype.listBreakpoints = function(callback) {
@@ -84,7 +91,7 @@ Client.prototype.listBreakpoints = function(callback) {
         command: 'listbreakpoints'
     };
 
-    this.debug.send(request, callback);
+    this.send(request, callback);
 };
 
 module.exports = Client;

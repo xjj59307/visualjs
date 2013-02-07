@@ -27,7 +27,7 @@ var Interface = function(stdin, stdout) {
     });
 
     var proto = Interface.prototype,
-    	ignored = ['clearline', 'print', 'error', 'requireConnection', 'controlEval', 'pause', 'resume'],
+    	ignored = ['clearline', 'print', 'error', 'handleBreak', 'requireConnection', 'controlEval', 'pause', 'resume'],
     	shortcut = {
             'cont': 'c',
     		'setBreakpoint': 'sb'
@@ -63,8 +63,19 @@ var Interface = function(stdin, stdout) {
     // Connect to debugger automatically
     this.pause();
     this.client = new Client();
+
+    this.client.emitter.on('break', function(response) {
+        self.handleBreak(response);
+    });
+
+    this.client.emitter.on('exception', function(response) {
+        self.handleBreak(response);
+    });
+
     this.client.connect(function() {
-        self.resume();
+        self.client.requireScripts(function() {
+            self.resume();
+        });
     });
 };
 
@@ -86,6 +97,24 @@ Interface.prototype.print = function(text, oneline) {
 Interface.prototype.error = function(text) {
 	this.print(text);
 	this.resume();
+};
+
+Interface.prototype.handleBreak = function(response) {
+    var self = this;
+
+    this.pause();
+
+    // Save execution context's data
+    this.client.currentLine = response.sourceLine;
+    this.client.currentSourceColumn = response.sourceColumn;
+    this.client.currentFrame = 0;
+    this.client.currentScript = response.script && response.script.name;
+
+    // Print break data
+    this.print(SourceInfo(response));
+
+    // TODO: Show watches' values
+    this.resume();
 };
 
 Interface.prototype.requireConnection = function() {
@@ -256,6 +285,34 @@ Interface.prototype.breakpoints = function() {
         self.print(response.body);
         self.resume();
     });
+};
+
+var SourceInfo = function(body) {
+    var result = body.exception ? 'exception in ' : 'break in ';
+
+    if (body.script) {
+        if (body.script.name) {
+            var name = body.script.name,
+                // Get current path
+                dir = path.resolve() + '/';
+
+            // Change path to relative, if possible
+            if (name.indexOf(dir) === 0) {
+                name = name.slice(dir.length);
+            }
+
+            result += name;
+        } else {
+            result += '[unnamed]';
+        }
+    }
+
+    result += ':';
+    result += body.sourceLine + 1;
+
+    if (body.exception) result += '\n' + body.exception.text;
+
+    return result;
 };
 
 module.exports = Interface;
