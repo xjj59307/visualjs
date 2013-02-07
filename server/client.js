@@ -53,6 +53,15 @@ Client.prototype.requireScripts = function(callback) {
     });
 };
 
+Client.prototype.requireContinue = function(callback) {
+    this.currentFrame = NO_FRAME;
+
+    var request = {
+        command: 'continue'
+    };
+    this.debug.send(request, callback);
+};
+
 Client.prototype.setBreakpoint = function(request, callback) {
 	var request = {
         command: 'setbreakpoint',

@@ -29,6 +29,7 @@ var Interface = function(stdin, stdout) {
     var proto = Interface.prototype,
     	ignored = ['clearline', 'print', 'error', 'requireConnection', 'controlEval', 'pause', 'resume'],
     	shortcut = {
+            'cont': 'c',
     		'setBreakpoint': 'sb'
     	};
 
@@ -157,6 +158,16 @@ Interface.prototype.scripts = function() {
 	}
 	this.print(scripts.join('\n'));
 	this.resume();
+};
+
+Interface.prototype.cont = function() {
+    if (!this.requireConnection()) return;
+
+    this.pause();
+    var self = this;
+    this.client.requireContinue(function() {
+        self.resume();
+    });
 };
 
 Interface.prototype.setBreakpoint = function(script, line, condition) {
