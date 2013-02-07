@@ -39,20 +39,20 @@ Client.prototype._addScript = function(script) {
 
         // Here is some bad smell when debugging multiple scripts
         if (script.isNative === false) {
-        	this.currentScript = script.name;
+            this.currentScript = script.name;
             this.currentLine = 0;
         }
     }
 };
 
 Client.prototype.requireScripts = function(callback) {
-	var self = this;
+    var self = this;
     callback = callback || function() {};
 
-	var request = {
-		command: 'scripts'
-	};
-	this.send(request, function(request, response) {
+    var request = {
+        command: 'scripts'
+    };
+    this.send(request, function(request, response) {
         for (var i = 0; i < response.body.length; ++i) {
             self._addScript(response.body[i]);
         }
@@ -80,20 +80,20 @@ Client.prototype.requireContinue = function(callback) {
 };
 
 Client.prototype.setBreakpoint = function(request, callback) {
-	var request = {
+    var request = {
         command: 'setbreakpoint',
         arguments: request
-	};
+    };
 
-	this.send(request, callback);
+    this.send(request, callback);
 };
 
 Client.prototype.continue = function(callback) {
-	var request = {
-		command: 'continue'
-	};
+    var request = {
+        command: 'continue'
+    };
 
-	this.send(request, callback);
+    this.send(request, callback);
 };
 
 Client.prototype.listBreakpoints = function(callback) {
