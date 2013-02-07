@@ -60,6 +60,16 @@ Client.prototype.requireScripts = function(callback) {
     });
 };
 
+Client.prototype.requireSource = function(from, to, callback) {
+    var request = {
+        command: 'source',
+        fromLine: from,
+        toLine: to
+    };
+
+    this.send(request, callback);
+};
+
 Client.prototype.requireContinue = function(callback) {
     this.currentFrame = NO_FRAME;
 

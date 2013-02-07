@@ -2,7 +2,8 @@ var Client = require('./client'),
 	repl = require('repl'),
 	vm = require('vm'),
 	path = require('path'),
-	util = require('util');
+	util = require('util'),
+    tool = require('./tool');
 
 var Interface = function(stdin, stdout) {
 	var self = this;
@@ -111,7 +112,7 @@ Interface.prototype.handleBreak = function(response) {
     this.client.currentScript = response.script && response.script.name;
 
     // Print break data
-    this.print(SourceInfo(response));
+    this.print(tool.SourceInfo(response));
 
     // TODO: Show watches' values
     this.resume();
@@ -189,6 +190,52 @@ Interface.prototype.scripts = function() {
 	this.resume();
 };
 
+// List source code
+Interface.prototype.list = function(delta) {
+    if (!this.requireConnection()) return;
+
+    delta = delta || 5;
+
+    var self = this,
+        client = this.client,
+        from = client.currentLine - delta + 1,
+        to = client.currentLine + delta + 1;
+
+    self.pause();
+    client.requireSource(from, to, function(request, response) {
+        var body = response.body;
+        var lines = body.source.split('\n');
+        for (var i = 0; i < lines.length; ++i) {
+            var lineNo = body.fromLine + i + 1;
+            if (lineNo < from || lineNo > to) continue;
+
+            var isCurrent = (lineNo === client.currentLine + 1),
+                hasBreakpoint = client.breakpoints.some(function(bp) {
+                    return bp.script === client.currentScript && bp.line === lineNo;
+                });
+
+            // The first line needs to have the module wrapper filtered out of it
+            if (lineNo === 1) {
+                var wrapper = require('module').wrapper[0];
+                lines[i] = lines[i].slice(wrapper.length);
+
+                client.currentSourceColumn -= wrapper.length;
+            }
+
+            // Highlight executing statement
+            var line;
+            if (isCurrent) {
+                line = tool.SourceUnderline(lines[i], client.currentSourceColumn, self.repl);
+            } else {
+                line = lines[i];
+            }
+
+            self.print(tool.leftPad(lineNo, hasBreakpoint && '*') + ' ' + line);
+        }
+        self.resume();
+    });
+};
+
 Interface.prototype.cont = function() {
     if (!this.requireConnection()) return;
 
@@ -199,7 +246,7 @@ Interface.prototype.cont = function() {
     });
 };
 
-Interface.prototype.setBreakpoint = function(script, line, condition) {
+Interface.prototype.setBreakpoint = function(script, line, condition, slient) {
     if (!this.requireConnection()) return;
 
 	var self = this,
@@ -255,6 +302,10 @@ Interface.prototype.setBreakpoint = function(script, line, condition) {
 
 	self.pause();
 	self.client.setBreakpoint(request, function(request, response) {
+        if (!slient) {
+            self.list(5);
+        }
+
 		// Load scriptId and line when function breakpoint is set
 		if (!scriptId) {
 			scriptId = response.body.script_id;
@@ -285,34 +336,6 @@ Interface.prototype.breakpoints = function() {
         self.print(response.body);
         self.resume();
     });
-};
-
-var SourceInfo = function(body) {
-    var result = body.exception ? 'exception in ' : 'break in ';
-
-    if (body.script) {
-        if (body.script.name) {
-            var name = body.script.name,
-                // Get current path
-                dir = path.resolve() + '/';
-
-            // Change path to relative, if possible
-            if (name.indexOf(dir) === 0) {
-                name = name.slice(dir.length);
-            }
-
-            result += name;
-        } else {
-            result += '[unnamed]';
-        }
-    }
-
-    result += ':';
-    result += body.sourceLine + 1;
-
-    if (body.exception) result += '\n' + body.exception.text;
-
-    return result;
 };
 
 module.exports = Interface;
