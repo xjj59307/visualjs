@@ -31,6 +31,9 @@ var Interface = function(stdin, stdout) {
         ignored = ['clearline', 'print', 'error', 'handleBreak', 'requireConnection', 'controlEval', 'pause', 'resume'],
         shortcut = {
             'cont': 'c',
+            'next': 'n',
+            'step': 's',
+            'out': 'o',
             'setBreakpoint': 'sb'
         };
 
@@ -115,6 +118,7 @@ Interface.prototype.handleBreak = function(response) {
     this.print(tool.SourceInfo(response));
 
     // TODO: Show watches' values
+    this.list(2);
     this.resume();
 };
 
@@ -251,6 +255,30 @@ Interface.prototype.cont = function() {
         self.resume();
     });
 };
+
+// Step commands generator
+Interface.stepGenerator = function(type, count) {
+    return function() {
+        if (!this.requireConnection()) return;
+
+        var self = this;
+
+        self.pause();
+        self.client.step(type, count, function(err, response) {
+            if (err) self.error(err);
+            self.resume();
+        });
+    };
+};
+
+// Jump to next command
+Interface.prototype.next = Interface.stepGenerator('next', 1);
+
+// Step in
+Interface.prototype.step = Interface.stepGenerator('in', 1);
+
+// Step out
+Interface.prototype.out = Interface.stepGenerator('out', 1);
 
 Interface.prototype.setBreakpoint = function(script, line, condition, slient) {
     if (!this.requireConnection()) return;

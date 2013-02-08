@@ -42,7 +42,7 @@ Protocal.prototype.connect = function(callback) {
         currentLength = 0;
         self = this;
 
-    process.stdout.write('Connecting');
+    process.stdout.write('connecting');
 
     var setupConnection = function() {
         self.client = net.connect(self.port, self.host, callback);
@@ -96,13 +96,14 @@ Protocal.prototype.disconnect = function() {
 Protocal.prototype.send = function(request, callback) {
     request.seq = ++this.seq;
     request.type = 'request';
-
     var str = JSON.stringify(request);
     var header = 'Content-Length:';
-    this.client.write(header + str.length + '\r\n\r\n' + str);
 
+    // Following statements must be executed before write, otherwise it is possible that response returns back before their execution
     request.callback = callback;
     this.sendedRequests[this.seq] = request;
+
+    this.client.write(header + str.length + '\r\n\r\n' + str);
 };
 
 module.exports = Protocal;

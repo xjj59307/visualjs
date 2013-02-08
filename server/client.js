@@ -72,6 +72,19 @@ Client.prototype.requireSource = function(from, to, callback) {
     this.send(request, callback);
 };
 
+Client.prototype.step = function(action, count, callback) {
+    var request = {
+        command: 'continue',
+        arguments: {
+            stepaction: action,
+            stepcount: count
+        }
+    };
+
+    this.currentFrame = NO_FRAME;
+    this.send(request, callback);
+};
+
 Client.prototype.requireContinue = function(callback) {
     this.currentFrame = NO_FRAME;
 
