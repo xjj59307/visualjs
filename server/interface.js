@@ -202,7 +202,13 @@ Interface.prototype.list = function(delta) {
         to = client.currentLine + delta + 1;
 
     self.pause();
-    client.requireSource(from, to, function(request, response) {
+    client.requireSource(from, to, function(err, response) {
+        if (err || !response.body) {
+            self.error('You can\'t list source code right now');
+            self.resume();
+            return;
+        }
+
         var body = response.body;
         var lines = body.source.split('\n');
         for (var i = 0; i < lines.length; ++i) {
@@ -301,28 +307,33 @@ Interface.prototype.setBreakpoint = function(script, line, condition, slient) {
     }
 
     self.pause();
-    self.client.setBreakpoint(request, function(request, response) {
-        if (!slient) {
-            self.list(5);
-        }
+    self.client.setBreakpoint(request, function(err, response) {
+        if (err) {
+            if (!slient) {
+                self.error(err);
+            }
+        } else {
+            if (!slient) {
+                self.list(5);
+            }
 
-        // Load scriptId and line when function breakpoint is set
-        if (!scriptId) {
-            scriptId = response.body.script_id;
-            line = response.body.line;
-        }
+            // Load scriptId and line when function breakpoint is set
+            if (!scriptId) {
+                scriptId = response.body.script_id;
+                line = response.body.line;
+            }
 
-        // If we finally have one, remember this breakpoint
-        if (scriptId) {
-            self.client.breakpoints.push({
-                id: response.body.breakpoint,
-                scriptId: scriptId,
-                script: (self.client.scripts[scriptId] || {}).name,
-                line: line,
-                condition: condition
-            });
+            // If we finally have one, remember this breakpoint
+            if (scriptId) {
+                self.client.breakpoints.push({
+                    id: response.body.breakpoint,
+                    scriptId: scriptId,
+                    script: (self.client.scripts[scriptId] || {}).name,
+                    line: line,
+                    condition: condition
+                });
+            }
         }
-
         self.resume();
     });
 };
@@ -332,9 +343,13 @@ Interface.prototype.breakpoints = function() {
 
     this.pause();
     var self = this;
-    this.client.listBreakpoints(function(resquest, response) {
-        self.print(response.body);
-        self.resume();
+    this.client.listBreakpoints(function(err, response) {
+        if (err) {
+            self.error(err);
+        } else {
+            self.print(response.body);
+            self.resume();
+        }
     });
 };
 

@@ -52,7 +52,9 @@ Client.prototype.requireScripts = function(callback) {
     var request = {
         command: 'scripts'
     };
-    this.send(request, function(request, response) {
+    this.send(request, function(err, response) {
+        if (err) return callback(err);
+
         for (var i = 0; i < response.body.length; ++i) {
             self._addScript(response.body[i]);
         }
