@@ -1,12 +1,12 @@
-var pDebug = require('pDebug').pDebug;
+var Protocal = require('./protocal');
 var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 
 var NO_FRAME = -1;
 
-// Client inherits from pDebug
+// Client inherits from Protocal
 var Client = function() {
-    pDebug.call(this, {
+    Protocal.call(this, {
         eventHandler: function(response) {
             switch (response.event) {
                 case 'break':
@@ -28,7 +28,7 @@ var Client = function() {
     this.scripts = {};
     this.breakpoints = [];
 };
-util.inherits(Client, pDebug);
+util.inherits(Client, Protocal);
 
 var natives = process.binding('natives');
 

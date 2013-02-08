@@ -1,3 +1,5 @@
+var path = require('path');
+
 // Return number of digits
 var numLen = function(num) {
     if (num < 50) {
