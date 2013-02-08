@@ -1,12 +1,12 @@
-var Protocal = require('./protocal');
+var Protocol = require('./protocol');
 var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 
 var NO_FRAME = -1;
 
-// Client inherits from Protocal
+// Client inherits from Protocol
 var Client = function() {
-    Protocal.call(this, {
+    Protocol.call(this, {
         eventHandler: function(response) {
             switch (response.event) {
                 case 'break':
@@ -28,7 +28,7 @@ var Client = function() {
     this.scripts = {};
     this.breakpoints = [];
 };
-util.inherits(Client, Protocal);
+util.inherits(Client, Protocol);
 
 var natives = process.binding('natives');
 

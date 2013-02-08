@@ -1,6 +1,6 @@
 var net = require('net');
 
-var Protocal = function(obj) {
+var Protocol = function(obj) {
     this.port = obj && obj.port || 5858;
     this.host = obj && obj.host || 'localhost';
     this.seq = 0;
@@ -8,7 +8,7 @@ var Protocal = function(obj) {
     this.eventHandler = obj && obj.eventHandler;
 };
 
-Protocal.prototype._handleResponse = function(body) {
+Protocol.prototype._handleResponse = function(body) {
     var response = JSON.parse(body);
     var requestSeq = response.request_seq;
     if (self.sendedRequests[requestSeq]) {
@@ -36,7 +36,7 @@ Protocal.prototype._handleResponse = function(body) {
     }
 };
 
-Protocal.prototype.connect = function(callback) {
+Protocol.prototype.connect = function(callback) {
     var inHeader = true,
         body = '',
         currentLength = 0;
@@ -89,11 +89,11 @@ Protocal.prototype.connect = function(callback) {
     setupConnection();
 };
 
-Protocal.prototype.disconnect = function() {
+Protocol.prototype.disconnect = function() {
     this.client.end();
 };
 
-Protocal.prototype.send = function(request, callback) {
+Protocol.prototype.send = function(request, callback) {
     request.seq = ++this.seq;
     request.type = 'request';
     var str = JSON.stringify(request);
@@ -106,4 +106,4 @@ Protocal.prototype.send = function(request, callback) {
     this.client.write(header + str.length + '\r\n\r\n' + str);
 };
 
-module.exports = Protocal;
+module.exports = Protocol;
