@@ -1,4 +1,5 @@
 var net = require('net');
+var util = require('util');
 
 var Protocol = function(obj) {
     this.port = obj && obj.port || 5858;
@@ -6,10 +7,10 @@ var Protocol = function(obj) {
     this.seq = 0;
     this.sendedRequests = {};
     this.eventHandler = obj && obj.eventHandler;
+    this._newResponse();
 };
 
-Protocol.prototype._handleResponse = function(body) {
-    var response = JSON.parse(body);
+Protocol.prototype._handleResponse = function(response) {
     var requestSeq = response.request_seq;
     if (self.sendedRequests[requestSeq]) {
         // Response for sended request
@@ -36,6 +37,63 @@ Protocol.prototype._handleResponse = function(body) {
     }
 };
 
+Protocol.prototype._newResponse = function(raw) {
+    this.response = {
+        raw: raw || '',
+        headers: {}
+    };
+    this.state = 'headers';
+    // this._execute('');
+};
+
+Protocol.prototype._execute = function(data) {
+    var response = this.response;
+    response.raw += data;
+
+    switch (this.state) {
+        case 'headers':
+            var endHeaderIndex = response.raw.indexOf('\r\n\r\n');
+            if (endHeaderIndex < 0) break;
+
+            var rawHeader = response.raw.slice(0, endHeaderIndex);
+            var endHeaderByteIndex = Buffer.byteLength(rawHeader, 'utf8');
+            var lines = rawHeader.split('\r\n');
+            for (var i = 0; i < lines.length; ++i) {
+                var vals = lines[i].split(/: +/);
+                response.headers[vals[0]] = vals[1];
+            }
+
+            // use + symbol to convert string to number
+            this.contentLength = +response.headers['Content-Length'];
+            this.bodyStartByteIndex = endHeaderByteIndex + 4;
+
+            this.state = 'body';
+
+            var len = Buffer.byteLength(response.raw, 'utf8');
+            if (len - this.bodyStartByteIndex < this.contentLength) break;
+            // No break for passing through
+        case 'body':
+            var resRawByteLength = Buffer.byteLength(response.raw, 'utf8');
+
+            if (resRawByteLength - this.bodyStartByteIndex >= this.contentLength) {
+                var buf = new Buffer(resRawByteLength);
+                buf.write(response.raw, 0, resRawByteLength, 'utf8');
+                response.body = buf.slice(this.bodyStartByteIndex, this.bodyStartByteIndex + this.contentLength).toString('utf8');
+                response.body = response.body.length ? JSON.parse(response.body) : {};
+
+                if (this.contentLength) {
+                    this._handleResponse(response.body);
+                }
+
+                this._newResponse(buf.slice(this.bodyStartByteIndex + this.contentLength).toString('utf8'));
+            }
+            break;
+        default:
+            throw new Error('Unknown state');
+            break;
+    }
+};
+
 Protocol.prototype.connect = function(callback) {
     var inHeader = true,
         body = '',
@@ -53,32 +111,9 @@ Protocol.prototype.connect = function(callback) {
             setTimeout(setupConnection, 1000);
         });
 
+        // self.client.setEncoding('utf8');
         self.client.on('data', function(data) {
-            var lines = data.toString().split('\r\n');
-
-            lines.forEach(function(line) {
-                if (!line) {
-                    inHeader = false;
-                    return;
-                }
-
-                if (inHeader) {
-                    var vals = line.split(':');
-                    if (vals[0] === 'Content-Length') {
-                        currentLength = parseInt(vals[1], 10);
-                    }
-                } else {
-                    body += line;
-                }
-            });
-
-            if (body.length === currentLength) {
-                inHeader = true;
-                if (body) {
-                    self._handleResponse(body);
-                    body = '';
-                }
-            }
+            self._execute(data);
         });
 
         self.client.on('end', function() {
