@@ -68,11 +68,11 @@ var Interface = function(stdin, stdout) {
     this.pause();
     this.client = new Client();
 
-    this.client.emitter.on('break', function(response) {
+    this.client.on('break', function(response) {
         self.handleBreak(response);
     });
 
-    this.client.emitter.on('exception', function(response) {
+    this.client.on('exception', function(response) {
         self.handleBreak(response);
     });
 

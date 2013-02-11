@@ -46,7 +46,7 @@ Protocol.prototype._newResponse = function(raw) {
         headers: {}
     };
     this.state = 'headers';
-    // this._execute('');
+    this._execute('');
 };
 
 Protocol.prototype._execute = function(data) {
@@ -103,9 +103,10 @@ Protocol.prototype.connectToNode = function(callback) {
         currentLength = 0;
         self = this;
 
+    self.setEncoding('utf8');
     self.on('error', function() {
         process.stdout.write('.');
-        setTimeout(setupConnection, 1000);
+        setTimeout(setupConnection, 2000);
     });
 
     // self.setEncoding('utf8');

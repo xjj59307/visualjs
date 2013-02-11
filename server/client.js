@@ -1,5 +1,4 @@
 var Protocol = require('./protocol');
-var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 
 var NO_FRAME = -1;
@@ -10,8 +9,6 @@ var Client = function() {
         eventHandler: this.onResponse
     });
 
-    this.emitter = new EventEmitter();
-
     this.currentFrame = NO_FRAME;
     this.scripts = {};
     this.breakpoints = [];
@@ -21,13 +18,13 @@ util.inherits(Client, Protocol);
 Client.prototype.onResponse = function(response) {
     switch (response.event) {
         case 'break':
-            this.emitter.emit('break', response.body);
+            this.emit('break', response.body);
             break;
         case 'afterCompile':
             console.log('Event: afterCompile');
             break;
         default:
-            this.emitter.emit('exception', response.body);
+            this.emit('exception', response.body);
             break;
     }
 };
