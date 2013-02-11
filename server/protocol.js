@@ -2,6 +2,8 @@ var net = require('net');
 var util = require('util');
 
 var Protocol = function(obj) {
+    net.Stream.call(this);
+
     this.port = obj && obj.port || 5858;
     this.host = obj && obj.host || 'localhost';
     this.seq = 0;
@@ -9,6 +11,7 @@ var Protocol = function(obj) {
     this.eventHandler = obj && obj.eventHandler;
     this._newResponse();
 };
+util.inherits(Protocol, net.Stream);
 
 Protocol.prototype._handleResponse = function(response) {
     var requestSeq = response.request_seq;
@@ -94,38 +97,36 @@ Protocol.prototype._execute = function(data) {
     }
 };
 
-Protocol.prototype.connect = function(callback) {
+Protocol.prototype.connectToNode = function(callback) {
     var inHeader = true,
         body = '',
         currentLength = 0;
         self = this;
 
+    self.on('error', function() {
+        process.stdout.write('.');
+        setTimeout(setupConnection, 1000);
+    });
+
+    // self.setEncoding('utf8');
+    self.on('data', function(data) {
+        self._execute(data);
+    });
+
+    self.on('end', function() {
+        process.stdout.write('client disconnected');
+    });
+
+    // Try to connect every second
     process.stdout.write('connecting');
-
     var setupConnection = function() {
-        self.client = net.connect(self.port, self.host, callback);
-
-        // Try to connect every second
-        self.client.on('error', function() {
-            process.stdout.write('.');
-            setTimeout(setupConnection, 1000);
-        });
-
-        // self.client.setEncoding('utf8');
-        self.client.on('data', function(data) {
-            self._execute(data);
-        });
-
-        self.client.on('end', function() {
-            process.stdout.write('client disconnected');
-        });
+        self.connect(self.port, self.host, callback);
     }
-
     setupConnection();
 };
 
 Protocol.prototype.disconnect = function() {
-    this.client.end();
+    this.end();
 };
 
 Protocol.prototype.send = function(request, callback) {
@@ -138,7 +139,7 @@ Protocol.prototype.send = function(request, callback) {
     request.callback = callback;
     this.sendedRequests[this.seq] = request;
 
-    this.client.write(header + str.length + '\r\n\r\n' + str);
+    this.write(header + str.length + '\r\n\r\n' + str);
 };
 
 module.exports = Protocol;

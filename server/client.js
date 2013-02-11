@@ -7,19 +7,7 @@ var NO_FRAME = -1;
 // Client inherits from Protocol
 var Client = function() {
     Protocol.call(this, {
-        eventHandler: function(response) {
-            switch (response.event) {
-                case 'break':
-                    this.emitter.emit('break', response.body);
-                    break;
-                case 'afterCompile':
-                    console.log('Event: afterCompile');
-                    break;
-                default:
-                    this.emitter.emit('exception', response.body);
-                    break;
-            }
-        }
+        eventHandler: this.onResponse
     });
 
     this.emitter = new EventEmitter();
@@ -29,6 +17,20 @@ var Client = function() {
     this.breakpoints = [];
 };
 util.inherits(Client, Protocol);
+
+Client.prototype.onResponse = function(response) {
+    switch (response.event) {
+        case 'break':
+            this.emitter.emit('break', response.body);
+            break;
+        case 'afterCompile':
+            console.log('Event: afterCompile');
+            break;
+        default:
+            this.emitter.emit('exception', response.body);
+            break;
+    }
+};
 
 var natives = process.binding('natives');
 

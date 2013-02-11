@@ -76,7 +76,7 @@ var Interface = function(stdin, stdout) {
         self.handleBreak(response);
     });
 
-    this.client.connect(function() {
+    this.client.connectToNode(function() {
         self.client.requireScripts(function() {
             self.resume();
         });
