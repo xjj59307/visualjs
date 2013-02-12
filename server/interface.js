@@ -34,6 +34,7 @@ var Interface = function(stdin, stdout) {
             'next': 'n',
             'step': 's',
             'out': 'o',
+            'backtrace': 'bt',
             'setBreakpoint': 'sb'
         };
 
@@ -242,6 +243,47 @@ Interface.prototype.list = function(delta) {
 
             self.print(tool.leftPad(lineNo, hasBreakpoint && '*') + ' ' + line);
         }
+        self.resume();
+    });
+};
+
+Interface.prototype.backtrace = function() {
+    if (!this.requireConnection()) return;
+
+    var self = this,
+        client = this.client;
+
+    self.pause();
+    client.fullTrace(function(err, bt) {
+        if (err) {
+            self.error('Can\'t request backtrace now');
+            self.resume();
+            return;
+        }
+
+        if (bt.totalFrames === 0) {
+            self.print('empty stack');
+        } else {
+            var trace = [],
+                firstFrameNative = bt.frames[0].script.isNative;
+
+            for (var i = 0; i < bt.frames.length; ++i) {
+                var frame = bt.frames[i];
+                if (!firstFrameNative && frame.script.isNative) break;
+
+                var text = '#' + i + ' ';
+                if (frame.func.inferredName && frame.func.inferredName.length > 0) {
+                    text += frame.func.inferredName + ' ';
+                }
+                text += path.basename(frame.script.name) +':';
+                text += (frame.line + 1) + ':' + (frame.column + 1);
+
+                trace.push(text);
+            }
+
+            self.print(trace.join('\n'));
+        }
+
         self.resume();
     });
 };

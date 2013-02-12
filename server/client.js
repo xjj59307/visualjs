@@ -11,6 +11,7 @@ var Client = function() {
 
     this.currentFrame = NO_FRAME;
     this.scripts = {};
+    this.handles = {};
     this.breakpoints = [];
 };
 util.inherits(Client, Protocol);
@@ -21,7 +22,7 @@ Client.prototype.onResponse = function(response) {
             this.emit('break', response.body);
             break;
         case 'afterCompile':
-            console.log('Event: afterCompile');
+            this._addHandle(response.body.script);
             break;
         default:
             this.emit('exception', response.body);
@@ -29,16 +30,27 @@ Client.prototype.onResponse = function(response) {
     }
 };
 
+Client.prototype._addHandle = function(desc) {
+    if (typeof desc !== 'object' || typeof desc.handle !== 'number') {
+        return;
+    }
+
+    this.handles[desc.handle] = desc;
+    if (desc.type === 'script') {
+        this._addScript(desc);
+    }
+};
+
 var natives = process.binding('natives');
 
-Client.prototype._addScript = function(script) {
-    this.scripts[script.id] = script;
-    if (script.name) {
-        script.isNative = (script.name.replace('.js', '') in natives) || script.name === 'node.js';
+Client.prototype._addScript = function(desc) {
+    this.scripts[desc.id] = desc;
+    if (desc.name) {
+        desc.isNative = (desc.name.replace('.js', '') in natives) || desc.name === 'node.js';
 
         // Here is some bad smell when debugging multiple scripts
-        if (script.isNative === false) {
-            this.currentScript = script.name;
+        if (desc.isNative === false) {
+            this.currentScript = desc.name;
             this.currentLine = 0;
         }
     }
@@ -55,10 +67,63 @@ Client.prototype.requireScripts = function(callback) {
         if (err) return callback(err);
 
         for (var i = 0; i < response.body.length; ++i) {
-            self._addScript(response.body[i]);
+            self._addHandle(response.body[i]);
         }
         callback();
     });
+};
+
+Client.prototype.requireLookup = function(refs, callback) {
+    var self = this;
+
+    var request = {
+        command: 'lookup',
+        arguments: { handles: refs }
+    };
+
+    callback = callback || function() {};
+    this.send(request, function(err, response) {
+        if (err) return callback(err);
+
+        var body = response.body;
+        for (var ref in body) {
+            if (typeof body[ref] === 'object') {
+                self._addHandle(body[ref]);
+            }
+        }
+
+        callback(null, body);
+    });
+};
+
+Client.prototype.requireFrameEval = function(expression, frame, callback) {
+    var self = this;
+    var request = {
+        command: 'evaluate',
+        arguments: { expression: expression }
+    };
+
+    if (frame === NO_FRAME) {
+        request.arguments.global = true;
+    } else {
+        request.arguments.frame = frame;
+    }
+
+    callback = callback || function() {};
+    this.send(request, function(err, response) {
+        // What is the response here
+        if (!err) self._addHandle(response);
+        callback(err, response);
+    });
+};
+
+Client.prototype.requireBacktrace = function(callback) {
+    var request = {
+        command: 'backtrace',
+        arguments: { inlineRefs: true }
+    };
+
+    this.send(request, callback);
 };
 
 Client.prototype.requireSource = function(from, to, callback) {
@@ -116,6 +181,39 @@ Client.prototype.listBreakpoints = function(callback) {
     };
 
     this.send(request, callback);
+};
+
+Client.prototype.fullTrace = function(callback) {
+    var self = this;
+
+    callback = callback || function() {};
+    this.requireBacktrace(function(err, response) {
+        if (err) return callback(err);
+        var trace = response.body;
+        if (trace.totalFrames <= 0) return callback(Error('No frames'));
+
+        var refs = [];
+
+        for (var i = 0; i < trace.frames.length; i++) {
+            var frame = trace.frames[i];
+            refs.push(frame.script.ref);
+            refs.push(frame.func.ref);
+            refs.push(frame.receiver.ref);
+        }
+
+        self.requireLookup(refs, function(err, response) {
+            if (err) return callback(err);
+
+            for (var i = 0; i < trace.frames.length; i++) {
+                var frame = trace.frames[i];
+                frame.script = response[frame.script.ref];
+                frame.func = response[frame.func.ref];
+                frame.receiver = response[frame.receiver.ref];
+            }
+
+            callback(null, trace);
+        });
+    });
 };
 
 module.exports = Client;
