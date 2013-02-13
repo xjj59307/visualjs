@@ -71,6 +71,7 @@ var Interface = function(stdin, stdout) {
         debug: [],
         control: []
     };
+    this._watchers = [];
 
     // Connect to debugger automatically
     this.pause();
@@ -125,9 +126,13 @@ Interface.prototype.handleBreak = function(response) {
     // Print break data
     this.print(tool.SourceInfo(response));
 
-    // TODO: Show watches' values
-    this.list(2);
-    this.resume();
+    // Show watches' values
+    this.watchers(true, function(err) {
+        if (err) return self.error(err);
+
+        self.list(2);
+        self.resume();
+    });
 };
 
 Interface.prototype.requireConnection = function() {
@@ -215,7 +220,7 @@ Interface.prototype.resume = function(silent) {
     }
 };
 
-Interface.prototype.repl = function() {
+Interface.prototype.enterRepl = function() {
     if (!this.requireConnection()) return;
 
     var self = this;
@@ -417,6 +422,53 @@ Interface.prototype.step = Interface.stepGenerator('in', 1);
 
 // Step out
 Interface.prototype.out = Interface.stepGenerator('out', 1);
+
+Interface.prototype.watch = function(expr) {
+    this._watchers.push(expr);
+};
+
+Interface.prototype.unwatch = function(expr) {
+    var index = this._watchers.indexOf(expr);
+
+    this._watchers.splice(index !== -1 ? index : +expr, 1);
+};
+
+Interface.prototype.watchers = function() {
+    var self = this,
+        verbose = arguments[0] || false,
+        callback = arguments[1] || function() {},
+        waiting = this._watchers.length,
+        values = [];
+
+    this.pause();
+
+    if (!waiting) {
+        this.resume();
+
+        return callback();
+    }
+
+    this._watchers.forEach(function(watcher, index) {
+        self.debugEval(watcher, null, null, function(err, value) {
+            values[index] = err ? '<error>': value;
+            wait();
+        });
+    });
+
+    function wait() {
+        if (--waiting === 0) {
+            if (verbose) self.print('Watchers:');
+
+            self._watchers.forEach(function(watcher, index) {
+                self.print(tool.leftPad(index, ' ') + ': ' + watcher + ' = ' + JSON.stringify(values[index]));
+            });
+
+            if (verbose) self.print('');
+            self.resume();
+            callback(null);
+        }
+    }
+};
 
 Interface.prototype.setBreakpoint = function(script, line, condition, slient) {
     if (!this.requireConnection()) return;
