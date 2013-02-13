@@ -96,6 +96,36 @@ Client.prototype.requireLookup = function(refs, callback) {
     });
 };
 
+Client.prototype.requireScopes = function(callback) {
+    var self = this,
+        request = {
+            command: 'scopes',
+            arguments: {}
+        };
+
+    callback = callback || function() {};
+    this.send(request, function(err, response) {
+        if (err) return callback(err);
+
+        var body = response.body;
+        var refs = body.scopes.map(function(scope) {
+            return scope.object.ref;
+        });
+
+        self.requireLookup(refs, function(err, response) {
+            if (err) return callback(err);
+
+            var globals = Object.keys(response).map(function(key) {
+                return response[key].properties.map(function(property) {
+                    return property.name;
+                });
+            });
+
+            callback(null, globals.reverse());
+        });
+    });
+};
+
 Client.prototype.requireFrameEval = function(expression, frame, callback) {
     var self = this;
     var request = {

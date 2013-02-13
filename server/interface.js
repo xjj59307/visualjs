@@ -28,7 +28,7 @@ var Interface = function(stdin, stdout) {
     });
 
     var proto = Interface.prototype,
-        ignored = ['clearline', 'print', 'error', 'handleBreak', 'requireConnection', 'controlEval', 'pause', 'resume'],
+        ignored = ['clearline', 'print', 'error', 'handleBreak', 'requireConnection', 'controlEval', 'debugEval', 'pause', 'resume', 'exitRepl'],
         shortcut = {
             'cont': 'c',
             'next': 'n',
@@ -62,8 +62,9 @@ var Interface = function(stdin, stdout) {
         }
     }
 
-    this.paused = 0;
     this.waiting = null;
+    this.paused = 0;
+    this.context = this.repl.context;
 
     // Connect to debugger automatically
     this.pause();
@@ -149,6 +150,25 @@ Interface.prototype.controlEval = function(code, context, filename, callback) {
     }
 };
 
+Interface.prototype.debugEval = function(code, context, filename, callback) {
+    if (!this.requireConnection()) return;
+
+    var self = this,
+        client = this.client;
+
+    // Repl asked for scope variables
+    if (code === '.scope') {
+        client.requireScopes(callback);
+        return;
+    }
+
+    var frame = client.currentFrame === NO_FRAME ? frame : undefined;
+
+    self.pause();
+
+    // Request remote evaluation globally or in current frame
+};
+
 Interface.prototype.pause = function() {
     if (this.paused++ > 0) return false;
     this.repl.rli.pause();
@@ -167,6 +187,53 @@ Interface.prototype.resume = function(silent) {
         this.waiting();
         this.waiting = null;
     }
+};
+
+Interface.prototype.repl = function() {
+    if (!this.requireConnection()) return;
+
+    var self = this;
+
+    self.print('Press Ctrl + C to leave debug repl');
+
+    // Don't display any default messages
+    var listeners = this.repl.rli.listeners('SIGINT').slice(0);
+    this.repl.rli.removeAllListeners('SIGINT');
+
+    // Exit debug repl on Ctrl + C
+    this.repl.rli.once('SIGINT', function() {
+        // Restore all listeners
+        process.nextTick(function() {
+            listeners.forEach(function(listener) {
+                self.repl.rli.on('SIGINT', listener);
+            });
+        });
+
+        // Exit debug repl
+        self.exitRepl();
+    });
+
+    // Set new
+    this.repl.eval = this.debugEval.bind(this);
+    this.repl.context = {};
+
+    // TODO: swap history
+
+    this.repl.prompt = '> ';
+    this.repl.rli.setPrompt('> ');
+    this.repl.displayPrompt();
+};
+
+Interface.prototype.exitRepl = function() {
+    // Restore eval
+    this.repl.eval = this.controlEval.bind(this);
+
+    // TODO: swap history
+
+    this.repl.context = this.context;
+    this.repl.prompt = 'debug> ';
+    this.repl.rli.setPrompt('debug> ');
+    this.repl.displayPrompt();
 };
 
 Interface.prototype.scripts = function() {
