@@ -5,6 +5,8 @@ var Client = require('./client'),
     util = require('util'),
     tool = require('./tool');
 
+var NO_FRAME = -1;
+
 var Interface = function(stdin, stdout) {
     var self = this;
 
@@ -65,6 +67,10 @@ var Interface = function(stdin, stdout) {
     this.waiting = null;
     this.paused = 0;
     this.context = this.repl.context;
+    this.history = {
+        debug: [],
+        control: []
+    };
 
     // Connect to debugger automatically
     this.pause();
@@ -88,7 +94,7 @@ var Interface = function(stdin, stdout) {
 Interface.prototype.clearline = function() {
     this.stdout.cursorTo(0);
     this.stdout.clearLine(1);
-}
+};
 
 Interface.prototype.print = function(text, oneline) {
     this.clearline();
@@ -134,6 +140,13 @@ Interface.prototype.requireConnection = function() {
 
 Interface.prototype.controlEval = function(code, context, filename, callback) {
     try {
+        // Repeat last command if empty line are going to be evaluated
+        if (this.repl.rli.history && this.repl.rli.history.length > 0) {
+            if (code === '(\n)') {
+                code = '(' + this.repl.rli.history[0] + '\n)';
+            }
+        }
+
         var result = vm.runInContext(code, context, filename);
 
         // Repl should not ask for next command
@@ -167,6 +180,19 @@ Interface.prototype.debugEval = function(code, context, filename, callback) {
     self.pause();
 
     // Request remote evaluation globally or in current frame
+    client.requireFrameEval(code, frame, function(err, response) {
+        if (err) {
+            callback(err);
+            self.resume(true);
+            return;
+        }
+
+        // Request object by handles
+        client.mirrorObject(response, 3, function(err, mirror) {
+            callback(null, mirror);
+            self.resume(true);
+        });
+    });
 };
 
 Interface.prototype.pause = function() {
@@ -217,7 +243,9 @@ Interface.prototype.repl = function() {
     this.repl.eval = this.debugEval.bind(this);
     this.repl.context = {};
 
-    // TODO: swap history
+    // Swap history
+    this.history.control = this.repl.rli.history;
+    this.repl.rli.history = this.history.debug;
 
     this.repl.prompt = '> ';
     this.repl.rli.setPrompt('> ');
@@ -228,7 +256,9 @@ Interface.prototype.exitRepl = function() {
     // Restore eval
     this.repl.eval = this.controlEval.bind(this);
 
-    // TODO: swap history
+    // Swap history
+    this.history.debug = this.repl.rli.history;
+    this.repl.rli.history = this.history.control;
 
     this.repl.context = this.context;
     this.repl.prompt = 'debug> ';
@@ -275,16 +305,15 @@ Interface.prototype.list = function(delta) {
 
     self.pause();
     client.requireSource(from, to, function(err, response) {
-        if (err || !response.body) {
+        if (err || !response) {
             self.error('You can\'t list source code right now');
             self.resume();
             return;
         }
 
-        var body = response.body;
-        var lines = body.source.split('\n');
+        var lines = response.source.split('\n');
         for (var i = 0; i < lines.length; ++i) {
-            var lineNo = body.fromLine + i + 1;
+            var lineNo = response.fromLine + i + 1;
             if (lineNo < from || lineNo > to) continue;
 
             var isCurrent = (lineNo === client.currentLine + 1),
@@ -456,14 +485,14 @@ Interface.prototype.setBreakpoint = function(script, line, condition, slient) {
 
             // Load scriptId and line when function breakpoint is set
             if (!scriptId) {
-                scriptId = response.body.script_id;
-                line = response.body.line;
+                scriptId = response.script_id;
+                line = response.line;
             }
 
             // If we finally have one, remember this breakpoint
             if (scriptId) {
                 self.client.breakpoints.push({
-                    id: response.body.breakpoint,
+                    id: response.breakpoint,
                     scriptId: scriptId,
                     script: (self.client.scripts[scriptId] || {}).name,
                     line: line,
@@ -484,7 +513,7 @@ Interface.prototype.breakpoints = function() {
         if (err) {
             self.error(err);
         } else {
-            self.print(response.body);
+            self.print(response);
             self.resume();
         }
     });

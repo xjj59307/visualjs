@@ -26,7 +26,7 @@ Protocol.prototype._handleResponse = function(response) {
                 err = response.body.message || true;
             }
 
-            request.callback.call(self, err, response);
+            request.callback.call(self, err, response.body && response.body.body || response.body, response);
         }
         delete self.sendedRequests[requestSeq];
     } else {
