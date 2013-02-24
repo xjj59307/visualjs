@@ -267,14 +267,14 @@ Client.prototype.mirrorObject = function(handle, depth, callback) {
                     return;
                 }
 
-                keyValues[i] = {
+                keyValues[index] = {
                     name: property.name,
                     value: mirrorValue
                 };
                 if (value && value.handle && depth > 0) {
                     waiting++;
                     self.mirrorObject(value, depth - 1, function(err, result) {
-                        if (!err) keyValues[i].value = result;
+                        if (!err) keyValues[index].value = result;
                         waitForOthers();
                     });
                 }
