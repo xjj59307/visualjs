@@ -16,16 +16,16 @@ var Client = function() {
 };
 util.inherits(Client, Protocol);
 
-Client.prototype.onResponse = function(response) {
-    switch (response.event) {
+Client.prototype.onResponse = function(res) {
+    switch (res.event) {
         case 'break':
-            this.emit('break', response.body);
+            this.emit('break', res.body);
             break;
         case 'afterCompile':
-            this._addHandle(response.body.script);
+            this._addHandle(res.body.script);
             break;
         default:
-            this.emit('exception', response.body);
+            this.emit('exception', res.body);
             break;
     }
 };
@@ -56,88 +56,88 @@ Client.prototype._addScript = function(desc) {
     }
 };
 
-Client.prototype.requireScripts = function(callback) {
+Client.prototype.requireScripts = function(cb) {
     var self = this;
-    callback = callback || function() {};
+    cb = cb || function() {};
 
-    var request = {
+    var req = {
         command: 'scripts'
     };
-    this.send(request, function(err, response) {
-        if (err) return callback(err);
+    this.send(req, function(err, res) {
+        if (err) return cb(err);
 
-        for (var i = 0; i < response.length; ++i) {
-            self._addHandle(response[i]);
+        for (var i = 0; i < res.length; ++i) {
+            self._addHandle(res[i]);
         }
-        callback();
+        cb();
     });
 };
 
-Client.prototype.requireLookup = function(refs, callback) {
+Client.prototype.requireLookup = function(refs, cb) {
     var self = this;
 
-    var request = {
+    var req = {
         command: 'lookup',
         arguments: { handles: refs }
     };
 
-    callback = callback || function() {};
-    this.send(request, function(err, response) {
-        if (err) return callback(err);
+    cb = cb || function() {};
+    this.send(req, function(err, res) {
+        if (err) return cb(err);
 
-        for (var ref in response) {
-            if (typeof response[ref] === 'object') {
-                self._addHandle(response[ref]);
+        for (var ref in res) {
+            if (typeof res[ref] === 'object') {
+                self._addHandle(res[ref]);
             }
         }
 
-        callback(null, response);
+        cb(null, res);
     });
 };
 
-Client.prototype.requireScopes = function(callback) {
+Client.prototype.requireScopes = function(cb) {
     var self = this,
-        request = {
+        req = {
             command: 'scopes',
             arguments: {}
         };
 
-    callback = callback || function() {};
-    this.send(request, function(err, response) {
-        if (err) return callback(err);
+    cb = cb || function() {};
+    this.send(req, function(err, res) {
+        if (err) return cb(err);
 
-        var refs = response.scopes.map(function(scope) {
+        var refs = res.scopes.map(function(scope) {
             return scope.object.ref;
         });
 
-        self.requireLookup(refs, function(err, response) {
-            if (err) return callback(err);
+        self.requireLookup(refs, function(err, res) {
+            if (err) return cb(err);
 
-            var globals = Object.keys(response).map(function(key) {
-                return response[key].properties.map(function(property) {
+            var globals = Object.keys(res).map(function(key) {
+                return res[key].properties.map(function(property) {
                     return property.name;
                 });
             });
 
-            callback(null, globals.reverse());
+            cb(null, globals.reverse());
         });
     });
 };
 
-Client.prototype.requireEval = function(expression, callback) {
+Client.prototype.requireEval = function(expression, cb) {
     var self = this;
 
     if (this.currentFrame === NO_FRAME) {
         // Only need to eval in global scope
-        this.requireFrameEval(expression, NO_FRAME, callback);
+        this.requireFrameEval(expression, NO_FRAME, cb);
         return;
     }
 
-    callback = callback || function() {};
+    cb = cb || function() {};
     // Otherwise we need to get the current frame to see which scopes it has
     this.requireBacktrace(function(err, backtrace) {
         if (err || !backtrace.frames) {
-            return callback(null, {});
+            return cb(null, {});
         }
 
         var frame = backtrace.frames[self.currentFrame];
@@ -149,69 +149,69 @@ Client.prototype.requireEval = function(expression, callback) {
             return frame.index;
         });
 
-        self._requireFrameEval(expression, evalFrames, callback);
+        self._requireFrameEval(expression, evalFrames, cb);
     });
 };
 
-Client.prototype._requireFrameEval = function(expression, evalFrames, callback) {
+Client.prototype._requireFrameEval = function(expression, evalFrames, cb) {
     if (evalFrames.length === 0) {
         // Just eval in global scope
-        this.requireFrameEval(expression, NO_FRAME, callback);
+        this.requireFrameEval(expression, NO_FRAME, cb);
         return;
     }
 
     var self = this;
     var i = evalFrames.shift();
 
-    callback = callback || function() {};
-    this.requireFrameEval(expression, i, function(err, response) {
-        if (!err) return callback(null, response);
-        self._requireFrameEval(expression, evalFrames, callback);
+    cb = cb || function() {};
+    this.requireFrameEval(expression, i, function(err, res) {
+        if (!err) return cb(null, res);
+        self._requireFrameEval(expression, evalFrames, cb);
     });
 };
 
-Client.prototype.requireFrameEval = function(expression, frame, callback) {
+Client.prototype.requireFrameEval = function(expression, frame, cb) {
     var self = this;
-    var request = {
+    var req = {
         command: 'evaluate',
         arguments: { expression: expression }
     };
 
     if (frame === NO_FRAME) {
-        request.arguments.global = true;
+        req.arguments.global = true;
     } else {
-        request.arguments.frame = frame;
+        req.arguments.frame = frame;
     }
 
-    callback = callback || function() {};
-    this.send(request, function(err, response) {
+    cb = cb || function() {};
+    this.send(req, function(err, res) {
         // What is the response here
-        if (!err) self._addHandle(response);
-        callback(err, response);
+        if (!err) self._addHandle(res);
+        cb(err, res);
     });
 };
 
-Client.prototype.requireBacktrace = function(callback) {
-    var request = {
+Client.prototype.requireBacktrace = function(cb) {
+    var req = {
         command: 'backtrace',
         arguments: { inlineRefs: true }
     };
 
-    this.send(request, callback);
+    this.send(req, cb);
 };
 
-Client.prototype.requireSource = function(from, to, callback) {
-    var request = {
+Client.prototype.requireSource = function(from, to, cb) {
+    var req = {
         command: 'source',
         fromLine: from,
         toLine: to
     };
 
-    this.send(request, callback);
+    this.send(req, cb);
 };
 
-Client.prototype.step = function(action, count, callback) {
-    var request = {
+Client.prototype.step = function(action, count, cb) {
+    var req = {
         command: 'continue',
         arguments: {
             stepaction: action,
@@ -220,10 +220,10 @@ Client.prototype.step = function(action, count, callback) {
     };
 
     this.currentFrame = NO_FRAME;
-    this.send(request, callback);
+    this.send(req, cb);
 };
 
-Client.prototype.mirrorObject = function(handle, depth, callback) {
+Client.prototype.mirrorObject = function(handle, depth, cb) {
     var self = this;
 
     var value;
@@ -233,11 +233,11 @@ Client.prototype.mirrorObject = function(handle, depth, callback) {
             return property.ref;
         });
 
-        callback = callback || function() {};
-        this.requireLookup(propertyRefs, function(err, response) {
+        cb = cb || function() {};
+        this.requireLookup(propertyRefs, function(err, res) {
             if (err) {
                 console.error('problem with requireLookup');
-                callback(null, handle);
+                cb(null, handle);
                 return;
             }
 
@@ -254,7 +254,7 @@ Client.prototype.mirrorObject = function(handle, depth, callback) {
 
             var keyValues = [];
             handle.properties.forEach(function(property, index) {
-                var value = response[property.ref];
+                var value = res[property.ref];
                 var mirrorValue;
                 if (value) {
                     mirrorValue = value.value ? value.value : value.text;
@@ -282,11 +282,11 @@ Client.prototype.mirrorObject = function(handle, depth, callback) {
 
             waitForOthers();
             function waitForOthers() {
-                if (--waiting === 0 && callback) {
+                if (--waiting === 0 && cb) {
                     keyValues.forEach(function(pair) {
                         mirror[pair.name] = pair.value;
                     });
-                    callback(null, mirror);
+                    cb(null, mirror);
                 }
             };
         });
@@ -303,51 +303,60 @@ Client.prototype.mirrorObject = function(handle, depth, callback) {
         val = handle;
     }
     process.nextTick(function() {
-        callback(null, val);
+        cb(null, val);
     });
 };
 
-Client.prototype.requireContinue = function(callback) {
+Client.prototype.requireContinue = function(cb) {
     this.currentFrame = NO_FRAME;
 
-    var request = {
+    var req = {
         command: 'continue'
     };
-    this.send(request, callback);
+    this.send(req, cb);
 };
 
-Client.prototype.setBreakpoint = function(request, callback) {
-    var request = {
+Client.prototype.setBreakpoint = function(req, cb) {
+    var req = {
         command: 'setbreakpoint',
-        arguments: request
+        arguments: req
     };
 
-    this.send(request, callback);
+    this.send(req, cb);
 };
 
-Client.prototype.continue = function(callback) {
-    var request = {
+Client.prototype.clearBreakpoint = function(req, cb) {
+    var req = {
+        command: 'clearbreakpoint',
+        arguments: req
+    };
+
+    this.send(req, cb);
+};
+
+Client.prototype.continue = function(cb) {
+    var req = {
         command: 'continue'
     };
 
-    this.send(request, callback);
+    this.send(req, cb);
 };
 
-Client.prototype.listBreakpoints = function(callback) {
-    var request = {
+Client.prototype.listBreakpoints = function(cb) {
+    var req = {
         command: 'listbreakpoints'
     };
 
-    this.send(request, callback);
+    this.send(req, cb);
 };
 
-Client.prototype.fullTrace = function(callback) {
+Client.prototype.fullTrace = function(cb) {
     var self = this;
 
-    callback = callback || function() {};
+    cb = cb || function() {};
     this.requireBacktrace(function(err, trace) {
-        if (err) return callback(err);
-        if (trace.totalFrames <= 0) return callback(Error('No frames'));
+        if (err) return cb(err);
+        if (trace.totalFrames <= 0) return cb(Error('No frames'));
 
         var refs = [];
 
@@ -358,17 +367,17 @@ Client.prototype.fullTrace = function(callback) {
             refs.push(frame.receiver.ref);
         }
 
-        self.requireLookup(refs, function(err, response) {
-            if (err) return callback(err);
+        self.requireLookup(refs, function(err, res) {
+            if (err) return cb(err);
 
             for (var i = 0; i < trace.frames.length; i++) {
                 var frame = trace.frames[i];
-                frame.script = response[frame.script.ref];
-                frame.func = response[frame.func.ref];
-                frame.receiver = response[frame.receiver.ref];
+                frame.script = res[frame.script.ref];
+                frame.func = res[frame.func.ref];
+                frame.receiver = res[frame.receiver.ref];
             }
 
-            callback(null, trace);
+            cb(null, trace);
         });
     });
 };

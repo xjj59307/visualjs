@@ -37,7 +37,8 @@ var Interface = function(stdin, stdout) {
             'step': 's',
             'out': 'o',
             'backtrace': 'bt',
-            'setBreakpoint': 'sb'
+            'setBreakpoint': 'sb',
+            'clearBreakpoint': 'cb'
         };
 
     var defineProperty = function(key, protoKey) {
@@ -77,12 +78,12 @@ var Interface = function(stdin, stdout) {
     this.pause();
     this.client = new Client();
 
-    this.client.on('break', function(response) {
-        self.handleBreak(response);
+    this.client.on('break', function(res) {
+        self.handleBreak(res);
     });
 
-    this.client.on('exception', function(response) {
-        self.handleBreak(response);
+    this.client.on('exception', function(res) {
+        self.handleBreak(res);
     });
 
     this.client.connectToNode(function() {
@@ -112,19 +113,19 @@ Interface.prototype.error = function(text) {
     this.resume();
 };
 
-Interface.prototype.handleBreak = function(response) {
+Interface.prototype.handleBreak = function(res) {
     var self = this;
 
     this.pause();
 
     // Save execution context's data
-    this.client.currentLine = response.sourceLine;
-    this.client.currentSourceColumn = response.sourceColumn;
+    this.client.currentLine = res.sourceLine;
+    this.client.currentSourceColumn = res.sourceColumn;
     this.client.currentFrame = 0;
-    this.client.currentScript = response.script && response.script.name;
+    this.client.currentScript = res.script && res.script.name;
 
     // Print break data
-    this.print(tool.SourceInfo(response));
+    this.print(tool.SourceInfo(res));
 
     // Show watches' values
     this.watchers(true, function(err) {
@@ -185,7 +186,7 @@ Interface.prototype.debugEval = function(code, context, filename, callback) {
     self.pause();
 
     // Request remote evaluation globally or in current frame
-    client.requireFrameEval(code, frame, function(err, response) {
+    client.requireFrameEval(code, frame, function(err, res) {
         if (err) {
             callback(err);
             self.resume(true);
@@ -193,7 +194,7 @@ Interface.prototype.debugEval = function(code, context, filename, callback) {
         }
 
         // Request object by handles
-        client.mirrorObject(response, 3, function(err, mirror) {
+        client.mirrorObject(res, 3, function(err, mirror) {
             callback(null, mirror);
             self.resume(true);
         });
@@ -309,16 +310,16 @@ Interface.prototype.list = function(delta) {
         to = client.currentLine + delta + 1;
 
     self.pause();
-    client.requireSource(from, to, function(err, response) {
-        if (err || !response) {
+    client.requireSource(from, to, function(err, res) {
+        if (err || !res) {
             self.error('You can\'t list source code right now');
             self.resume();
             return;
         }
 
-        var lines = response.source.split('\n');
+        var lines = res.source.split('\n');
         for (var i = 0; i < lines.length; ++i) {
-            var lineNo = response.fromLine + i + 1;
+            var lineNo = res.fromLine + i + 1;
             if (lineNo < from || lineNo > to) continue;
 
             var isCurrent = (lineNo === client.currentLine + 1),
@@ -407,7 +408,7 @@ Interface.stepGenerator = function(type, count) {
         var self = this;
 
         self.pause();
-        self.client.step(type, count, function(err, response) {
+        self.client.step(type, count, function(err, res) {
             if (err) self.error(err);
             self.resume();
         });
@@ -525,7 +526,7 @@ Interface.prototype.setBreakpoint = function(script, line, condition, slient) {
     }
 
     self.pause();
-    self.client.setBreakpoint(request, function(err, response) {
+    self.client.setBreakpoint(request, function(err, res) {
         if (err) {
             if (!slient) {
                 self.error(err);
@@ -537,14 +538,14 @@ Interface.prototype.setBreakpoint = function(script, line, condition, slient) {
 
             // Load scriptId and line when function breakpoint is set
             if (!scriptId) {
-                scriptId = response.script_id;
-                line = response.line;
+                scriptId = res.script_id;
+                line = res.line;
             }
 
             // If we finally have one, remember this breakpoint
             if (scriptId) {
                 self.client.breakpoints.push({
-                    id: response.breakpoint,
+                    id: res.breakpoint,
                     scriptId: scriptId,
                     script: (self.client.scripts[scriptId] || {}).name,
                     line: line,
@@ -556,16 +557,59 @@ Interface.prototype.setBreakpoint = function(script, line, condition, slient) {
     });
 };
 
+Interface.prototype.clearBreakpoint = function(script, line) {
+    if (!this.requireConnection()) return;
+
+    var ambiguous,
+        breakpoint,
+        index;
+
+    this.client.breakpoints.some(function(bp, i) {
+        if (bp.scriptId === script || bp.script.indexOf(script) !== -1) {
+            if (index !== undefined) {
+                ambiguous = true;
+            }
+            if (bp.line === line) {
+                index = i;
+                breakpoint = bp.id;
+                return true;
+            }
+        }
+    });
+
+    if (ambiguous) return this.error('Script name is ambiguous');
+
+    if (breakpoint === undefined) {
+        return this.error('Script : ' + script + ' not found');
+    }
+
+    var self = this,
+        req = {
+            breakpoint: breakpoint
+        };
+
+    self.pause();
+    self.client.clearBreakpoint(req, function(err, res) {
+        if (err) {
+            self.error(err);
+        } else {
+            self.client.breakpoints.splice(index, 1);
+            self.list(5);
+        }
+        self.resume();
+    });
+};
+
 Interface.prototype.breakpoints = function() {
     if (!this.requireConnection()) return;
 
     this.pause();
     var self = this;
-    this.client.listBreakpoints(function(err, response) {
+    this.client.listBreakpoints(function(err, res) {
         if (err) {
             self.error(err);
         } else {
-            self.print(response);
+            self.print(res);
             self.resume();
         }
     });
