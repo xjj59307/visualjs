@@ -2,9 +2,8 @@
 
 <meta charset="utf-8">
 <title>Graph Visualization</title>
-<h2>Graph Visualization</h2>
 
-<svg width=0 height=0>
+<!-- <svg width=0 height=0>
 	<defs>
 	<marker id="arrowhead"
 		viewBox="0 0 10 10"
@@ -20,7 +19,7 @@
 </defs>
 </svg>
 
-<style >
+<style>
 .node rect {
 	stroke-width: 1.5px;
 	stroke: #333;
@@ -52,6 +51,15 @@ path.edge {
 	opacity: 0.4;
 }
 </style>
+ -->
 
 <script src="script/lib/require-config.js"></script>
-<script data-main="graph-demo", src="script/lib/require.js"></script>
+<!-- <script data-main="graph-demo", src="script/lib/require.js"></script> -->
+<div id="body">
+	<div id="footer">
+		visualize tree
+		<div class="hint">click or option-click to expand or collapse</div>
+	</div>
+</div>
+<link rel="stylesheet" href="graph-demo.css" type="text/css"/>
+<script data-main="visual/tree", src="script/lib/require.js"></script>
