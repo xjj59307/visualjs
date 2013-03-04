@@ -68,7 +68,7 @@ define(["lib/d3.v3"], function (d3) {
 
         nodeEnter.append("svg:text")
             .attr("y", function(d) {
-                return d.children || d._children ? -10 : 15;
+                return -10;
             })
             .attr("dx", "-.3em")
             .attr("text-anchor", function(d) {
