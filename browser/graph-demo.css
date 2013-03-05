@@ -1,6 +1,6 @@
 .node rect {
   stroke-width: 1.5px;
-  stroke: #333;
+  stroke: darkgreen;
   fill: #fff;
 }
 
@@ -10,14 +10,7 @@
 }
 
 .node text {
-  font: 300 12px "Helvetica Neue";
-}
-
-.node circle {
-  cursor: pointer;
-  fill: #fff;
-  stroke: steelblue;
-  stroke-width: 1.5px;
+  font: 300 14px "Trebuchet MS";
 }
 
 .node:hover {
@@ -28,12 +21,6 @@
 path.edge {
   fill: none;
   stroke: #333;
-  stroke-width: 1.5px;
-}
-
-path.link {
-  fill: none;
-  stroke: #ccc;
   stroke-width: 1.5px;
 }
 
