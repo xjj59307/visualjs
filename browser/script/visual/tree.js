@@ -2,22 +2,30 @@ define(["lib/d3.v3"], function (d3) {
 
     debugger;
 
-    var margin = [20, 120, 20, 120],
-        weight = 30000 - margin[1] - margin[3],
-        height = 30000 - margin[0] - margin[2],
-        index = 0;
+    var width = 1280,
+        height = 800,
+        index = 0,
+        treeSize = [3e4, 3e4];
 
-    var tree = d3.layout.tree().size([height, weight]);
+    var tree = d3.layout.tree().size(treeSize);
 
     var diagonal = d3.svg.diagonal().projection(function(d) {
         return [d.x, d.y];
     });
 
     var svg = d3.select("svg")
-        .attr("width", weight + margin[1] + margin[3])
-        .attr("height", height + margin[0] + margin[2])
+        .attr("width", width)
+        .attr("height", height)
+        .attr("pointer-events", "all")
         .append("g")
-        .attr("transform", "translate(" + margin[0] + "," + margin[3] + ")");
+        .call(d3.behavior.zoom().on("zoom", onZoom))
+        .append("g");
+
+    function onZoom() {
+        var translate = "translate(" + d3.event.translate + ")";
+        var scale = "scale(" + d3.event.scale + ")";
+        svg.attr("transform", translate + " " + scale);
+    }
 
     d3.json("script/visual/flare.json", function(err, root) {
         root.x0 = 0;
