@@ -4,7 +4,7 @@ var util = require('util');
 var Protocol = function(obj) {
     net.Stream.call(this);
 
-    this.port = obj && obj.port || 5858;
+    this.port = obj && obj.port || 8000;
     this.host = obj && obj.host || 'localhost';
     this.seq = 0;
     this.sendedRequests = {};

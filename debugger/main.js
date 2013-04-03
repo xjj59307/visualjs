@@ -1,5 +1,5 @@
-var Interface = require('./interface');
+var Interface = require('./cmd_interface');
 
-stdin = process.stdin;
-stdout = process.stdout;
+var stdin = process.stdin;
+var stdout = process.stdout;
 var interface = new Interface(stdin, stdout);

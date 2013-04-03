@@ -73,6 +73,16 @@ Client.prototype.requireScripts = function(cb) {
     });
 };
 
+/*
+{ "seq"         : <number>,
+  "type"        : "response",
+  "request_seq" : <number>,
+  "command"     : "lookup",
+  "body"        : <array of serialized objects indexed using their handle>
+  "running"     : <is the VM running after sending this response>
+  "success"     : true
+}
+*/
 Client.prototype.requireLookup = function(refs, cb) {
     var self = this;
 
@@ -124,52 +134,6 @@ Client.prototype.requireScopes = function(cb) {
     });
 };
 
-Client.prototype.requireEval = function(expression, cb) {
-    var self = this;
-
-    if (this.currentFrame === NO_FRAME) {
-        // Only need to eval in global scope
-        this.requireFrameEval(expression, NO_FRAME, cb);
-        return;
-    }
-
-    cb = cb || function() {};
-    // Otherwise we need to get the current frame to see which scopes it has
-    this.requireBacktrace(function(err, backtrace) {
-        if (err || !backtrace.frames) {
-            return cb(null, {});
-        }
-
-        var frame = backtrace.frames[self.currentFrame];
-
-        var evalFrames = frames.scopes.map(function(scope) {
-            if (!scope) return;
-            var frame = backtrace.frames[scope.index];
-            if (!frame) return;
-            return frame.index;
-        });
-
-        self._requireFrameEval(expression, evalFrames, cb);
-    });
-};
-
-Client.prototype._requireFrameEval = function(expression, evalFrames, cb) {
-    if (evalFrames.length === 0) {
-        // Just eval in global scope
-        this.requireFrameEval(expression, NO_FRAME, cb);
-        return;
-    }
-
-    var self = this;
-    var i = evalFrames.shift();
-
-    cb = cb || function() {};
-    this.requireFrameEval(expression, i, function(err, res) {
-        if (!err) return cb(null, res);
-        self._requireFrameEval(expression, evalFrames, cb);
-    });
-};
-
 Client.prototype.requireFrameEval = function(expression, frame, cb) {
     var self = this;
     var req = {
@@ -191,6 +155,20 @@ Client.prototype.requireFrameEval = function(expression, frame, cb) {
     });
 };
 
+/*
+{ "seq"         : <number>,
+  "type"        : "response",
+  "request_seq" : <number>,
+  "command"     : "backtrace",
+  "body"        : { "fromFrame" : <number>
+                    "toFrame" : <number>
+                    "totalFrames" : <number>
+                    "frames" : <array of frames>
+                  }
+  "running"     : <is the VM running after sending this response>
+  "success"     : true
+}
+*/
 Client.prototype.requireBacktrace = function(cb) {
     var req = {
         command: 'backtrace',
@@ -292,18 +270,19 @@ Client.prototype.mirrorObject = function(handle, depth, cb) {
         });
         return;
     } else if (handle.type === 'function') {
-        val = function() {};
+        // value = function() {};
+        value = '[Function]';
     } else if (handle.type === 'null') {
-        val = null;
+        value = null;
     } else if (handle.value !== undefined) {
-        val = handle.value;
+        value = handle.value;
     } else if (handle.type === 'undefined') {
-        val = undefined;
+        value = undefined;
     } else {
-        val = handle;
+        value = handle;
     }
     process.nextTick(function() {
-        cb(null, val);
+        cb(null, value);
     });
 };
 
