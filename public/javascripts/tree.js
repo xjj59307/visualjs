@@ -27,7 +27,7 @@ define(["lib/d3.v3"], function (d3) {
         svg.attr("transform", translate + " " + scale);
     }
 
-    d3.json("javascripts/data/flare.json", function(err, root) {
+    d3.json("../javascripts/data/flare.json", function(err, root) {
         root.x0 = 0;
         root.y0 = 0;
         update(root);

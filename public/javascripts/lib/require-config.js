@@ -1,6 +1,6 @@
 var require = {
 
-    baseUrl: "javascripts",
+    baseUrl: "../javascripts",
 
     shim: {
         "lib/d3.v3": { exports: "d3" },
