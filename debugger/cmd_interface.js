@@ -181,7 +181,8 @@ Interface.prototype.debugEval = function(code, context, filename, callback) {
         return;
     }
 
-    var frame = client.currentFrame === NO_FRAME ? frame : undefined;
+    // var frame = client.currentFrame === NO_FRAME ? frame : undefined;
+    var frame = client.currentFrame;
 
     self.pause();
 

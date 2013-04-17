@@ -1,3 +1,5 @@
+// https://code.google.com/p/v8/wiki/DebuggerProtocol
+
 var Protocol = require('./protocol');
 var util = require('util');
 
