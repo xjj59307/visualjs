@@ -1,7 +1,6 @@
 var Client = require('./client'),
     util = require('util')
 
-
 var RouteInterface = function() {
     var self = this;
 
@@ -70,19 +69,13 @@ RouteInterface.prototype.resume = function() {
     this.paused = false;
 };
 
-// Parsing commond sended from browser
-RouteInterface.prototype.parse = function(cmd) {
+RouteInterface.prototype.evaluate = function(code, callback) {
+    if (!this.requireConnection()) return;
+
     if (this.paused) {
         this.error('Wait for last request');
         return;
     }
-
-    var code = cmd;
-    return this.evaluate(code);
-};
-
-RouteInterface.prototype.evaluate = function(code, callback) {
-    if (!this.requireConnection()) return;
 
     var self = this,
         client = this.client,
@@ -93,15 +86,16 @@ RouteInterface.prototype.evaluate = function(code, callback) {
     // Request remote evaluation globally or in current frame
     client.requireFrameEval(code, frame, function(err, res) {
         if (err) {
-            callback(err);
-            self.resume();
+            self.error(err);
             return;
         }
 
         // Request object by handles
         client.mirrorObject(res, 3, function(err, mirror) {
-            callback(null, mirror);
+            callback(mirror);
             self.resume();
         });
     });
 };
+
+module.exports = RouteInterface;

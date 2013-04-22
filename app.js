@@ -23,7 +23,7 @@ app.configure('development', function() {
 
 // Map url to handlers
 app.get('/', router.index);
-app.get("/graph-demo.html", router.graph);
+app.get('/graph-demo.html', router.graph);
 app.get('/repl', router.repl);
 
 http.createServer(app).listen(app.get('port'), function() {
