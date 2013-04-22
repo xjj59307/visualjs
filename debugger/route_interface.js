@@ -76,9 +76,12 @@ RouteInterface.prototype.parse = function(cmd) {
         this.error('Wait for last request');
         return;
     }
+
+    var code = cmd;
+    return this.evaluate(code);
 };
 
-RouteInterface.prototype.evaluate = function(cmd, callback) {
+RouteInterface.prototype.evaluate = function(code, callback) {
     if (!this.requireConnection()) return;
 
     var self = this,
@@ -87,7 +90,6 @@ RouteInterface.prototype.evaluate = function(cmd, callback) {
 
     self.pause();
 
-    var code = cmd;
     // Request remote evaluation globally or in current frame
     client.requireFrameEval(code, frame, function(err, res) {
         if (err) {

@@ -1,6 +1,5 @@
 var express = require('express'),
-    routes = require('./routes'),
-    dbg = require('./routes/debugger')
+    router = require('./router.js'),
     http = require('http'),
     path = require('path');
 
@@ -22,8 +21,10 @@ app.configure('development', function() {
     app.use(express.errorHandler());
 });
 
-app.get('/', routes.index);
-app.get('/repl', dbg.repl);
+// Map url to handlers
+app.get('/', router.index);
+app.get("/graph-demo.html", router.graph);
+app.get('/repl', router.repl);
 
 http.createServer(app).listen(app.get('port'), function() {
     console.log("Express server listening on port " + app.get('port'));
