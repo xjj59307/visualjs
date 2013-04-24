@@ -8,20 +8,34 @@
 
 <div class="container-fluid">
     <div class="row-fluid">
-        <div id="visualization-window", class="span7">
-            <iframe src="http://localhost:3000/graph-demo.html", frameborder="1", width=1024, height=800></iframe>
+        <div id="visualization-window" class="span8">
+            <iframe src="http://localhost:3000/graph-demo.html" frameborder="1" width=900 height=640></iframe>
         </div>
-        <div id="debugger-button", class="span3">
+        <div id="debugger" class="span3">
             <div class="btn-group">
-                <button class="btn">Run</button>
-                <button class="btn">Step over</button>
-                <button class="btn">Step in</button>
-                <button class="btn">Step out</button>
+                <button class="btn btn-large" title="Run/Pause">
+                    <i class=icon-play></i>
+                </button>
+                <button class="btn btn-large" title="Step over">
+                    <i class=icon-share-alt></i>
+                </button>
+                <button class="btn btn-large" title="Step in">
+                    <i class=icon-arrow-down></i>
+                </button>
+                <button class="btn btn-large" title="Step out">
+                    <i class=icon-arrow-up></i>
+                </button>
             </div>
+
+            <br><br>
+            <textarea rows="20"></textarea>
+
+            <br>
+            <button type="submit" class="btn">Submit</button>
         </div>
     </div>
 </div>
 
 <script src="javascripts/lib/require-config.js"></script>
-<script data-main="repl", src="javascripts/lib/require.js"></script>
+<script data-main="repl" src="javascripts/lib/require.js"></script>
 

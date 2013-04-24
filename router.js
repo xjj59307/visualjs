@@ -15,8 +15,8 @@ exports.graph = function(req, res) {
 
 // request object evaluation
 exports.repl = function(req, res) {
-    var code = req.query.code;
-    routeInterface.evaluate(code, function(result) {
-        res.send(JSON.stringify(result));
+    var expr = req.query.expr;
+    routeInterface.evaluate(expr, function(obj) {
+        res.json(obj);
     });
 };
