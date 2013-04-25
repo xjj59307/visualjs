@@ -118,8 +118,12 @@ Protocol.prototype.connectToNode = function(callback) {
         process.stdout.write('client disconnected');
     });
 
+    self.on('connect', function() {
+        process.stdout.write('client connected\n');
+    });
+
     // Try to connect every second
-    process.stdout.write('connecting');
+    process.stdout.write('connecting\n');
     var setupConnection = function() {
         self.connect(self.port, self.host, callback);
     }
