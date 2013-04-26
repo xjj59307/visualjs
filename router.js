@@ -20,3 +20,8 @@ exports.repl = function(req, res) {
         res.json(obj);
     });
 };
+
+exports.step = function(req, res) {
+    var action = req.params.action;
+    routeInterface[action]();
+};

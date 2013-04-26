@@ -26,6 +26,8 @@ app.get('/', router.index);
 app.get('/graph-demo.html', router.graph);
 app.get('/repl', router.repl);
 
+app.post('/step/:action', router.step);
+
 http.createServer(app).listen(app.get('port'), function() {
     console.log("Express server listening on port " + app.get('port'));
 });

@@ -33,7 +33,7 @@ var SourceUnderline = function(sourceText, position, repl) {
         tail = sourceText.slice(position);
 
     // Colourize char if stdout supports colours
-    if (repl.useColors) {
+    if (repl && repl.useColors) {
         tail = tail.replace(/(.+?)([^\w]|$)/, '\u001b[32m$1\u001b[39m$2');
     }
 

@@ -1,5 +1,6 @@
 var Client = require('./client'),
-    util = require('util')
+    util = require('util'),
+    tool = require('./tool');
 
 var RouteInterface = function() {
     var self = this;
@@ -11,6 +12,8 @@ var RouteInterface = function() {
     // Connect to debugger automatically
     this.pause();
     this.client = new Client();
+    this.client.currentLine = 0;
+    this.client.currentColumn = 0;
 
     this.client.on('break', function(res) {
         self.handleBreak(res);
@@ -53,10 +56,13 @@ RouteInterface.prototype.requireConnection = function() {
     return true;
 };
 
-RouteInterface.prototype.handleBreak = function() {
+RouteInterface.prototype.handleBreak = function(res) {
     this.pause();
 
-    this.currentFrame = 0;
+    this.client.currentLine = res.sourceLine;
+    this.client.currentColumn = res.sourceColumn;
+    this.client.currentFrame = 0;
+    this.list();
 
     this.resume();
 };
@@ -118,5 +124,77 @@ RouteInterface.prototype.evaluate = function(code, callback, isStmt) {
         }
     });
 };
+
+// List source code
+RouteInterface.prototype.list = function(delta) {
+    if (!this.requireConnection()) return;
+
+    delta = delta || 5;
+
+    var self = this,
+        client = this.client,
+        from = client.currentLine - delta + 1,
+        to = client.currentLine + delta + 1;
+
+    self.pause();
+    client.requireSource(from, to, function(err, res) {
+        if (err || !res) {
+            self.error('You can\'t list source code right now');
+            self.resume();
+            return;
+        }
+
+        var lines = res.source.split('\n');
+        var srcClip = '';
+        for (var i = 0; i < lines.length; ++i) {
+            var lineNo = res.fromLine + i + 1;
+            if (lineNo < from || lineNo > to) continue;
+
+            var isCurrent = (lineNo === client.currentLine + 1);
+
+            // The first line needs to have the module wrapper filtered out of it
+            if (lineNo === 1) {
+                var wrapper = require('module').wrapper[0];
+                lines[i] = lines[i].slice(wrapper.length);
+
+                client.currentColumn -= wrapper.length;
+            }
+
+            // Highlight executing statement
+            var line;
+            line = lines[i];
+
+            var prefix = isCurrent && '*';
+            srcClip += tool.leftPad(lineNo, prefix) + ' ' + line + '\n';
+        }
+
+        console.log(srcClip);
+        self.resume();
+    });
+};
+
+// Step commands generator
+RouteInterface.stepGenerator = function(type, count) {
+    return function() {
+        if (!this.requireConnection()) return;
+
+        var self = this;
+
+        self.pause();
+        self.client.step(type, count, function(err, res) {
+            if (err) self.error(err);
+            self.resume();
+        });
+    };
+};
+
+// Jump to next command
+RouteInterface.prototype.over = RouteInterface.stepGenerator('next', 1);
+
+// Step in
+RouteInterface.prototype.in = RouteInterface.stepGenerator('in', 1);
+
+// Step out
+RouteInterface.prototype.out = RouteInterface.stepGenerator('out', 1);
 
 module.exports = RouteInterface;
