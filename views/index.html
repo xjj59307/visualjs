@@ -5,11 +5,15 @@
 
 <link rel="stylesheet" href="bootstrap/css/bootstrap.css", type="text/css/">
 <link rel="stylesheet" href="stylesheets/index.css", type="text/css/">
+<link rel="stylesheet" href="stylesheets/bar-chart.css" type="text/css"/>
 
 <div class="container-fluid">
     <div class="row-fluid">
+        <div class="span1">
+            <label><input type="checkbox"> Sort values</label>
+        </div>
         <div id="visualization-window" class="span8">
-            <iframe src="http://localhost:3000/graph-demo.html" frameborder="1" width=900 height=640></iframe>
+            <svg></svg>
         </div>
         <div id="debugger" class="span3">
             <div class="btn-group">

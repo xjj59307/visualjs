@@ -1,7 +1,5 @@
 define(["lib/d3.v3"], function (d3) {
 
-    debugger;
-
     var width = 1280,
         height = 800,
         index = 0,
