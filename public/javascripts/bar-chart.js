@@ -61,17 +61,10 @@ define(["lib/d3.v3"], function (d3) {
                 .attr("y", function(d) { return y(d.frequency); })
                 .attr("height", function(d) { return height - y(d.frequency); });
 
-            d3.select("input").on("change", change);
-
-            var sortTimeout = setTimeout(function() {
-                d3.select("input").property("checked", true).each(change);
-            }, 2000);
-
-            function change() {
-                clearTimeout(sortTimeout);
-
+            // smooth animation for sorting
+            var update = function () {
                 // Copy-on-write since tweens are evaluated after a delay.
-                var x0 = x.domain(data.sort(this.checked
+                var x0 = x.domain(data.sort(true
                     ? function(a, b) { return b.frequency - a.frequency; }
                     : function(a, b) { return d3.ascending(a.letter, b.letter); })
                     .map(function(d) { return d.letter; }))
@@ -88,7 +81,9 @@ define(["lib/d3.v3"], function (d3) {
                     .call(xAxis)
                     .selectAll("g")
                     .delay(delay);
-            }
+            };
+
+            update();
         });
 
     };
