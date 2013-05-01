@@ -1,8 +1,14 @@
-#debugger {
-    margin-top: 1em;
+#visualization-span {
+    margin: 40px;
 }
 
 #visualization-window {
-    margin-top: 1em;
-    margin-left: 1em;
+    border: 1px solid grey;
+    padding: 10px;
+    float: right;
 }
+
+#debugger {
+    margin: 40px;
+}
+

@@ -19,6 +19,7 @@ define(["lib/jquery-1.8.2", "bar-chart"], function ($, plot) {
         $.post("http://localhost:3000/step/out");
     });
 
-    plot.plotBarChart();
+    plot.initialPlot();
+    plot.update();
 
 });

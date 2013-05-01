@@ -7,7 +7,7 @@ var RouteInterface = function() {
 
     this.stdin = process.stdin;
     this.stdout = process.stdout;
-    this.paused = false;
+    this.paused = 0;
 
     // Connect to debugger automatically
     this.pause();
@@ -68,11 +68,11 @@ RouteInterface.prototype.handleBreak = function(res) {
 };
 
 RouteInterface.prototype.pause = function() {
-    this.paused = true;
+    this.paused++;
 };
 
 RouteInterface.prototype.resume = function() {
-    this.paused = false;
+    this.paused--;
 };
 
 // Returns `true` if "err" is a SyntaxError, `false` otherwise. This function filters out false positives likes JSON.parse() errors and RegExp syntax errors.
@@ -92,7 +92,7 @@ RouteInterface.prototype.isSyntaxError = function(err) {
 RouteInterface.prototype.evaluate = function(code, callback, isStmt) {
     if (!this.requireConnection()) return;
 
-    if (this.paused) {
+    if (this.paused !== 0) {
         this.error('Wait for last request');
         return;
     }
@@ -177,6 +177,11 @@ RouteInterface.prototype.list = function(delta) {
 RouteInterface.stepGenerator = function(type, count) {
     return function() {
         if (!this.requireConnection()) return;
+
+        if (this.paused !== 0) {
+            this.error('Wait for last request');
+            return;
+        }
 
         var self = this;
 

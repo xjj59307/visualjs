@@ -1,95 +1,82 @@
 define(["lib/d3.v3"], function (d3) {
 
-    var plotBarChart = function() {
+    var margin = { top: 20, right: 20, bottom: 30, left: 40 },
+        width = 900 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom;
 
-        var margin = { top: 20, right: 20, bottom: 30, left: 40 },
-            width = 900 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom;
+    var x = d3.scale.ordinal()
+        .rangeRoundBands([0, width], .1, 1);
 
-        var formatPercent = d3.format(".0%");
+    var y = d3.scale.linear()
+        .range([height, 0]);
 
-        var x = d3.scale.ordinal()
-            .rangeRoundBands([0, width], .1, 1);
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom");
 
-        var y = d3.scale.linear()
-            .range([height, 0]);
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left");
 
-        var xAxis = d3.svg.axis()
-            .scale(x)
-            .orient("bottom");
+    var svg = d3.select("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        var yAxis = d3.svg.axis()
-            .scale(y)
-            .orient("left")
-            .tickFormat(formatPercent);
+    var data = [];
+    for (var i = 0; i <= 25; ++i) {
+        data.push({ id: i, value: Math.random() * 10 });
+    }
 
-        var svg = d3.select("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    var initialPlot = function() {
+        x.domain(data.map(function(d) { return d.id; }));
+        y.domain([0, d3.max(data, function(d) { return d.value; })]);
 
-        d3.tsv("../javascripts/data/bar-chart.tsv", function(error, data) {
-            data.forEach(function(d) {
-                d.frequency = +d.frequency;
-            });
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
 
-            x.domain(data.map(function(d) { return d.letter; }));
-            y.domain([0, d3.max(data, function(d) { return d.frequency; })]);
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis);
 
-            svg.append("g")
-                .attr("class", "x axis")
-                .attr("transform", "translate(0," + height + ")")
-                .call(xAxis);
+        svg.selectAll(".bar")
+            .data(data)
+            .enter().append("rect")
+            .attr("class", "bar")
+            .attr("x", function(d) { return x(d.id); })
+            .attr("width", x.rangeBand())
+            .attr("y", function(d) { return y(d.value); })
+            .attr("height", function(d) { return height - y(d.value); });
+    };
 
-            svg.append("g")
-                .attr("class", "y axis")
-                .call(yAxis)
-                .append("text")
-                .attr("transform", "rotate(-90)")
-                .attr("y", 6)
-                .attr("dy", ".71em")
-                .style("text-anchor", "end")
-                .text("Frequency");
+    // smooth animation for sorting
+    var update = function () {
+        // Copy-on-write since tweens are evaluated after a delay.
+        var x0 = x.domain(data.sort(function(a, b) {
+                return b.value - a.value;
+            })
+            .map(function(d) { return d.id; }))
+            .copy();
 
-            svg.selectAll(".bar")
-                .data(data)
-                .enter().append("rect")
-                .attr("class", "bar")
-                .attr("x", function(d) { return x(d.letter); })
-                .attr("width", x.rangeBand())
-                .attr("y", function(d) { return y(d.frequency); })
-                .attr("height", function(d) { return height - y(d.frequency); });
+        var transition = svg.transition().duration(200),
+            delay = function(d, i) { return i * 100; };
 
-            // smooth animation for sorting
-            var update = function () {
-                // Copy-on-write since tweens are evaluated after a delay.
-                var x0 = x.domain(data.sort(true
-                    ? function(a, b) { return b.frequency - a.frequency; }
-                    : function(a, b) { return d3.ascending(a.letter, b.letter); })
-                    .map(function(d) { return d.letter; }))
-                    .copy();
+        transition.selectAll(".bar")
+            .delay(delay)
+            .attr("x", function(d) { return x0(d.id); });
 
-                var transition = svg.transition().duration(750),
-                    delay = function(d, i) { return i * 50; };
-
-                transition.selectAll(".bar")
-                    .delay(delay)
-                    .attr("x", function(d) { return x0(d.letter); });
-
-                transition.select(".x.axis")
-                    .call(xAxis)
-                    .selectAll("g")
-                    .delay(delay);
-            };
-
-            update();
-        });
-
+        transition.select(".x.axis")
+            .call(xAxis)
+            .selectAll("g")
+            .delay(delay);
     };
 
     return {
-        plotBarChart: plotBarChart
+        initialPlot: initialPlot,
+        update: update
     };
 
 });
