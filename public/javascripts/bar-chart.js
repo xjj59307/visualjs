@@ -24,12 +24,15 @@ define(["lib/d3.v3"], function (d3) {
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    var data = [];
-    for (var i = 0; i <= 25; ++i) {
-        data.push({ id: i, value: Math.random() * 10 });
-    }
+    var initial = true;
 
-    var initialPlot = function() {
+    var plot = function(data) {
+        initial ? initialPlot(data) : update(data);
+    };
+
+    var initialPlot = function(data) {
+        initial = false;
+
         x.domain(data.map(function(d) { return d.id; }));
         y.domain([0, d3.max(data, function(d) { return d.value; })]);
 
@@ -53,7 +56,7 @@ define(["lib/d3.v3"], function (d3) {
     };
 
     // smooth animation for sorting
-    var update = function () {
+    var update = function (data) {
         // Copy-on-write since tweens are evaluated after a delay.
         var x0 = x.domain(data.sort(function(a, b) {
                 return b.value - a.value;
@@ -75,8 +78,7 @@ define(["lib/d3.v3"], function (d3) {
     };
 
     return {
-        initialPlot: initialPlot,
-        update: update
+        plot: plot
     };
 
 });
