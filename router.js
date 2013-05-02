@@ -21,7 +21,7 @@ exports.repl = function(req, res) {
     });
 };
 
-exports.step = function(req, res) {
-    var action = req.params.action;
+exports.step = function(req) {
+    var action = req.action;
     routeInterface[action]();
 };

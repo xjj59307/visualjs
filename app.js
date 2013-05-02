@@ -1,7 +1,8 @@
 var express = require('express'),
     router = require('./router.js'),
     http = require('http'),
-    path = require('path');
+    path = require('path'),
+    io = require('socket.io');
 
 var app = express();
 
@@ -21,13 +22,20 @@ app.configure('development', function() {
     app.use(express.errorHandler());
 });
 
+var server = http.createServer(app).listen(app.get('port'), function() {
+    console.log('Express server listening on port ' + app.get('port'));
+});
+
 // Map url to handlers
 app.get('/', router.index);
 app.get('/graph-demo.html', router.graph);
 app.get('/repl', router.repl);
+// app.post('/step/:action', router.step);
 
-app.post('/step/:action', router.step);
-
-http.createServer(app).listen(app.get('port'), function() {
-    console.log("Express server listening on port " + app.get('port'));
+io = io.listen(server);
+io.sockets.on('connection', function(socket) {
+    socket.on('step', function(data) {
+        router.step(data);
+    });
 });
+

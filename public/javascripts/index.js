@@ -1,4 +1,6 @@
-define(["lib/jquery-1.8.2", "bar-chart"], function ($, plot) {
+define(["lib/jquery-1.8.2", "lib/socket.io", "bar-chart"], function ($, io, plot) {
+
+    var socket = io.connect('http://localhost');
 
     $("button[title='Submit']").on("click", function(event) {
         var query = { expr: $("textarea").val() };
@@ -8,15 +10,18 @@ define(["lib/jquery-1.8.2", "bar-chart"], function ($, plot) {
     });
 
     $("button[title='Step over']").on("click", function(event) {
-        $.post("http://localhost:3000/step/over");
+        // $.post("http://localhost:3000/step/over");
+        socket.emit("step", { action: "over" });
     });
 
     $("button[title='Step in']").on("click", function(event) {
-        $.post("http://localhost:3000/step/in");
+        // $.post("http://localhost:3000/step/in");
+        socket.emit("step", { action: "in" });
     });
 
     $("button[title='Step out']").on("click", function(event) {
-        $.post("http://localhost:3000/step/out");
+        // $.post("http://localhost:3000/step/out");
+        socket.emit("step", { action: "out" });
     });
 
     plot.initialPlot();
