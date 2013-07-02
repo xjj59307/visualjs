@@ -5,7 +5,7 @@ define(["lib/d3.v3"], function (d3) {
         height = 500 - margin.top - margin.bottom;
 
     var x = d3.scale.ordinal()
-        .rangeRoundBands([0, width], .1, 1);
+        .rangeRoundBands([0, width], 0.1, 1);
 
     var y = d3.scale.linear()
         .range([height, 0]);
@@ -58,14 +58,10 @@ define(["lib/d3.v3"], function (d3) {
     // smooth animation for sorting
     var update = function (data) {
         // Copy-on-write since tweens are evaluated after a delay.
-        var x0 = x.domain(data.sort(function(a, b) {
-                return b.value - a.value;
-            })
-            .map(function(d) { return d.id; }))
-            .copy();
+        var x0 = x.domain(data.map(function(d) { return d.id; })).copy();
 
-        var transition = svg.transition().duration(200),
-            delay = function(d, i) { return i * 100; };
+        var transition = svg.transition().duration(500),
+            delay = function(d, i) { return i * 300; };
 
         transition.selectAll(".bar")
             .delay(delay)

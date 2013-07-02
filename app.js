@@ -2,7 +2,17 @@ var express = require('express'),
     router = require('./router.js'),
     http = require('http'),
     path = require('path'),
-    io = require('socket.io');
+    io = require('socket.io'),
+    exec = require('child_process').exec;
+
+var child = exec('node --debug-brk=8000 debugger/sort.js',
+  function (error, stdout, stderr) {
+    // console.log('stdout: ' + stdout);
+    // console.log('stderr: ' + stderr);
+    if (error !== null) {
+      console.log('exec error: ' + error);
+    }
+});
 
 var app = express();
 

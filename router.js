@@ -10,7 +10,7 @@ exports.index = function(req, res) {
 
 // visualization
 exports.graph = function(req, res) {
-    res.render('graph-demo.html')
+    res.render('graph-demo.html');
 };
 
 // request object evaluation
