@@ -5,14 +5,14 @@ var express = require('express'),
     io = require('socket.io'),
     exec = require('child_process').exec;
 
-var child = exec('node --debug-brk=8000 debugger/sort.js',
-  function (error, stdout, stderr) {
-    // console.log('stdout: ' + stdout);
-    // console.log('stderr: ' + stderr);
+// open debugger in node
+var debuggee = process.argv[2] || "debugger/sort.js";
+var child = exec('node --debug-brk=8000 ' + debuggee, function (error, stdout, stderr) {
     if (error !== null) {
-      console.log('exec error: ' + error);
+        console.log('exec error: ' + error);
     }
 });
+// child.kill();
 
 var app = express();
 
@@ -36,7 +36,7 @@ var server = http.createServer(app).listen(app.get('port'), function() {
     console.log('Express server listening on port ' + app.get('port'));
 });
 
-// Map url to handlers
+// map url to handlers
 app.get('/', router.index);
 app.get('/graph-demo.html', router.graph);
 app.get('/repl', router.repl);
