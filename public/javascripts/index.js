@@ -1,4 +1,4 @@
-define(["lib/jquery-1.8.2", "lib/socket.io", "bar-chart"], function ($, io, barChart) {
+define(["lib/jquery-1.8.2", "lib/socket.io", "bar-chart", "lib/ace/ace"], function ($, io, barChart, ace) {
 
     var socket = io.connect('http://localhost');
 
@@ -23,5 +23,10 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "bar-chart"], function ($, io, barC
         // $.post("http://localhost:3000/step/out");
         socket.emit("step", { action: "out" });
     });
+
+    var code = "var x = 2;\nvar y = 2;"
+    var editor = ace.edit("editor");
+    editor.getSession().setMode("ace/mode/javascript");
+    editor.getSession().setValue(code);
 
 });

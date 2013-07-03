@@ -1,5 +1,5 @@
 #visualization-span {
-    margin: 40px;
+    margin: 30px;
 }
 
 #visualization-window {
@@ -9,6 +9,20 @@
 }
 
 #debugger {
-    margin: 40px;
+    margin-top: 30px;
+}
+
+textarea {
+    margin-top:30px;
+}
+
+#editor {
+    margin-top: 30px;
+}
+
+#editor{ 
+    position: relative;
+    width: 250px;
+    height: 400px;
 }
 

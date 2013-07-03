@@ -7,7 +7,8 @@ var require = {
         "lib/underscore": { exports: "_" },
         "lib/buckets": { exports: "buckets" },
         "lib/priority-queue": { exports: "priorityQueue" },
-        "lib/jquery-1.8.2": { exports: "$" }
+        "lib/jquery-1.8.2": { exports: "$" },
+        "lib/ace/ace": { exports: "ace" }
     }
 
 };
