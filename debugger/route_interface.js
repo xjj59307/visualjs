@@ -173,6 +173,29 @@ RouteInterface.prototype.list = function(delta) {
     });
 };
 
+RouteInterface.prototype.requireSource = function(socket) {
+    if (!this.requireConnection()) return;
+
+    var delta = 5;
+
+    var self = this,
+        client = this.client,
+        from = client.currentLine - delta + 1,
+        to = client.currentLine + delta + 1;
+
+    self.pause();
+    client.requireSource(from, to, function(err, res) {
+        if (err || !res) {
+            self.error('You can\'t list source code right now');
+            self.resume();
+            return;
+        }
+
+        self.resume();
+        socket.emit('response-source', res.source);
+    });
+};
+
 // Step commands generator
 RouteInterface.stepGenerator = function(type, count) {
     return function() {

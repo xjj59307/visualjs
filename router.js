@@ -14,7 +14,7 @@ exports.graph = function(req, res) {
 };
 
 // request object evaluation
-exports.repl = function(req, res) {
+exports.eval = function(req, res) {
     var expr = req.query.expr;
     routeInterface.evaluate(expr, function(obj) {
         res.json(obj);
@@ -24,4 +24,8 @@ exports.repl = function(req, res) {
 exports.step = function(req) {
     var action = req.action;
     routeInterface[action]();
+};
+
+exports.requireSource = function(socket) {
+    routeInterface.requireSource(socket); 
 };

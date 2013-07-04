@@ -39,13 +39,16 @@ var server = http.createServer(app).listen(app.get('port'), function() {
 // map url to handlers
 app.get('/', router.index);
 app.get('/graph-demo.html', router.graph);
-app.get('/repl', router.repl);
+app.get('/eval', router.eval);
 // app.post('/step/:action', router.step);
 
 io = io.listen(server);
 io.sockets.on('connection', function(socket) {
-    socket.on('step', function(data) {
-        router.step(data);
+    socket.on('request-step', function(action) {
+        router.step(action);
+    });
+    socket.on('request-source', function() {
+        var source = router.requireSource(socket);
     });
 });
 
