@@ -27,6 +27,8 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "bar-chart", "lib/ace/ace"], functi
     var code = "var x = 2;\nvar y = 2;"
     var editor = ace.edit("editor");
     editor.getSession().setMode("ace/mode/javascript");
+    editor.setReadOnly(true);
     editor.getSession().setValue(code);
+    editor.getSession().addGutterDecoration(1, "ace_breakpoint");
 
 });
