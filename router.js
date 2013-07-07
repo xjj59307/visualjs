@@ -2,6 +2,7 @@ var RouteInterface = require('./debugger/route_interface');
 
 // create connection with node.js debugger
 var routeInterface = new RouteInterface();
+exports.routeInterface = routeInterface;
 
 // main page for debugger GUI
 exports.index = function(req, res) {
@@ -26,6 +27,6 @@ exports.step = function(req) {
     routeInterface[action]();
 };
 
-exports.requireSource = function(socket) {
-    routeInterface.requireSource(socket); 
+exports.requireSource = function() {
+    routeInterface.requireSource();
 };

@@ -1,16 +1,26 @@
 define(["lib/jquery-1.8.2", "lib/socket.io", "bar-chart", "lib/ace/ace"], function ($, io, barChart, ace) {
 
     var socket = io.connect('http://localhost');
+    var lastLine;
 
     // initialize editor
     var editor = ace.edit("editor");
     editor.getSession().setMode("ace/mode/javascript");
     editor.setReadOnly(true);
-    
+
     // get code chunk from server
-    socket.on("response-source", function(source) {
-        editor.getSession().setValue(source);
-        // editor.getSession().addGutterDecoration(1, "ace_breakpoint");
+    socket.on("response-source", function(res) {
+        editor.getSession().setValue(res.source);
+
+        // delete last program counter
+        // TODO: support multi-file
+        // if (lastLine) editor.getSession().removeGutterDecoration(lastLine, "program-counter");
+        // lastLine = res.currentLine;
+
+        // add new program counter
+        editor.focus();
+        editor.gotoLine(res.currentLine + 1);
+        // editor.getSession().addGutterDecoration(res.currentLine, "program-counter");
     });
 
     $("button[title='Submit']").on("click", function(event) {

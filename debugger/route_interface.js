@@ -28,6 +28,10 @@ var RouteInterface = function() {
     });
 };
 
+RouteInterface.prototype.setSocket = function(socket) {
+    this.socket = socket;
+};
+
 RouteInterface.prototype.clearline = function() {
     this.stdout.cursorTo(0);
     this.stdout.clearLine(1);
@@ -62,7 +66,8 @@ RouteInterface.prototype.handleBreak = function(res) {
     this.client.currentLine = res.sourceLine;
     this.client.currentColumn = res.sourceColumn;
     this.client.currentFrame = 0;
-    this.list();
+    // this.list();
+    if (this.socket) this.requireSource();
 
     this.resume();
 };
@@ -173,7 +178,7 @@ RouteInterface.prototype.list = function(delta) {
     });
 };
 
-RouteInterface.prototype.requireSource = function(socket) {
+RouteInterface.prototype.requireSource = function() {
     if (!this.requireConnection()) return;
 
     var delta = 5;
@@ -191,8 +196,25 @@ RouteInterface.prototype.requireSource = function(socket) {
             return;
         }
 
+        // delete header and tail of node.js wrapper
+        var source = res.source,
+            wrapper = require('module').wrapper[0];
+        source = source.slice(wrapper.length);
+        var tailLoc = source.length - 1;
+        while (tailLoc--) {
+            // location last line
+            if (source[tailLoc] === '\n') break;
+        }
+        source = source.substr(0, tailLoc);
+
+        if (client.currentLine === 0)
+            client.currentColumn -= wrapper.length;
+
+        self.socket.emit('response-source', {
+            source: source,
+            currentLine: client.currentLine
+        });
         self.resume();
-        socket.emit('response-source', res.source);
     });
 };
 

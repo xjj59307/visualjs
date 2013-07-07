@@ -44,11 +44,14 @@ app.get('/eval', router.eval);
 
 io = io.listen(server);
 io.sockets.on('connection', function(socket) {
+    router.routeInterface.setSocket(socket);
+
     socket.on('request-step', function(action) {
         router.step(action);
     });
+
     socket.on('request-source', function() {
-        var source = router.requireSource(socket);
+        var source = router.requireSource();
     });
 });
 
