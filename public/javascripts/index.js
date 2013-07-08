@@ -14,13 +14,14 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "bar-chart", "lib/ace/ace"], functi
 
         // delete last program counter
         // TODO: support multi-file
-        // if (lastLine) editor.getSession().removeGutterDecoration(lastLine, "program-counter");
-        // lastLine = res.currentLine;
+        if (lastLine !== undefined) editor.getSession().removeGutterDecoration(lastLine, "program-counter");
+        lastLine = res.currentLine;
 
         // add new program counter
-        editor.focus();
-        editor.gotoLine(res.currentLine + 1);
-        // editor.getSession().addGutterDecoration(res.currentLine, "program-counter");
+        // if (!editor.isFocused()) editor.focus();
+        // editor.gotoLine(res.currentLine + 1);
+        editor.scrollToLine(res.currentLine + 1, true, true);
+        editor.getSession().addGutterDecoration(res.currentLine, "program-counter");
     });
 
     $("button[title='Submit']").on("click", function(event) {
