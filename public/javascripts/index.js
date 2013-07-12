@@ -9,19 +9,19 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "bar-chart", "lib/ace/ace"], functi
     editor.setReadOnly(true);
 
     // get code chunk from server
-    socket.on("update source", function(res) {
-        editor.getSession().setValue(res.source);
+    socket.on("update source", function(data) {
+        editor.getSession().setValue(data.source);
 
         // delete last program counter
         // TODO: support multi-file
         if (lastLine !== undefined) editor.getSession().removeGutterDecoration(lastLine, "program-counter");
-        lastLine = res.currentLine;
+        lastLine = data.currentLine;
 
         // add new program counter
         // if (!editor.isFocused()) editor.focus();
-        // editor.gotoLine(res.currentLine + 1);
-        editor.scrollToLine(res.currentLine + 1, true, true);
-        editor.getSession().addGutterDecoration(res.currentLine, "program-counter");
+        // editor.gotoLine(data.currentLine + 1);
+        editor.scrollToLine(data.currentLine + 1, true, true);
+        editor.getSession().addGutterDecoration(data.currentLine, "program-counter");
     });
 
     socket.on("update view", function() {

@@ -3,7 +3,8 @@ var express = require('express'),
     http = require('http'),
     path = require('path'),
     io = require('socket.io'),
-    exec = require('child_process').exec;
+    exec = require('child_process').exec,
+    BrowserInterface = require('./debugger/browser_interface');
 
 // open debugger in node
 var debuggee = process.argv[2] || "debugger/sort.js";
@@ -12,7 +13,6 @@ var child = exec('node --debug-brk=8000 ' + debuggee, function (error, stdout, s
         console.log('exec error: ' + error);
     }
 });
-// child.kill();
 
 var app = express();
 
@@ -39,18 +39,18 @@ var server = http.createServer(app).listen(app.get('port'), function() {
 // map url to handlers
 app.get('/', router.index);
 app.get('/graph-demo.html', router.graph);
-app.get('/eval', router.eval);
-// app.post('/step/:action', router.step);
 
+// create socket.io connection
 io = io.listen(server);
 io.sockets.on('connection', function(socket) {
-    router.routeInterface.setSocket(socket);
+    // create connection with node.js debugger
+    var browserInterface = new BrowserInterface(socket);
 
-    socket.on('step through', function(action) {
-        router.step(action);
+    socket.on('step through', function(data) {
+        browserInterface[data.action]();
     });
 
     socket.on('require source', function() {
-        var source = router.requireSource();
+        browserInterface.requireSource();
     });
 });
