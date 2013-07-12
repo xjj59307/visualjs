@@ -46,12 +46,11 @@ io = io.listen(server);
 io.sockets.on('connection', function(socket) {
     router.routeInterface.setSocket(socket);
 
-    socket.on('request-step', function(action) {
+    socket.on('step through', function(action) {
         router.step(action);
     });
 
-    socket.on('request-source', function() {
+    socket.on('require source', function() {
         var source = router.requireSource();
     });
 });
-

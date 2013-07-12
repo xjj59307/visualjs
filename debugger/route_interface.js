@@ -66,8 +66,10 @@ RouteInterface.prototype.handleBreak = function(res) {
     this.client.currentLine = res.sourceLine;
     this.client.currentColumn = res.sourceColumn;
     this.client.currentFrame = 0;
-    // this.list();
+
+    // trigger update events
     if (this.socket) this.requireSource();
+    if (this.socket) this.socket.emit('update view');
 
     this.resume();
 };
@@ -210,7 +212,7 @@ RouteInterface.prototype.requireSource = function() {
         if (client.currentLine === 0)
             client.currentColumn -= wrapper.length;
 
-        self.socket.emit('response-source', {
+        self.socket.emit('update source', {
             source: source,
             currentLine: client.currentLine
         });

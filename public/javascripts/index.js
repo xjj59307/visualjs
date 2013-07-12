@@ -9,7 +9,7 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "bar-chart", "lib/ace/ace"], functi
     editor.setReadOnly(true);
 
     // get code chunk from server
-    socket.on("response-source", function(res) {
+    socket.on("update source", function(res) {
         editor.getSession().setValue(res.source);
 
         // delete last program counter
@@ -24,29 +24,33 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "bar-chart", "lib/ace/ace"], functi
         editor.getSession().addGutterDecoration(res.currentLine, "program-counter");
     });
 
-    $("button[title='Submit']").on("click", function(event) {
+    socket.on("update view", function() {
+        updateView();
+    });
+
+    var updateView = function() {
         var query = { expr: $("textarea").val() };
         $.get("http://localhost:3000/eval", query, function(data) {
             barChart.plot(data);
         });
-    });
+    };
 
     $("button[title='Step over']").on("click", function(event) {
         // $.post("http://localhost:3000/step/over");
-        socket.emit("request-step", { action: "over" });
+        socket.emit("step through", { action: "over" });
     });
 
     $("button[title='Step in']").on("click", function(event) {
         // $.post("http://localhost:3000/step/in");
-        socket.emit("request-step", { action: "in" });
+        socket.emit("step through", { action: "in" });
     });
 
     $("button[title='Step out']").on("click", function(event) {
         // $.post("http://localhost:3000/step/out");
-        socket.emit("request-step", { action: "out" });
+        socket.emit("step through", { action: "out" });
     });
 
     // get initial source
-    socket.emit("request-source");
+    socket.emit("require source");
 
 });

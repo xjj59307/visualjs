@@ -27,6 +27,7 @@ define(["lib/d3.v3"], function (d3) {
     var initial = true;
 
     var plot = function(data) {
+        if (!data) return;
         initial ? initialPlot(data) : update(data);
     };
 
@@ -57,18 +58,31 @@ define(["lib/d3.v3"], function (d3) {
 
     // smooth animation for sorting
     var update = function (data) {
-        // Copy-on-write since tweens are evaluated after a delay.
-        var x0 = x.domain(data.map(function(d) { return d.id; })).copy();
+        x.domain(data.map(function(d) { return d.id; }));
+        y.domain([0, d3.max(data, function(d) { return d.value; })]);
+
+        svg.selectAll(".bar")
+            .data(data)
+            .enter().append("rect")
+            .attr("class", "bar");
 
         var transition = svg.transition().duration(500),
             delay = function(d, i) { return i * 300; };
 
         transition.selectAll(".bar")
             .delay(delay)
-            .attr("x", function(d) { return x0(d.id); });
+            .attr("x", function(d) { return x(d.id); })
+            .attr("width", x.rangeBand())
+            .attr("y", function(d) { return y(d.value); })
+            .attr("height", function(d) { return height - y(d.value); });
 
         transition.select(".x.axis")
             .call(xAxis)
+            .selectAll("g")
+            .delay(delay);
+
+        transition.select(".y.axis")
+            .call(yAxis)
             .selectAll("g")
             .delay(delay);
     };

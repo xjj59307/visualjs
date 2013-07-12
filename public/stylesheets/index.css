@@ -3,7 +3,7 @@
 }
 
 #visualization-window {
-    border: 1px solid grey;
+    border: 1px solid #E1E1E8;
     padding: 10px;
     float: right;
 }
@@ -18,9 +18,10 @@ textarea {
 
 #editor {
     margin-top: 30px;
-    position: absolute;
+    position: relative;
     width: 400px;
     height: 500px;
+    border: 1px solid #E1E1E8;
 }
 
 .program-counter {
