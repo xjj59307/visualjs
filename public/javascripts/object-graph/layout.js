@@ -18,7 +18,7 @@ define(["lib/underscore", "utility", "graph", "acyclic", "rank", "order", "norma
 
 	self.nodes = util.propertyAccessor(self, config, "nodes");
 	self.edges = util.propertyAccessor(self, config, "edges");
-	
+
 	self.nodeSep = util.delegateProperty(self, position.nodeSep);
 	self.edgeSep = util.delegateProperty(self, position.edgeSep);
 	self.universalSep = util.delegateProperty(self, position.universalSep);
@@ -98,5 +98,5 @@ define(["lib/underscore", "utility", "graph", "acyclic", "rank", "order", "norma
 	self.run = run;
 
 	return self;
-	
+
 });
