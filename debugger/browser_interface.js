@@ -2,10 +2,9 @@ var Client = require('./client'),
     util = require('util'),
     tool = require('./tool');
 
-var BrowserInterface = function(socket) {
+var BrowserInterface = function() {
     var self = this;
 
-    this.socket = socket;
     this.stdin = process.stdin;
     this.stdout = process.stdout;
     this.paused = 0;
@@ -27,6 +26,10 @@ var BrowserInterface = function(socket) {
     this.client.connectToNode(function() {
         self.resume();
     });
+};
+
+BrowserInterface.prototype.setSocket = function(socket) {
+    this.socket = socket;
 };
 
 BrowserInterface.prototype.clearline = function() {
@@ -65,8 +68,8 @@ BrowserInterface.prototype.handleBreak = function(res) {
     this.client.currentFrame = 0;
 
     // trigger update events
-    this.requireSource();
-    this.socket.emit('update view');
+    if (this.socket) this.requireSource();
+    if (this.socket) this.socket.emit('update view');
 
     this.resume();
 };
@@ -129,54 +132,7 @@ BrowserInterface.prototype.evaluate = function(code, callback, isStmt) {
     });
 };
 
-// List source code
-BrowserInterface.prototype.list = function(delta) {
-    if (!this.requireConnection()) return;
-
-    delta = delta || 5;
-
-    var self = this,
-        client = this.client,
-        from = client.currentLine - delta + 1,
-        to = client.currentLine + delta + 1;
-
-    self.pause();
-    client.requireSource(from, to, function(err, res) {
-        if (err || !res) {
-            self.error('You can\'t list source code right now');
-            self.resume();
-            return;
-        }
-
-        var lines = res.source.split('\n');
-        var srcClip = '';
-        for (var i = 0; i < lines.length; ++i) {
-            var lineNo = res.fromLine + i + 1;
-            if (lineNo < from || lineNo > to) continue;
-
-            var isCurrent = (lineNo === client.currentLine + 1);
-
-            // The first line needs to have the module wrapper filtered out of it
-            if (lineNo === 1) {
-                var wrapper = require('module').wrapper[0];
-                lines[i] = lines[i].slice(wrapper.length);
-
-                client.currentColumn -= wrapper.length;
-            }
-
-            // Highlight executing statement
-            var line;
-            line = lines[i];
-
-            var prefix = isCurrent && '*';
-            srcClip += tool.leftPad(lineNo, prefix) + ' ' + line + '\n';
-        }
-
-        console.log(srcClip);
-        self.resume();
-    });
-};
-
+// Get running source file
 BrowserInterface.prototype.requireSource = function() {
     if (!this.requireConnection()) return;
 

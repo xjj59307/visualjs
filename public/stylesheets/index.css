@@ -1,25 +1,23 @@
-#visualization-span {
+.visualization-window {
     margin-top: 30px;
-}
-
-#visualization-window {
     border: 1px solid #E1E1E8;
     padding: 10px;
     float: right;
 }
 
-#debugger {
-    margin-top: 30px;
+/*binding data input area*/
+.input {
+    float: right;
 }
 
-textarea {
-    margin-top:30px;
+/*step through button group*/
+.btn-group {
+    margin-top: 30px;
 }
 
 #editor {
     margin-top: 30px;
-    position: relative;
-    width: 400px;
+    width: 600px;
     height: 500px;
     border: 1px solid #E1E1E8;
 }

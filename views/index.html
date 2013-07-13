@@ -1,7 +1,7 @@
 <!doctype html>
 
 <meta charset="utf-8">
-<title>Graph Visualization</title>
+<title>VisualJS</title>
 
 <link rel="stylesheet" href="bootstrap/css/bootstrap.css", type="text/css/">
 <link rel="stylesheet" href="stylesheets/index.css", type="text/css/">
@@ -9,31 +9,38 @@
 
 <div class="container-fluid">
     <div class="row-fluid">
-        <div id="visualization-span" class="span7">
-            <div id="visualization-window"><svg/></div>
-        </div>
-
-        <div id="debugger" class="span2">
-            <div class="btn-group">
-                <button class="btn btn-large" title="Run/Pause">
-                    <i class=icon-play></i>
-                </button>
-                <button class="btn btn-large" title="Step over">
-                    <i class=icon-share-alt></i>
-                </button>
-                <button class="btn btn-large" title="Step in">
-                    <i class=icon-arrow-down></i>
-                </button>
-                <button class="btn btn-large" title="Step out">
-                    <i class=icon-arrow-up></i>
-                </button>
+        <div class="span7">
+            <div class="visualization-window">
+                <input class="input" type="text" placeholder="Binding data">
+                <svg/>
             </div>
-
-            <textarea rows="5"></textarea>
         </div>
 
-        <div id="editor-span" class="span2">
-            <div id="editor"/>
+        <div class="span5">
+            <div class="row-fluid">
+                <div class="span12">
+                    <div class="btn-group">
+                        <button class="btn btn-large" title="Run/Pause">
+                            <i class=icon-play></i>
+                        </button>
+                        <button class="btn btn-large" title="Step over">
+                            <i class=icon-share-alt></i>
+                        </button>
+                        <button class="btn btn-large" title="Step in">
+                            <i class=icon-arrow-down></i>
+                        </button>
+                        <button class="btn btn-large" title="Step out">
+                            <i class=icon-arrow-up></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- this span is always displayed with left margin,
+                so I delete it manually -->
+                <div class="span12" style="margin-left:0px">
+                    <div id="editor"/>
+                </div>
+            </div>
         </div>
     </div>
 </div>

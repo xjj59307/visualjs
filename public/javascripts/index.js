@@ -25,29 +25,27 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "bar-chart", "lib/ace/ace"], functi
     });
 
     socket.on("update view", function() {
-        updateView();
-    });
-
-    var updateView = function() {
-        var query = { expr: $("textarea").val() };
+        var query = { expr: $(".input").val() };
+        // evaluate empty expression will contribute to exception from v8
+        if (!query.expr) return;
         $.get("http://localhost:3000/eval", query, function(data) {
             barChart.plot(data);
         });
-    };
+    });
 
     $("button[title='Step over']").on("click", function(event) {
         // $.post("http://localhost:3000/step/over");
-        socket.emit("step through", { action: "over" });
+        socket.emit("step through", "over");
     });
 
     $("button[title='Step in']").on("click", function(event) {
         // $.post("http://localhost:3000/step/in");
-        socket.emit("step through", { action: "in" });
+        socket.emit("step through", "in");
     });
 
     $("button[title='Step out']").on("click", function(event) {
         // $.post("http://localhost:3000/step/out");
-        socket.emit("step through", { action: "out" });
+        socket.emit("step through", "out");
     });
 
     // get initial source

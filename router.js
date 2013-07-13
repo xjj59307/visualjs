@@ -1,3 +1,9 @@
+var BrowserInterface = require('./debugger/browser_interface');
+
+// create connection with node.js debugger
+var browserInterface = new BrowserInterface();
+exports.browserInterface = browserInterface;
+
 // main page for debugger GUI
 exports.index = function(req, res) {
     res.render('index.html');
@@ -6,4 +12,12 @@ exports.index = function(req, res) {
 // visualization
 exports.graph = function(req, res) {
     res.render('graph-demo.html');
+};
+
+// request object evaluation
+exports.eval = function(req, res) {
+    var expr = req.query.expr;
+    browserInterface.evaluate(expr, function(obj) {
+        res.json(obj);
+    });
 };
