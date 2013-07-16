@@ -7,10 +7,8 @@ var BrowserInterface = function() {
 
     this.stdin = process.stdin;
     this.stdout = process.stdout;
-    this.paused = 0;
 
     // Connect to debugger automatically
-    this.pause();
     this.client = new Client();
     this.client.currentLine = 0;
     this.client.currentColumn = 0;
@@ -23,9 +21,7 @@ var BrowserInterface = function() {
         self.handleBreak(res);
     });
 
-    this.client.connectToNode(function() {
-        self.resume();
-    });
+    this.client.connectToNode();
 };
 
 BrowserInterface.prototype.setSocket = function(socket) {
@@ -49,7 +45,6 @@ BrowserInterface.prototype.print = function(text, oneline) {
 
 BrowserInterface.prototype.error = function(text) {
     this.print(text);
-    this.resume();
 };
 
 BrowserInterface.prototype.requireConnection = function() {
@@ -61,8 +56,6 @@ BrowserInterface.prototype.requireConnection = function() {
 };
 
 BrowserInterface.prototype.handleBreak = function(res) {
-    this.pause();
-
     this.client.currentLine = res.sourceLine;
     this.client.currentColumn = res.sourceColumn;
     this.client.currentFrame = 0;
@@ -70,16 +63,6 @@ BrowserInterface.prototype.handleBreak = function(res) {
     // trigger update events
     if (this.socket) this.requireSource();
     if (this.socket) this.socket.emit('update view');
-
-    this.resume();
-};
-
-BrowserInterface.prototype.pause = function() {
-    this.paused++;
-};
-
-BrowserInterface.prototype.resume = function() {
-    this.paused--;
 };
 
 // Returns `true` if "err" is a SyntaxError, `false` otherwise. This function filters out false positives likes JSON.parse() errors and RegExp syntax errors.
@@ -99,16 +82,9 @@ BrowserInterface.prototype.isSyntaxError = function(err) {
 BrowserInterface.prototype.evaluate = function(code, callback, isStmt) {
     if (!this.requireConnection()) return;
 
-    if (this.paused !== 0) {
-        this.error('Wait for last request');
-        return;
-    }
-
     var self = this,
         client = this.client,
         frame = client.currentFrame;
-
-    self.pause();
 
     // Request remote evaluation globally or in current frame
     client.requireFrameEval(isStmt ? code : "(" + code + ")", frame, function(err, res) {
@@ -120,13 +96,11 @@ BrowserInterface.prototype.evaluate = function(code, callback, isStmt) {
         if (typeof res === 'function' &&
             /^[\r\n\s]*function/.test(code) ||
             err) {
-            self.resume();
             self.evaluate(code, callback, true);
         } else {
             // Request object by handles
             client.mirrorObject(res, 3, function(err, mirror) {
                 callback(mirror);
-                self.resume();
             });
         }
     });
@@ -143,11 +117,9 @@ BrowserInterface.prototype.requireSource = function() {
         from = client.currentLine - delta + 1,
         to = client.currentLine + delta + 1;
 
-    self.pause();
     client.requireSource(from, to, function(err, res) {
         if (err || !res) {
             self.error('You can\'t list source code right now');
-            self.resume();
             return;
         }
 
@@ -169,7 +141,6 @@ BrowserInterface.prototype.requireSource = function() {
             source: source,
             currentLine: client.currentLine
         });
-        self.resume();
     });
 };
 
@@ -178,17 +149,10 @@ BrowserInterface.stepGenerator = function(type, count) {
     return function() {
         if (!this.requireConnection()) return;
 
-        if (this.paused !== 0) {
-            this.error('Wait for last request');
-            return;
-        }
-
         var self = this;
 
-        self.pause();
         self.client.step(type, count, function(err, res) {
             if (err) self.error(err);
-            self.resume();
         });
     };
 };
