@@ -106,7 +106,8 @@ BrowserInterface.prototype.evaluate = function(code, callback, isStmt) {
     });
 };
 
-// Get running source file
+// Get running code chunk around current line
+// TODO: v8 will return whole file even I only require current_line +/- delta
 BrowserInterface.prototype.requireSource = function() {
     if (!this.requireConnection()) return;
 
