@@ -45,11 +45,7 @@ io = io.listen(server);
 io.sockets.on('connection', function(socket) {
     router.browserInterface.setSocket(socket);
 
-    socket.on('step through', function(action) {
-        router.browserInterface[action]();
-    });
-
-    socket.on('require source', function() {
-        router.browserInterface.requireSource();
+    socket.on('new job', function(job) {
+        router.browserInterface.addJob(job);
     });
 });

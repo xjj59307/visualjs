@@ -1,4 +1,4 @@
-var BrowserInterface = require('./debugger/browser_interface');
+var BrowserInterface = require('./debugger/browser-interface');
 
 // create connection with node.js debugger
 var browserInterface = new BrowserInterface();

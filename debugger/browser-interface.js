@@ -1,12 +1,18 @@
 var Client = require('./client'),
     util = require('util'),
-    tool = require('./tool');
+    tool = require('./tool'),
+    JobQueue = require('./job-queue'),
+    JobHandler = require('./job-handler'),
+    buckets = require('buckets'),
+    TASK = require('./enum').TASK;
 
 var BrowserInterface = function() {
     var self = this;
 
     this.stdin = process.stdin;
     this.stdout = process.stdout;
+    this.jobQueue = new JobQueue(new JobHandler(this));
+    this.exprSet = new buckets.Set(); // expression list to evluate when stepping through
 
     // Connect to debugger automatically
     this.client = new Client();
@@ -17,8 +23,10 @@ var BrowserInterface = function() {
         self.handleBreak(res);
     });
 
+    // TODO: handle exception
     this.client.on('exception', function(res) {
-        self.handleBreak(res);
+        // self.handleBreak(res);
+        self.error('unknown exception');
     });
 
     this.client.connectToNode();
@@ -26,6 +34,27 @@ var BrowserInterface = function() {
 
 BrowserInterface.prototype.setSocket = function(socket) {
     this.socket = socket;
+    this.jobQueue.reset();
+};
+
+BrowserInterface.prototype.getSocket = function(socket) {
+    return this.socket;
+};
+
+BrowserInterface.prototype.addJob = function(job) {
+    this.jobQueue.addJob(job);
+};
+
+BrowserInterface.prototype.finishTask = function(task) {
+    this.jobQueue.finishTask(task);
+};
+
+BrowserInterface.prototype.addExpr = function(expr) {
+    this.exprSet.add(expr);
+};
+
+BrowserInterface.prototype.getExprList = function() {
+    return this.exprSet.toArray();
 };
 
 BrowserInterface.prototype.clearline = function() {
@@ -56,13 +85,28 @@ BrowserInterface.prototype.requireConnection = function() {
 };
 
 BrowserInterface.prototype.handleBreak = function(res) {
+    var self = this;
+
     this.client.currentLine = res.sourceLine;
     this.client.currentColumn = res.sourceColumn;
     this.client.currentFrame = 0;
 
-    // trigger update events
-    if (this.socket) this.requireSource();
-    if (this.socket) this.socket.emit('update view');
+    // inform client to update source
+    if (this.socket) this.requireSource(function(source, currentLine) {
+        self.socket.emit('update source', {
+            source: source,
+            currentLine: currentLine
+        });
+        self.jobQueue.finishTask(TASK.REQUIRE_SOURCE);
+    });
+
+    // inform client to update view
+    this.exprSet.toArray().forEach(function(expr) {
+        self.evaluate(expr, function(obj) {
+            self.socket.emit('update view', { expr: expr, result: obj });
+            self.jobQueue.finishTask(expr);
+        });
+    });
 };
 
 // Returns `true` if "err" is a SyntaxError, `false` otherwise. This function filters out false positives likes JSON.parse() errors and RegExp syntax errors.
@@ -108,7 +152,7 @@ BrowserInterface.prototype.evaluate = function(code, callback, isStmt) {
 
 // Get running code chunk around current line
 // TODO: v8 will return whole file even I only require current_line +/- delta
-BrowserInterface.prototype.requireSource = function() {
+BrowserInterface.prototype.requireSource = function(callback) {
     if (!this.requireConnection()) return;
 
     var delta = 5;
@@ -138,33 +182,35 @@ BrowserInterface.prototype.requireSource = function() {
         if (client.currentLine === 0)
             client.currentColumn -= wrapper.length;
 
-        self.socket.emit('update source', {
-            source: source,
-            currentLine: client.currentLine
-        });
+        if (callback) callback(source, client.currentLine);
     });
 };
 
 // Step commands generator
-BrowserInterface.stepGenerator = function(type, count) {
-    return function() {
-        if (!this.requireConnection()) return;
+BrowserInterface.prototype.stepThrough = function(type, count, callback) {
+    if (!this.requireConnection()) return;
 
-        var self = this;
+    var self = this;
 
-        self.client.step(type, count, function(err, res) {
-            if (err) self.error(err);
-        });
-    };
+    self.client.step(type, count, function(err, res) {
+        if (err) self.error(err);
+        if (callback) callback();
+    });
+};
+
+// Step in
+BrowserInterface.prototype.in = function(callback) {
+    this.stepThrough('in', 1, callback);
 };
 
 // Jump to next command
-BrowserInterface.prototype.over = BrowserInterface.stepGenerator('next', 1);
-
-// Step in
-BrowserInterface.prototype.in = BrowserInterface.stepGenerator('in', 1);
+BrowserInterface.prototype.over = function(callback) {
+    this.stepThrough('next', 1, callback);
+};
 
 // Step out
-BrowserInterface.prototype.out = BrowserInterface.stepGenerator('out', 1);
+BrowserInterface.prototype.out = function(callback) {
+    this.stepThrough('out', 1, callback);
+};
 
 module.exports = BrowserInterface;
