@@ -2,17 +2,72 @@ var Client = require('./client'),
     util = require('util'),
     tool = require('./tool'),
     JobQueue = require('./job-queue'),
-    JobHandler = require('./job-handler'),
     buckets = require('buckets'),
+    JOB = require('./enum').JOB;
     TASK = require('./enum').TASK;
+
+var  addListeners = function(browserInterface, jobQueue) {
+    var handleStepJob = function(task) {
+        jobQueue.addTask(task);
+        jobQueue.addTask(TASK.REQUIRE_SOURCE);
+        browserInterface.getExprList().forEach(function(expr) {
+            jobQueue.addTask(expr, 1);
+        });
+    };
+
+    jobQueue.on(JOB.STEP_IN, function(job) {
+        handleStepJob(TASK.STEP_IN);
+
+        browserInterface.in(function() {
+            browserInterface.finishTask(TASK.STEP_IN);
+        });
+    });
+
+    jobQueue.on(JOB.STEP_OVER, function(job) {
+        handleStepJob(TASK.STEP_OVER);
+
+        browserInterface.over(function() {
+            browserInterface.finishTask(TASK.STEP_OVER);
+        });
+    });
+
+    jobQueue.on(JOB.STEP_OUT, function(job) {
+        handleStepJob(TASK.STEP_OUT);
+
+        browserInterface.out(function() {
+            browserInterface.finishTask(TASK.STEP_OUT);
+        });
+    });
+
+    jobQueue.on(JOB.REQUIRE_SOURCE, function(job) {
+        jobQueue.addTask(TASK.REQUIRE_SOURCE);
+
+        browserInterface.requireSource(function(source, currentLine) {
+            browserInterface.getSocket().emit('update source', {
+                source: source,
+                currentLine: currentLine
+            });
+            browserInterface.finishTask(TASK.REQUIRE_SOURCE);
+        });
+    });
+
+    jobQueue.on(JOB.NEW_EXPRESSION, function(job) {
+        jobQueue.addTask(TASK.NEW_EXPRESSION);
+
+        var expr = job.data;
+        browserInterface.addExpr(expr);
+        browserInterface.finishTask(TASK.NEW_EXPRESSION);
+    });
+};
 
 var BrowserInterface = function() {
     var self = this;
 
     this.stdin = process.stdin;
     this.stdout = process.stdout;
-    this.jobQueue = new JobQueue(new JobHandler(this));
     this.exprSet = new buckets.Set(); // expression list to evluate when stepping through
+    this.jobQueue = new JobQueue();
+    addListeners(this, this.jobQueue);
 
     // Connect to debugger automatically
     this.client = new Client();
@@ -101,7 +156,7 @@ BrowserInterface.prototype.handleBreak = function(res) {
     });
 
     // inform client to update view
-    this.exprSet.toArray().forEach(function(expr) {
+    this.getExprList().forEach(function(expr) {
         self.evaluate(expr, function(obj) {
             self.socket.emit('update view', { expr: expr, result: obj });
             self.jobQueue.finishTask(expr);
