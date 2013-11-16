@@ -169,6 +169,7 @@ Interface.prototype.controlEval = function(code, context, filename, callback) {
     }
 };
 
+// Input line will be automatically wrapped in '(' and '\n)'.
 Interface.prototype.debugEval = function(code, context, filename, callback) {
     if (!this.requireConnection()) return;
 
@@ -176,7 +177,8 @@ Interface.prototype.debugEval = function(code, context, filename, callback) {
         client = this.client;
 
     // Repl asked for scope variables
-    if (code === '.scope') {
+    if (code.substr(0, code.length - 2) === '(_scope') {
+        console.log('scope');
         client.requireScopes(callback);
         return;
     }
@@ -194,8 +196,8 @@ Interface.prototype.debugEval = function(code, context, filename, callback) {
             return;
         }
 
-        // Request object by handles
-        client.mirrorObject(res, 3, function(err, mirror) {
+        // Request object in first level by handles.
+        client.mirrorObject(res, 0, function(err, mirror) {
             callback(null, mirror);
             self.resume(true);
         });
