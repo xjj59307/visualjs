@@ -1,6 +1,6 @@
 operator: pattern {
-    exec plus when (this.op === 0),
-    exec minus when (this.op === 1),
-    exec times when (this.op === 2),
-    exec divide when (this.op === 3)
+    exec plus(label = '+') when (this.op === 0),
+    exec minus(label = '-') when (this.op === 1),
+    exec times(label = '*') when (this.op === 2),
+    exec divide(label = '/') when (this.op === 3)
 }

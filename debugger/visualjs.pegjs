@@ -17,7 +17,7 @@ identifier_start
 
 identifier_part
     = identifier_start
-    / characters:[0-9A-Za-z]
+    / characters:[0-9]
 
 reserved_word
     = (
@@ -28,7 +28,7 @@ reserved_word
         / exec_token
         / when_token
       )
-      ! identifier_name
+      !identifier_part
 
 pattern_token = 'pattern' !identifier_part
 action_token = 'action' !identifier_part
@@ -49,34 +49,56 @@ rules
     }
 
 rule
-    = pattern
+    = pattern / action
 
 pattern
     = name:identifier __ ':' __ pattern_token __
-    '{' __ match_clauses:match_clauses __ '}' {
+    '{' __ exec_clauses:exec_clauses __ '}' {
         return {
             type: 'pattern',
             name: name,
-            match_clauses: match_clauses
+            exec_clauses: exec_clauses
         };
     }
 
-match_clauses
-    = head:match_clause tail:(__ ',' __ match_clause)* {
+exec_clauses
+    = head:exec_clause tail:(__ ',' __ exec_clause)* {
         return tail.reduce(function(previous, current) {
             previous.push(current[3]);
             return previous;
         }, [head]);
     }
 
-match_clause
-    = exec_token __ name:identifier __ condition:when_clause? {
+exec_clause
+    = exec_token __ name:identifier __
+    '(' __ environment:assignment_expressions? __ ')' __ condition:when_clause? {
         return {
-            type: 'match_clause',
+            type: 'exec_clause',
             name: name,
+            environment: environment,
             condition: condition 
         };
     }
+
+assignment_expressions
+    = head:assignment_expression tail:(__ ',' __ assignment_expression)* {
+        return tail.reduce(function(previous, current) {
+            previous.push(current[3]);
+            return previous;
+        }, [head]);
+    }
+
+assignment_expression
+    = name:identifier __ '=' __ value:non_over+ {
+        return {
+            type: 'assignment_expression',
+            name: name,
+            value: value.join('')
+        };
+    }
+
+non_over
+    = [^,)]
 
 when_clause
     = when_token __ code:braced {
@@ -91,3 +113,61 @@ braced
 
 non_parenthesis
     = [^()]+
+
+action
+    = name:identifier __ ':' __ action_token __
+    '{' __ action_clauses:action_clauses __ '}' {
+        return {
+            type: 'action',
+            name: name,
+            action_clauses: action_clauses
+        };
+    }
+
+action_clauses
+    = head:action_clause tail:(__ ',' __ action_clause)* {
+        return tail.reduce(function(previous, current) {
+            previous.push(current[3]);
+            return previous;
+        }, [head]); 
+    }
+
+action_clause
+    = create_clause / next_clause
+
+create_clause
+    = create_token __ node:(node_assignment_expression / node_expression) __
+    '(' __ attributes:assignment_expressions __ ')' {
+        return {
+            type: 'create_clause',
+            node: node,
+            attributes: attributes 
+        };
+    }
+
+node_assignment_expression
+    = name:identifier __ '=' __ node_type:node_type {
+        return {
+            type: 'node_assignment_expression',    
+            name: name,
+            node_type: node_type
+        };
+    }
+
+node_expression
+    = identifier
+
+next_clause
+    = next_token __ object:non_over+ {
+        return {
+            type: 'next_clause',
+            object: object.join('')
+        };
+    }
+
+node_type
+    = (
+          'tree_node'
+        / 'tree_edge'
+      )
+      !identifier_part
