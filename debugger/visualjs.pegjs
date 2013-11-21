@@ -2,7 +2,13 @@ start
     = __ program:program __ { return program; } 
 
 program
-    = elements:rules? { return elements !== '' ? elements : []; }
+    = pattern:pattern __ actions:actions {
+        return {
+            type: 'program',
+            pattern: pattern,
+            actions: actions
+        };
+    }
 
 identifier
     = !reserved_word name:identifier_name { return name; }
@@ -40,16 +46,13 @@ when_token = 'when' !identifier_part
 __
     = [ \t\n\r]*
 
-rules
-    = head:rule tail:(__ rule)* {
+actions
+    = head:action tail:(__ action)* {
         return tail.reduce(function(previous, current) {
             previous.push(current[1]);
             return previous;
         }, [head]);
     }
-
-rule
-    = pattern / action
 
 pattern
     = name:identifier __ ':' __ pattern_token __
@@ -89,7 +92,7 @@ assignment_expressions
     }
 
 assignment_expression
-    = name:identifier __ '=' __ value:non_over+ {
+    = name:identifier __ '=' __ value:non_item_terminator+ {
         return {
             type: 'assignment_expression',
             name: name,
@@ -97,8 +100,8 @@ assignment_expression
         };
     }
 
-non_over
-    = [^,)]
+non_item_terminator
+    = [^ ,)}]
 
 when_clause
     = when_token __ code:braced {
@@ -155,10 +158,13 @@ node_assignment_expression
     }
 
 node_expression
-    = identifier
+    = node_type
 
 next_clause
-    = next_token __ object:non_over+ {
+    = next_token __ object:non_item_terminator+ {
+        // Termintor of last line is \n.
+        if (object[object.length - 1] === '\n')
+            object.length -= 1;
         return {
             type: 'next_clause',
             object: object.join('')
@@ -166,8 +172,11 @@ next_clause
     }
 
 node_type
-    = (
+    = node:(
           'tree_node'
         / 'tree_edge'
       )
-      !identifier_part
+    !identifier_part {
+        return node;
+    }
+
