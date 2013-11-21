@@ -1,0 +1,136 @@
+{
+  "type": "program",
+  "pattern": {
+    "type": "pattern",
+    "name": "operator",
+    "exec_clauses": [
+      {
+        "type": "exec_clause",
+        "name": "plus",
+        "environment": [
+          {
+            "type": "assignment_expression",
+            "name": "op",
+            "value": "'+'"
+          },
+          {
+            "type": "assignment_expression",
+            "name": "parent",
+            "value": "node"
+          }
+        ],
+        "condition": {
+          "type": "when_clause",
+          "code": "this.op === 0"
+        }
+      },
+      {
+        "type": "exec_clause",
+        "name": "minus",
+        "environment": [
+          {
+            "type": "assignment_expression",
+            "name": "op",
+            "value": "'-'"
+          },
+          {
+            "type": "assignment_expression",
+            "name": "parent",
+            "value": "node"
+          }
+        ],
+        "condition": {
+          "type": "when_clause",
+          "code": "this.op === 1"
+        }
+      },
+      {
+        "type": "exec_clause",
+        "name": "times",
+        "environment": [
+          {
+            "type": "assignment_expression",
+            "name": "op",
+            "value": "'*'"
+          },
+          {
+            "type": "assignment_expression",
+            "name": "parent",
+            "value": "node"
+          }
+        ],
+        "condition": {
+          "type": "when_clause",
+          "code": "this.op === 2"
+        }
+      },
+      {
+        "type": "exec_clause",
+        "name": "divide",
+        "environment": [
+          {
+            "type": "assignment_expression",
+            "name": "op",
+            "value": "'/'"
+          },
+          {
+            "type": "assignment_expression",
+            "name": "parent",
+            "value": "node"
+          }
+        ],
+        "condition": {
+          "type": "when_clause",
+          "code": "this.op === 3"
+        }
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "action",
+      "name": "plus",
+      "action_clauses": [
+        {
+          "type": "create_clause",
+          "node": {
+            "type": "node_assignment_expression",
+            "name": "node",
+            "node_type": "tree_node"
+          },
+          "attributes": [
+            {
+              "type": "assignment_expression",
+              "name": "label",
+              "value": "op"
+            }
+          ]
+        },
+        {
+          "type": "create_clause",
+          "node": "tree_edge",
+          "attributes": [
+            {
+              "type": "assignment_expression",
+              "name": "from",
+              "value": "parent"
+            },
+            {
+              "type": "assignment_expression",
+              "name": "to",
+              "value": "node"
+            }
+          ]
+        },
+        {
+          "type": "next_clause",
+          "object": "this.left"
+        },
+        {
+          "type": "next_clause",
+          "object": "this.right"
+        }
+      ]
+    }
+  ]
+}

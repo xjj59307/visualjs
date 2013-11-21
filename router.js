@@ -15,7 +15,7 @@ exports.graph = function(req, res) {
 };
 
 // request object evaluation
-exports.eval = function(req, res) {
+exports.evaluate = function(req, res) {
     var expr = req.query.expr;
     browserInterface.evaluate(expr, function(obj) {
         res.json(obj);

@@ -38,7 +38,7 @@ var server = http.createServer(app).listen(app.get('port'), function() {
 // map url to handlers
 app.get('/', router.index);
 app.get('/graph-demo.html', router.graph);
-app.get('/eval', router.eval);
+app.get('/eval', router.evaluate);
 
 // create socket.io connection
 io = io.listen(server);

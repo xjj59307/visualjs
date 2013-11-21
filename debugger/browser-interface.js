@@ -177,7 +177,7 @@ BrowserInterface.prototype.isSyntaxError = function(err) {
 };
 
 // Try to evaluate both expressions e.g. '{ a : 1 }' and statements e.g. 'for (var i = 0; i < 10; i++) console.log(i);'
-// First attempt to eval as expression with parens. This catches '{a : 1}' properly.
+// First attempt to evaluate as expression with parens. This catches '{a : 1}' properly.
 BrowserInterface.prototype.evaluate = function(code, callback, isStmt) {
     if (!this.requireConnection()) return;
 
