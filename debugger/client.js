@@ -268,7 +268,7 @@ Client.prototype.mirrorObject = function(handle, depth, cb) {
                     });
                     cb(null, mirror);
                 }
-            };
+            }
         });
         return;
     } else if (handle.type === 'function') {
@@ -298,21 +298,21 @@ Client.prototype.requireContinue = function(cb) {
 };
 
 Client.prototype.setBreakpoint = function(req, cb) {
-    var req = {
+    var command = {
         command: 'setbreakpoint',
         arguments: req
     };
 
-    this.send(req, cb);
+    this.send(command, cb);
 };
 
 Client.prototype.clearBreakpoint = function(req, cb) {
-    var req = {
+    var command = {
         command: 'clearbreakpoint',
         arguments: req
     };
 
-    this.send(req, cb);
+    this.send(command, cb);
 };
 
 Client.prototype.continue = function(cb) {

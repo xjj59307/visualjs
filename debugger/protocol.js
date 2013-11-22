@@ -93,7 +93,6 @@ Protocol.prototype._execute = function(data) {
             break;
         default:
             throw new Error('Unknown state');
-            break;
     }
 };
 
@@ -126,7 +125,7 @@ Protocol.prototype.connectToNode = function(callback) {
     process.stdout.write('connecting\n');
     var setupConnection = function() {
         self.connect(self.port, self.host, callback);
-    }
+    };
     setupConnection();
 };
 

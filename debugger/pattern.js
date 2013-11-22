@@ -1,4 +1,4 @@
-var _ = require('undersocre');
+var _ = require('underscore');
 
 var Match = function(actionName, conditionCode) {
     this.actionName = actionName; 
@@ -10,8 +10,15 @@ Match.prototype.addEnvironmentVariable = function(name, value){
     this.environment[name] = value;
 };
 
-var Pattern = function() {
+var Pattern = function(tree) {
+    var self = this;
+
+    this.name = tree.name;
     this.matches = [];
+
+    _.each(tree.exec_clauses, function(exec_clause) {
+        self.parseExecClause(exec_clause);
+    });
 };
 
 Pattern.prototype.parseExecClause = function(tree) {
@@ -25,3 +32,5 @@ Pattern.prototype.parseExecClause = function(tree) {
 
     this.matches.push(match);
 };
+
+module.exports = Pattern;

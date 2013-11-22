@@ -478,6 +478,7 @@ Interface.prototype.setBreakpoint = function(script, line, condition, slient) {
     if (!this.requireConnection()) return;
 
     var self = this,
+        request,
         scriptId,
         ambiguous;
 
@@ -495,7 +496,7 @@ Interface.prototype.setBreakpoint = function(script, line, condition, slient) {
 
     if (/\(\)$/.test(script)) {
         // setBreakpoint('functionname()');
-        var request = {
+        request = {
             type: 'function',
             target: script.replace(/\(\)$/, ''),
             condition: condition
@@ -520,7 +521,7 @@ Interface.prototype.setBreakpoint = function(script, line, condition, slient) {
         if (ambiguous) return this.error('Script name is ambiguous');
         if (line <= 0) return this.error('Line should be a positive value');
 
-        var request = {
+        request = {
             type: 'scriptId',
             target: scriptId,
             line: line - 1,
