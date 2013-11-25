@@ -1,36 +1,36 @@
 var _ = require('underscore');
 
-var CreateAction = function(sub_action_node) {
+var CreateAction = function(subActionNode) {
     var self = this;
 
-    this.name = _.has(sub_action_node.node, 'name') ?
-        sub_action_node.node.name : null;
-    this.node_type = sub_action_node.node.node_type;
+    this.name = _.has(subActionNode.node, 'name') ?
+        subActionNode.node.name : null;
+    this.node_type = subActionNode.node.node_type;
     this.attributes = {};
 
-    _.each(sub_action_node.attributes, function(attribute) {
+    _.each(subActionNode.attributes, function(attribute) {
         self.attributes[attribute.name] = attribute.value;   
     });
 };
 
-var NextAction = function(sub_action_node) {
-    this.next = sub_action_node.object; 
+var NextAction = function(subActionNode) {
+    this.next = subActionNode.object; 
 };
 
-var Action = function(action_node) {
+var Action = function(actionNode) {
     var self = this;
 
-    this.name = action_node.name;
-    this.create_actions = [];
-    this.next_actions = [];
+    this.name = actionNode.name;
+    this.createActions = [];
+    this.nextActions = [];
 
-    _.each(action_node.action_clauses, function(sub_action_node) {
-        switch (sub_action_node.type) {
+    _.each(actionNode.action_clauses, function(subActionNode) {
+        switch (subActionNode.type) {
             case 'create_clause':
-                self.create_actions.push(new CreateAction(sub_action_node));
+                self.createActions.push(new CreateAction(subActionNode));
                 break;
             case 'next_clause':
-                self.next_actions.push(new NextAction(sub_action_node));
+                self.nextActions.push(new NextAction(subActionNode));
                 break;
             default:
                 throw new Error('Unknown type of action clause.');

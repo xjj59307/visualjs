@@ -3,27 +3,27 @@ var Action = require('../debugger/action');
 
 describe('Action', function() {
     var tree = require('../debugger/ast.json');
-    var actions = _.reduce(tree.actions, function(actions, action_node) {
-        actions.push(new Action(action_node));
+    var actions = _.reduce(tree.actions, function(actions, actionNode) {
+        actions.push(new Action(actionNode));
         return actions;
     }, []);
-    var plus_action = _.first(actions);
+    var plusAction = _.first(actions);
 
     it('plus action: name', function() {
-        expect(plus_action.name).toBe('plus');
+        expect(plusAction.name).toBe('plus');
     });
 
     it('plus action: create action', function() {
-        var first_create_sub_action = _.first(plus_action.create_actions);
-        expect(first_create_sub_action.name).toBe('node');
-        expect(first_create_sub_action.node_type).toBe('tree_node');
+        var firstCreateAction = _.first(plusAction.createActions);
+        expect(firstCreateAction.name).toBe('node');
+        expect(firstCreateAction.node_type).toBe('tree_node');
 
         var attributes = { label: 'op' };
-        expect(first_create_sub_action.attributes).toEqual(attributes);
+        expect(firstCreateAction.attributes).toEqual(attributes);
     });
 
     it('plus action: next aciton', function() {
-        var first_next_action = _.first(plus_action.next_actions);
-        expect(first_next_action.next).toBe('this.left');
+        var firstNextAction = _.first(plusAction.nextActions);
+        expect(firstNextAction.next).toBe('this.left');
     });
 });
