@@ -1,36 +1,26 @@
 var _ = require('underscore');
 
-var Match = function(actionName, conditionCode) {
-    this.actionName = actionName; 
-    this.conditionCode = conditionCode;
-    this.environment = {};
-};
-
-Match.prototype.addEnvironmentVariable = function(name, value){
-    this.environment[name] = value;
-};
-
-var Pattern = function(tree) {
+var Match = function(exec_node) {
     var self = this;
 
-    this.name = tree.name;
-    this.matches = [];
+    this.actionName = exec_node.name;
+    this.conditionCode = exec_node.condition.code;
+    this.environment = {};
 
-    _.each(tree.exec_clauses, function(exec_clause) {
-        self.parseExecClause(exec_clause);
+    _.each(exec_node.environment, function(variable) {
+        self.environment[variable.name] = variable.value;
     });
 };
 
-Pattern.prototype.parseExecClause = function(tree) {
-    var actionName = tree.name;
-    var conditionCode = tree.condition.code;
-    var match = new Match(actionName, conditionCode);
+var Pattern = function(pattern_node) {
+    var self = this;
 
-    _.each(tree.environment, function(variable) {
-        match.addEnvironmentVariable(variable.name, variable.value);
+    this.name = pattern_node.name;
+    this.matches = [];
+
+    _.each(pattern_node.exec_clauses, function(exec_node) {
+        self.matches.push(new Match(exec_node));
     });
-
-    this.matches.push(match);
 };
 
 module.exports = Pattern;
