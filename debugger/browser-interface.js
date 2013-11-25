@@ -65,7 +65,8 @@ var BrowserInterface = function() {
 
     this.stdin = process.stdin;
     this.stdout = process.stdout;
-    this.exprSet = new buckets.Set(); // expression list to evluate when stepping through
+    // expression list to evluate when stepping through
+    this.exprSet = new buckets.Set();
     this.jobQueue = new JobQueue();
     addListeners(this, this.jobQueue);
 
@@ -164,20 +165,26 @@ BrowserInterface.prototype.handleBreak = function(res) {
     });
 };
 
-// Returns `true` if "err" is a SyntaxError, `false` otherwise. This function filters out false positives likes JSON.parse() errors and RegExp syntax errors.
+// Returns `true` if "err" is a SyntaxError, `false` otherwise.
+// This function filters out false positives likes JSON.parse() errors and
+// RegExp syntax errors.
 BrowserInterface.prototype.isSyntaxError = function(err) {
     // Convert error to string
     err = err && (err.stack || err.toString());
-    return err && err.match(/^SyntaxError/) &&
+    return err &&
+        err.match(/^SyntaxError/) &&
         // RegExp syntax error
         !err.match(/^SyntaxError: Invalid regular expression/) &&
         !err.match(/^SyntaxError: Invalid flags supplied to RegExp constructor/) &&
         // JSON.parse() error
-        !(err.match(/^SyntaxError: Unexpected (token .*|end of input)/) && err.match(/\n    at Object.parse \(native\)\n/));
+        !(err.match(/^SyntaxError: Unexpected (token .*|end of input)/) &&
+          err.match(/\n    at Object.parse \(native\)\n/));
 };
 
-// Try to evaluate both expressions e.g. '{ a : 1 }' and statements e.g. 'for (var i = 0; i < 10; i++) console.log(i);'
-// First attempt to evaluate as expression with parens. This catches '{a : 1}' properly.
+// Try to evaluate both expressions e.g. '{ a : 1 }' and
+// statements e.g. 'for (var i = 0; i < 10; i++) console.log(i);'
+// First attempt to evaluate as expression with parens.
+// This catches '{a : 1}' properly.
 BrowserInterface.prototype.evaluate = function(code, callback, isStmt) {
     if (!this.requireConnection()) return;
 
