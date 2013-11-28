@@ -1,8 +1,8 @@
 operator: pattern {
-    exec plus(op = '+', parent = node) when (this.op === 0),
-    exec minus(op = '-', parent = node) when (this.op === 1),
-    exec times(op = '*', parent = node) when (this.op === 2),
-    exec divide(op = '/', parent = node) when (this.op === 3)
+    exec plus(op = '+', parent = node) when (self.op),
+    exec minus(op = '-', parent = node) when (self.op),
+    exec times(op = '*', parent = node) when (self.op),
+    exec divide(op = '/', parent = node) when (self.op)
 }
 
 plus: action {

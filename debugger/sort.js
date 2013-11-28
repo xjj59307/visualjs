@@ -1,3 +1,8 @@
+var root = { op: 0 };
+var left = { value: 'left' };
+var right = { value: 'right' };
+
+/*
 var data = [];
 
 (function() {
@@ -12,6 +17,7 @@ var data = [];
 data.sort(function(a, b) {
     return b.value - a.value;
 });
+*/
 
 /*
 var data = [],

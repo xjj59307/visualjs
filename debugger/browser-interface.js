@@ -1,10 +1,11 @@
-var Client = require('./client'),
-    util = require('util'),
-    tool = require('./tool'),
-    JobQueue = require('./job-queue'),
-    buckets = require('buckets'),
-    JOB = require('./enum').JOB;
-    TASK = require('./enum').TASK;
+var util = require('util');
+var buckets = require('buckets');
+var Client = require('./client');
+var tool = require('./tool');
+var JobQueue = require('./job-queue');
+var JOB = require('./enum').JOB;
+var TASK = require('./enum').TASK;
+var Animator = require('./animator');
 
 var  addListeners = function(browserInterface, jobQueue) {
     var handleStepJob = function(task) {
@@ -106,6 +107,11 @@ BrowserInterface.prototype.finishTask = function(task) {
 };
 
 BrowserInterface.prototype.addExpr = function(expr) {
+    // TODO: Code about Animator here is temporary.
+    var fs = require('fs');
+    var code = '' + fs.readFileSync('./debugger/math.visjs');
+    var animator = new Animator(expr, code, this);
+
     this.exprSet.add(expr);
 };
 
