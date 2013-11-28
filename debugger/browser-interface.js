@@ -7,7 +7,7 @@ var JOB = require('./enum').JOB;
 var TASK = require('./enum').TASK;
 var Animator = require('./animator');
 
-var  addListeners = function(browserInterface, jobQueue) {
+var addListeners = function(browserInterface, jobQueue) {
     var handleStepJob = function(task) {
         jobQueue.addTask(task);
         jobQueue.addTask(TASK.REQUIRE_SOURCE);
@@ -77,13 +77,13 @@ var BrowserInterface = function() {
     this.client.currentColumn = 0;
 
     this.client.on('break', function(res) {
-        self.handleBreak(res);
+        self._handleBreak(res);
     });
 
     // TODO: handle exception
     this.client.on('exception', function(res) {
-        // self.handleBreak(res);
-        self.error('unknown exception');
+        // self._handleBreak(res);
+        self._error('unknown exception');
     });
 
     this.client.connectToNode();
@@ -119,13 +119,13 @@ BrowserInterface.prototype.getExprList = function() {
     return this.exprSet.toArray();
 };
 
-BrowserInterface.prototype.clearline = function() {
+BrowserInterface.prototype._clearLine = function() {
     this.stdout.cursorTo(0);
     this.stdout.clearLine(1);
 };
 
-BrowserInterface.prototype.print = function(text, oneline) {
-    this.clearline();
+BrowserInterface.prototype._print = function(text, oneline) {
+    this._clearLine();
 
     this.stdout.write(typeof text === 'string' ? text : util.inspect(text));
 
@@ -134,19 +134,19 @@ BrowserInterface.prototype.print = function(text, oneline) {
     }
 };
 
-BrowserInterface.prototype.error = function(text) {
-    this.print(text);
+BrowserInterface.prototype._error = function(text) {
+    this._print(text);
 };
 
-BrowserInterface.prototype.requireConnection = function() {
+BrowserInterface.prototype._requireConnection = function() {
     if (!this.client) {
-        this.error('Connection isn\'t established');
+        this._error('Connection isn\'t established');
         return false;
     }
     return true;
 };
 
-BrowserInterface.prototype.handleBreak = function(res) {
+BrowserInterface.prototype._handleBreak = function(res) {
     var self = this;
 
     this.client.currentLine = res.sourceLine;
@@ -174,7 +174,7 @@ BrowserInterface.prototype.handleBreak = function(res) {
 // Returns `true` if "err" is a SyntaxError, `false` otherwise.
 // This function filters out false positives likes JSON.parse() errors and
 // RegExp syntax errors.
-BrowserInterface.prototype.isSyntaxError = function(err) {
+var isSyntaxError = function(err) {
     // Convert error to string
     err = err && (err.stack || err.toString());
     return err &&
@@ -192,7 +192,7 @@ BrowserInterface.prototype.isSyntaxError = function(err) {
 // First attempt to evaluate as expression with parens.
 // This catches '{a : 1}' properly.
 BrowserInterface.prototype.evaluate = function(code, callback, isStmt) {
-    if (!this.requireConnection()) return;
+    if (!this._requireConnection()) return;
 
     var self = this,
         client = this.client,
@@ -200,8 +200,8 @@ BrowserInterface.prototype.evaluate = function(code, callback, isStmt) {
 
     // Request remote evaluation globally or in current frame
     client.requireFrameEval(isStmt ? code : "(" + code + ")", frame, function(err, res) {
-        if (err && !self.isSyntaxError(err)) {
-            self.error(err);
+        if (err && !isSyntaxError(err)) {
+            self._error(err);
             return;
         }
 
@@ -221,7 +221,7 @@ BrowserInterface.prototype.evaluate = function(code, callback, isStmt) {
 // Get running code chunk around current line
 // TODO: v8 will return whole file even I only require current_line +/- delta
 BrowserInterface.prototype.requireSource = function(callback) {
-    if (!this.requireConnection()) return;
+    if (!this._requireConnection()) return;
 
     var delta = 5;
 
@@ -232,7 +232,7 @@ BrowserInterface.prototype.requireSource = function(callback) {
 
     client.requireSource(from, to, function(err, res) {
         if (err || !res) {
-            self.error('You can\'t list source code right now');
+            self._error('You can\'t list source code right now');
             return;
         }
 
@@ -255,30 +255,30 @@ BrowserInterface.prototype.requireSource = function(callback) {
 };
 
 // Step commands generator
-BrowserInterface.prototype.stepThrough = function(type, count, callback) {
-    if (!this.requireConnection()) return;
+BrowserInterface.prototype._stepThrough = function(type, count, callback) {
+    if (!this._requireConnection()) return;
 
     var self = this;
 
     self.client.step(type, count, function(err, res) {
-        if (err) self.error(err);
+        if (err) self._error(err);
         if (callback) callback();
     });
 };
 
 // Step in
 BrowserInterface.prototype.in = function(callback) {
-    this.stepThrough('in', 1, callback);
+    this._stepThrough('in', 1, callback);
 };
 
 // Jump to next command
 BrowserInterface.prototype.over = function(callback) {
-    this.stepThrough('next', 1, callback);
+    this._stepThrough('next', 1, callback);
 };
 
 // Step out
 BrowserInterface.prototype.out = function(callback) {
-    this.stepThrough('out', 1, callback);
+    this._stepThrough('out', 1, callback);
 };
 
 module.exports = BrowserInterface;
