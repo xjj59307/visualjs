@@ -98,6 +98,10 @@ BrowserInterface.prototype.getSocket = function(socket) {
     return this.socket;
 };
 
+BrowserInterface.prototype.getClient = function() {
+    return this.client;
+};
+
 BrowserInterface.prototype.addJob = function(job) {
     this.jobQueue.addJob(job);
 };

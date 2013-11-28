@@ -49,13 +49,28 @@ Animator.prototype._iterate = function(object, callback) {
     var iterator = function(match, _callback) {
         var code = match.conditionCode;
         self.browserInterface.evaluate(code, function(result) {
-            if (result) _callback(true);
-            else _callback(false);
+            if (typeof result === "boolean") _callback(false);
+            _callback(result);
         });
     };
 
     async.filter(this.pattern.matches, iterator, function(matched) {
         // Construct visual object based on matched exec action.
+        var client = self.getClient();           
+        var frame = client.currentFrame;
+        var environment = matched.environment;
+        var action = _.find(this.actions, function(action) {
+            return action.name === matched.actionName;  
+        });
+
+        client.requireFrameEval(self.root, frame, function(err, handle) {
+            if (err || handle.type !== 'object')
+                callback(err || 'Visual object is only based on object.');  
+
+            var visualObject = new VisualObject(handle, environment, action);
+            self.visualObjects.push(visualObject);
+            callback();
+        });
     });
 };
 
