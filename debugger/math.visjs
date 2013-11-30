@@ -1,13 +1,34 @@
 operator: pattern {
-    exec plus(op = '+', parent = node) when (self.op),
-    exec minus(op = '-', parent = node) when (self.op),
-    exec times(op = '*', parent = node) when (self.op),
-    exec divide(op = '/', parent = node) when (self.op)
+    exec plus(op = '+', parent = node) when (self.op === 0),
+    exec minus(op = '-', parent = node) when (self.op === 1),
+    exec times(op = '*', parent = node) when (self.op === 2),
+    exec divide(op = '/', parent = node) when (self.op === 3)
 }
 
 plus: action {
     create node=tree_node(label = op),
     create tree_edge(from = parent, to = node),
-    next this.left,
-    next this.right
+    next self.left,
+    next self.right
+}
+
+minus: action {
+    create node=tree_node(label = op),
+    create tree_edge(from = parent, to = node),
+    next self.left,
+    next self.right
+}
+
+times: action {
+    create node=tree_node(label = op),
+    create tree_edge(from = parent, to = node),
+    next self.left,
+    next self.right
+}
+
+divide: action {
+    create node=tree_node(label = op),
+    create tree_edge(from = parent, to = node),
+    next self.left,
+    next self.right
 }

@@ -23,55 +23,74 @@ var Animator = function(root, code, browserInterface) {
     return this.getInitialPlot();
 };
 
-Animator.prototype.getInitialPlot = function() {
+Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
     var self = this;
 
-    // Bind this to eval environment.
-    var code = 'self = ' + this.root;
-    var evaluateTask = function(callback) {
-        self.browserInterface.evaluate(code, function() {
-            callback();
-        });
+    // Create job queue for async iteration.
+    var queue = async.queue(function(object, callback) {
+        iterate(object, callback);
+    });
+    queue.drain = function() {
+        getInitialPlotCallback();
     };
-    var iterateTask = function(callback) {
-        self._iterate(self.root, callback);
-    };
+    queue.push(self.root, function(error) {
+        if (error) throw new Error(error);
+    });
 
-    async.series([evaluateTask, iterateTask]);
-};
-
-Animator.prototype.getPlotUpdate = function() {
-
-};
-
-Animator.prototype._iterate = function(object, callback) {
-    var self = this;
-    var iterator = function(match, _callback) {
+    // Evaluate condition code.
+    var iterator = function(match, callback) {
         var code = match.conditionCode;
         self.browserInterface.evaluate(code, function(result) {
-            if (typeof result === "boolean") _callback(false);
-            _callback(result);
+            // Call callback to emit termination signal.
+            if (typeof result !== "boolean") callback(false);
+            else callback(result);
         });
     };
 
-    async.filter(this.pattern.matches, iterator, function(matched) {
-        // Construct visual object based on matched exec action.
-        var client = self.getClient();           
-        var frame = client.currentFrame;
-        var environment = matched.environment;
-        var action = _.find(this.actions, function(action) {
-            return action.name === matched.actionName;  
-        });
+    function iterate(object, iterateCallback) {
+        // Bind local self keyword to eval environment.
+        self.browserInterface.evaluate('self = ' + object, function() {
+            // Filter exec actions based on its condition code.
+            async.filter(self.pattern.matches, iterator, function(matchedes) {
+                _.each(matchedes, function(matched) {
+                    var client = self.browserInterface.getClient();           
+                    var frame = client.currentFrame;
 
-        client.requireFrameEval(self.root, frame, function(err, handle) {
-            if (err || handle.type !== 'object')
-                callback(err || 'Visual object is only based on object.');  
+                    // Get object handle of current object.
+                    client.requireFrameEval('self', frame, function(err, handle) {
+                        // Stop iteration when type of object isn't 'object'.
+                        if (err || handle.type !== 'object') {
+                            iterateCallback(err);  
+                            return;
+                        }
 
-            var visualObject = new VisualObject(handle, environment, action);
-            self.visualObjects.push(visualObject);
-            callback();
+                        // Get action to be executed.
+                        var action = _.find(self.actions, function(action) {
+                            return action.name === matched.actionName;  
+                        });
+
+                        // Create visual object and push it back.
+                        var visualObject = new VisualObject(
+                            handle,
+                            matched.environment,
+                            action.createActions
+                        );
+                        self.visualObjects.push(visualObject);
+
+                        // Create new iteration task of next actions.
+                        _.each(action.nextActions, function(action) {
+                            queue.push(action.next, function(error) {
+                                if (error) throw new Error(error);
+                            });
+                        });
+
+                        // Call callback to emit termination signal.
+                        iterateCallback();
+                    });
+                });
+            });
         });
-    });
+    };
 };
 
 module.exports = Animator;

@@ -1,6 +1,7 @@
-var root = { op: 0 };
-var left = { value: 'left' };
-var right = { value: 'right' };
+var left = { op: 2 };
+var right = { op: 3 };
+var root = { op: 0, left: left, right: right};
+console.log(root);
 
 /*
 var data = [];
