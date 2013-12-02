@@ -25,6 +25,8 @@ var Animator = function(root, code, browserInterface) {
 
 Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
     var self = this;
+    var firstTask = true;
+    var evaluate = self.browserInterface.evaluate.bind(self.browserInterface);
 
     // Create job queue for async iteration.
     var queue = async.queue(function(object, callback) {
@@ -33,40 +35,51 @@ Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
     queue.drain = function() {
         getInitialPlotCallback();
     };
-    queue.push(self.root, function(error) {
-        if (error) throw new Error(error);
+    queue.push(self.root, function(err) {
+        if (err) throw new Error(err);
     });
 
     // Evaluate condition code.
     var iterator = function(match, callback) {
         var code = match.conditionCode;
-        self.browserInterface.evaluate(code, function(result) {
+        evaluate(code, function(result) {
             // Call callback to emit termination signal.
-            if (typeof result !== "boolean") callback(false);
+            if (typeof result !== 'boolean') callback(false);
             else callback(result);
         });
     };
 
     function iterate(object, iterateCallback) {
+        var firstStore = function(callback) { callback(); }
+        var store = function(callback) {
+            var code = 'parent = self';
+            evaluate(code, function() { callback(); });
+        };
+
         // Bind local self keyword to eval environment.
-        self.browserInterface.evaluate('self = ' + object, function() {
+        var bind = function(callback) {
+            var code = 'self = ' + object;
+            evaluate(code, function() { callback(); });
+        };
+
+        var match = function(callback) {
             // Filter exec actions based on its condition code.
             async.filter(self.pattern.matches, iterator, function(matchedes) {
                 _.each(matchedes, function(matched) {
-                    var client = self.browserInterface.getClient();           
+                    var client = self.browserInterface.getClient();
                     var frame = client.currentFrame;
 
                     // Get object handle of current object.
                     client.requireFrameEval('self', frame, function(err, handle) {
                         // Stop iteration when type of object isn't 'object'.
                         if (err || handle.type !== 'object') {
-                            iterateCallback(err);  
+                            callback(err);
                             return;
                         }
 
                         // Get action to be executed.
                         var action = _.find(self.actions, function(action) {
-                            return action.name === matched.actionName;  
+                            return action.name === matched.actionName;
                         });
 
                         // Create visual object and push it back.
@@ -79,18 +92,35 @@ Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
 
                         // Create new iteration task of next actions.
                         _.each(action.nextActions, function(action) {
-                            queue.push(action.next, function(error) {
-                                if (error) throw new Error(error);
+                            queue.push(action.next, function(err) {
+                                if (err) throw new Error(err);
                             });
                         });
 
                         // Call callback to emit termination signal.
-                        iterateCallback();
+                        callback();
                     });
                 });
             });
-        });
-    };
+        };
+
+        var firstRestore = function(callback) {
+            firstTask = false;
+            callback();
+        }
+        var restore = function(callback) {
+            var code = 'self = parent';
+            evaluate(code, function() { callback(); });
+        };
+
+        // Execute above processes seriesly.
+        var finial = function(err) { iterateCallback(err); }
+
+        if (firstTask)
+            async.series([firstStore, bind, match, firstRestore], finial);
+        else 
+            async.series([store, bind, match, restore], finial);
+    }
 };
 
 module.exports = Animator;
