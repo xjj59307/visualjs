@@ -1,4 +1,5 @@
 var _ = require('underscore');
+var util = require('util');
 var async = require('async');
 var visualjs = require('./visualjs');
 var Pattern = require('./pattern');
@@ -23,19 +24,25 @@ var Animator = function(root, code, browserInterface) {
     return this.getInitialPlot();
 };
 
+// TODO: Solve the problem of name collision.
 Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
     var self = this;
-    var firstTask = true;
+    var root = true;
+    var taskIndex = 0;
     var evaluate = self.browserInterface.evaluate.bind(self.browserInterface);
 
     // Create job queue for async iteration.
-    var queue = async.queue(function(object, callback) {
-        iterate(object, callback);
+    var queue = async.queue(function(task, callback) {
+        iterate(task, callback);
     });
     queue.drain = function() {
         getInitialPlotCallback();
     };
-    queue.push(self.root, function(err) {
+    var rootTask = {
+        index: taskIndex,
+        object: self.root
+    };
+    queue.push(rootTask, function(err) {
         if (err) throw new Error(err);
     });
 
@@ -49,17 +56,27 @@ Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
         });
     };
 
-    function iterate(object, iterateCallback) {
-        var firstStore = function(callback) { callback(); }
-        var store = function(callback) {
-            var code = 'parent = self';
-            evaluate(code, function() { callback(); });
+    function iterate(task, iterateCallback) {
+        var roll = function(callback) {
+            var code = 'parents = nextParents.slice(0)';
+            evaluate(code, function() {
+                taskIndex = 0;
+                callback();
+            });
         };
 
         // Bind local self keyword to eval environment.
         var bind = function(callback) {
-            var code = 'self = ' + object;
-            evaluate(code, function() { callback(); });
+            var code;
+
+            if (root) {
+                code = util.format('self = %s, nextParents = [], handles = {}', task.object);
+                root = false;
+            } else {
+                code = util.format('self = parents[%d], self = %s', task.index, task.object);
+            }
+
+            evaluate(code, function(obj) { callback(); });
         };
 
         var match = function(callback) {
@@ -84,42 +101,52 @@ Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
 
                         // Create visual object and push it back.
                         var visualObject = new VisualObject(
-                            handle,
+                            handle.handle,
                             matched.environment,
                             action.createActions
                         );
                         self.visualObjects.push(visualObject);
 
                         // Create new iteration task of next actions.
-                        _.each(action.nextActions, function(action) {
-                            queue.push(action.next, function(err) {
-                                if (err) throw new Error(err);
-                            });
-                        });
+                        var nextTasks = _.map(action.nextActions,
+                            function(nextAction) {
+                                var nextTask = {
+                                    index: taskIndex++,
+                                    object: nextAction.next
+                                };
+                                queue.push(nextTask, function(err) {
+                                    if (err) throw new Error(err);
+                                });
+
+                                return nextTask;
+                            }
+                        );
 
                         // Call callback to emit termination signal.
-                        callback();
+                        evaluate(util.format('handles[%d] = self', handle.handle), function() {
+                            async.each(nextTasks, function(nextTask, _callback) {
+                                var code = util.format(
+                                    'nextParents[%d] = handles[%d]',
+                                    nextTask.index, handle.handle
+                                );
+                                evaluate(code, function() {
+                                    _callback();
+                                });
+                            }, function() { callback(); });
+                        });
                     });
                 });
             });
         };
 
-        var firstRestore = function(callback) {
-            firstTask = false;
-            callback();
-        }
-        var restore = function(callback) {
-            var code = 'self = parent';
-            evaluate(code, function() { callback(); });
-        };
-
         // Execute above processes seriesly.
         var finial = function(err) { iterateCallback(err); }
+        var tasks;
 
-        if (firstTask)
-            async.series([firstStore, bind, match, firstRestore], finial);
-        else 
-            async.series([store, bind, match, restore], finial);
+        if (!root && task.index === 0) tasks = [roll, bind, match];
+        else tasks = [bind, match];    
+
+        async.series(tasks, finial);
     }
 };
 
