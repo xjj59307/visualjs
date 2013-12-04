@@ -83,7 +83,7 @@ var BrowserInterface = function() {
     // TODO: handle exception
     this.client.on('exception', function(res) {
         // self._handleBreak(res);
-        self._error('unknown exception');
+        throw new Error('unknown exception');
     });
 
     this.client.connectToNode();
@@ -123,30 +123,8 @@ BrowserInterface.prototype.getExprList = function() {
     return this.exprSet.toArray();
 };
 
-BrowserInterface.prototype._clearLine = function() {
-    this.stdout.cursorTo(0);
-    this.stdout.clearLine(1);
-};
-
-BrowserInterface.prototype._print = function(text, oneline) {
-    this._clearLine();
-
-    this.stdout.write(typeof text === 'string' ? text : util.inspect(text));
-
-    if (oneline !== true) {
-        this.stdout.write('\n');
-    }
-};
-
-BrowserInterface.prototype._error = function(text) {
-    this._print(text);
-};
-
 BrowserInterface.prototype._requireConnection = function() {
-    if (!this.client) {
-        this._error('Connection isn\'t established');
-        return false;
-    }
+    if (!this.client) throw new Error('Connection isn\'t established');
     return true;
 };
 
@@ -175,22 +153,6 @@ BrowserInterface.prototype._handleBreak = function(res) {
     });
 };
 
-// Returns `true` if "err" is a SyntaxError, `false` otherwise.
-// This function filters out false positives likes JSON.parse() errors and
-// RegExp syntax errors.
-var isSyntaxError = function(err) {
-    // Convert error to string
-    err = err && (err.stack || err.toString());
-    return err &&
-        err.match(/^SyntaxError/) &&
-        // RegExp syntax error
-        !err.match(/^SyntaxError: Invalid regular expression/) &&
-        !err.match(/^SyntaxError: Invalid flags supplied to RegExp constructor/) &&
-        // JSON.parse() error
-        !(err.match(/^SyntaxError: Unexpected (token .*|end of input)/) &&
-          err.match(/\n    at Object.parse \(native\)\n/));
-};
-
 // Try to evaluate both expressions e.g. '{ a : 1 }' and
 // statements e.g. 'for (var i = 0; i < 10; i++) console.log(i);'
 // First attempt to evaluate as expression with parens.
@@ -204,10 +166,7 @@ BrowserInterface.prototype.evaluate = function(code, callback, isStmt) {
 
     // Request remote evaluation globally or in current frame
     client.requireFrameEval(isStmt ? code : "(" + code + ")", frame, function(err, res) {
-        if (err && !isSyntaxError(err)) {
-            self._error(err);
-            return;
-        }
+        if (err) throw new Error(err);
 
         if (typeof res === 'function' &&
             /^[\r\n\s]*function/.test(code) ||
@@ -235,10 +194,8 @@ BrowserInterface.prototype.requireSource = function(callback) {
         to = client.currentLine + delta + 1;
 
     client.requireSource(from, to, function(err, res) {
-        if (err || !res) {
-            self._error('You can\'t list source code right now');
-            return;
-        }
+        if (err || !res)
+            throw new Error('You can\'t list source code right now');
 
         // delete header and tail of node.js wrapper
         var source = res.source,
@@ -265,7 +222,7 @@ BrowserInterface.prototype._stepThrough = function(type, count, callback) {
     var self = this;
 
     self.client.step(type, count, function(err, res) {
-        if (err) self._error(err);
+        if (err) throw new Error(err);
         if (callback) callback();
     });
 };
