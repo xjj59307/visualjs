@@ -6,6 +6,7 @@ var JobQueue = require('./job-queue');
 var JOB = require('./enum').JOB;
 var TASK = require('./enum').TASK;
 var Animator = require('./animator');
+var colors = require('colors');
 
 var addListeners = function(browserInterface, jobQueue) {
     var handleStepJob = function(task) {
@@ -82,7 +83,6 @@ var BrowserInterface = function() {
 
     // TODO: handle exception
     this.client.on('exception', function(res) {
-        // self._handleBreak(res);
         throw new Error('unknown exception');
     });
 
@@ -124,7 +124,10 @@ BrowserInterface.prototype.getExprList = function() {
 };
 
 BrowserInterface.prototype._requireConnection = function() {
-    if (!this.client) throw new Error('Connection isn\'t established');
+    if (!this.client) {
+        console.log('Connection isn\'t established'.red);  
+        return false;
+    }
     return true;
 };
 
@@ -153,6 +156,22 @@ BrowserInterface.prototype._handleBreak = function(res) {
     });
 };
 
+// Returns `true` if "err" is a SyntaxError, `false` otherwise.
+// This function filters out false positives likes JSON.parse() errors and
+// RegExp syntax errors.
+var isSyntaxError = function(err) {
+    // Convert error to string
+    err = err && (err.stack || err.toString());
+    return err &&
+        err.match(/^SyntaxError/) &&
+        // RegExp syntax error
+        !err.match(/^SyntaxError: Invalid regular expression/) &&
+        !err.match(/^SyntaxError: Invalid flags supplied to RegExp constructor/) &&
+        // JSON.parse() error
+        !(err.match(/^SyntaxError: Unexpected (token .*|end of input)/) &&
+          err.match(/\n    at Object.parse \(native\)\n/));
+};
+
 // Try to evaluate both expressions e.g. '{ a : 1 }' and
 // statements e.g. 'for (var i = 0; i < 10; i++) console.log(i);'
 // First attempt to evaluate as expression with parens.
@@ -166,7 +185,7 @@ BrowserInterface.prototype.evaluate = function(code, callback, isStmt) {
 
     // Request remote evaluation globally or in current frame
     client.requireFrameEval(isStmt ? code : "(" + code + ")", frame, function(err, res) {
-        if (err) throw new Error(err);
+        if (err && !isSyntaxError(err)) throw new Error(err);
 
         if (typeof res === 'function' &&
             /^[\r\n\s]*function/.test(code) ||
