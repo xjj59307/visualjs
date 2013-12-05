@@ -6,18 +6,18 @@ exports.browserInterface = browserInterface;
 
 // main page for debugger GUI
 exports.index = function(req, res) {
-    res.render('index.html');
+  res.render('index.html');
 };
 
 // visualization
 exports.graph = function(req, res) {
-    res.render('graph-demo.html');
+  res.render('graph-demo.html');
 };
 
 // request object evaluation
 exports.evaluate = function(req, res) {
-    var expr = req.query.expr;
-    browserInterface.evaluate(expr, function(obj) {
-        res.json(obj);
-    });
+  var expr = req.query.expr;
+  browserInterface.evaluate(expr, function(obj) {
+    res.json(obj);
+  });
 };
