@@ -49,9 +49,9 @@ Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
   // Evaluate condition code.
   var iterator = function(match, callback) {
     var code = match.conditionCode;
-    evaluate(code, function(result) {
+    evaluate(code, function(err, result) {
       // Call callback to emit termination signal.
-      if (typeof result !== 'boolean') callback(false);
+      if (typeof result !== 'boolean' || err) callback(false);
       else callback(result);
     });
   };
@@ -59,10 +59,7 @@ Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
   function iterate(task, iterateCallback) {
     var roll = function(callback) {
       var code = 'parents = nextParents.slice(0)';
-      evaluate(code, function() {
-        taskIndex = 0;
-        callback();
-      });
+      evaluate(code, function() { taskIndex = 0; callback(); });
     };
 
     // Bind local self keyword to eval environment.
@@ -76,10 +73,15 @@ Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
         code = format('self = parents[%d], self = %s', task.index, task.object);
       }
 
-      evaluate(code, function(obj) { callback(); });
-    };
+      evaluate(code, function(err, object) { 
+        if (err || _.isUndefined(object)) callback(null, false);
+        else callback(null, true);
+      });
+    }
 
-    var match = function(callback) {
+    var match = function(success, callback) {
+      if (!success) { callback(); return; }
+
       // Filter exec actions based on its condition code.
       async.filter(self.pattern.matches, iterator, function(matchedes) {
         _.each(matchedes, function(matched) {
@@ -142,7 +144,7 @@ Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
     if (!root && task.index === 0) tasks = [roll, bind, match];
     else tasks = [bind, match];    
 
-    async.series(tasks, finial);
+    async.waterfall(tasks, finial);
   }
 };
 

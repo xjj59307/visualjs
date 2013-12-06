@@ -149,9 +149,14 @@ BrowserInterface.prototype._handleBreak = function(res) {
 
   // inform client to update view
   this.getExprList().forEach(function(expr) {
-    self.evaluate(expr, function(obj) {
-      self.socket.emit('update view', { expr: expr, result: obj });
-      self.jobQueue.finishTask(expr);
+    self.evaluate(expr, function(err, obj) {
+      if (err) {
+        // TODO: Handle server error on the client side.
+        self.emit('server error', err);
+      } else {
+        self.socket.emit('update view', { expr: expr, result: obj });
+        self.jobQueue.finishTask(expr);
+      }
     });
   });
 };
@@ -188,16 +193,17 @@ BrowserInterface.prototype.evaluate = function(code, callback, isStmt) {
     isStmt ? code : "(" + code + ")",
     frame,
     function(err, res) {
-      if (err && !isSyntaxError(err)) throw new Error(err);
+      if (err && !isSyntaxError(err)) callback(err);
 
       if (typeof res === 'function' &&
-          /^[\r\n\s]*function/.test(code) ||
-            err) {
+        /^[\r\n\s]*function/.test(code) ||
+        err) {
         self.evaluate(code, callback, true);
       } else {
         // Request object by handles
         client.mirrorObject(res, 3, function(err, mirror) {
-          callback(mirror);
+          if (err) callback(err);
+          callback(null, mirror);
         });
       }
     }

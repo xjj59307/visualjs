@@ -212,8 +212,7 @@ Client.prototype.mirrorObject = function(handle, depth, callback) {
     callback = callback || function() {};
     this.requireLookup(propertyRefs, function(err, res) {
       if (err) {
-        console.error('problem with requireLookup');
-        callback(null, handle);
+        callback(err, handle);
         return;
       }
 
