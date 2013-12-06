@@ -21,7 +21,10 @@ var Animator = function(root, code, browserInterface) {
     return actions;
   }, []);
 
-  return this.getInitialPlot();
+  this.getInitialPlot(function() {
+    var inspect = require('util').inspect;
+    process.stdout.write(inspect(self.visualObjects));
+  });
 };
 
 // TODO: Solve the problem of name collision.
@@ -83,55 +86,49 @@ Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
       if (!success) { callback(); return; }
 
       // Filter exec actions based on its condition code.
-      async.filter(self.pattern.matches, iterator, function(matchedes) {
-        _.each(matchedes, function(matched) {
-          var client = self.browserInterface.getClient();
-          var frame = client.currentFrame;
+      async.detectSeries(self.pattern.matches, iterator, function(matched) {
+        var client = self.browserInterface.getClient();
+        var frame = client.currentFrame;
 
-          // Get object handle of current object.
-          client.requireFrameEval('self', frame, function(err, handle) {
-            // Stop iteration when type of object isn't 'object'.
-            if (err || handle.type !== 'object') {
-              callback(err);
-              return;
-            }
+        // Get object handle of current object.
+        client.requireFrameEval('self', frame, function(err, handle) {
+          if (err) { callback(err); return; }
 
-            // Get action to be executed.
-            var action = _.find(self.actions, function(action) {
-              return action.name === matched.actionName;
+          // Get action to be executed.
+          var action = _.find(self.actions, function(action) {
+            return action.name === matched.actionName;
+          });
+
+          // Create visual object and push it back.
+          var visualObject = new VisualObject(
+            handle.handle,
+            matched.environment,
+            action.createActions
+          );
+          self.visualObjects.push(visualObject);
+
+          // Create new iteration task of next actions.
+          var nextTasks = _.map(action.nextActions, function(nextAction) {
+            var nextTask = {
+              index: taskIndex++,
+              object: nextAction.next
+            };
+            queue.push(nextTask, function(err) {
+              if (err) throw new Error(err);
             });
 
-            // Create visual object and push it back.
-            var visualObject = new VisualObject(
-              handle.handle,
-              matched.environment,
-              action.createActions
-            );
-            self.visualObjects.push(visualObject);
+            return nextTask;
+          });
 
-            // Create new iteration task of next actions.
-            var nextTasks = _.map(action.nextActions, function(nextAction) {
-              var nextTask = {
-                index: taskIndex++,
-                object: nextAction.next
-              };
-              queue.push(nextTask, function(err) {
-                if (err) throw new Error(err);
-              });
-
-              return nextTask;
-            });
-
-           // Call callback to emit termination signal.
-           evaluate(format('handles[%d] = self', handle.handle), function() {
-             async.each(nextTasks, function(nextTask, _callback) {
-               var code = format(
-                 'nextParents[%d] = handles[%d]',
-                 nextTask.index, handle.handle
-               );
-               evaluate(code, function() { _callback(); });
-             }, function() { callback(); });
-           });
+          // Call callback to emit termination signal.
+          evaluate(format('handles[%d] = self', handle.handle), function() {
+            async.each(nextTasks, function(nextTask, _callback) {
+              var code = format(
+                'nextParents[%d] = handles[%d]',
+                nextTask.index, handle.handle
+              );
+              evaluate(code, function() { _callback(); });
+            }, function() { callback(); });
           });
         });
       });
