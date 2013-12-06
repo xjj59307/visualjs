@@ -174,7 +174,7 @@ var isSyntaxError = function(err) {
     !err.match(/^SyntaxError: Invalid flags supplied to RegExp constructor/) &&
     // JSON.parse() error
     !(err.match(/^SyntaxError: Unexpected (token .*|end of input)/) &&
-      err.match(/\n    at Object.parse \(native\)\n/));
+    err.match(/\n    at Object.parse \(native\)\n/));
 };
 
 // Try to evaluate both expressions e.g. '{ a : 1 }' and

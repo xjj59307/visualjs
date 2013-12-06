@@ -46,14 +46,6 @@ when_token = 'when' !identifier_part
 __
   = [ \t\n\r]*
 
-actions
-  = head:action tail:(__ action)* {
-    return tail.reduce(function(previous, current) {
-      previous.push(current[1]);
-      return previous;
-    }, [head]);
-  }
-
 pattern
   = name:identifier __ ':' __ pattern_token __
   '{' __ exec_clauses:exec_clauses __ '}' {
@@ -73,35 +65,16 @@ exec_clauses
   }
 
 exec_clause
-  = exec_token __ name:identifier __
-  '(' __ environment:assignment_expressions? __ ')' __ condition:when_clause? {
+  = exec_token __ name:identifier __ condition:when_clause? {
     return {
       type: 'exec_clause',
       name: name,
-      environment: environment,
       condition: condition 
     };
   }
 
-assignment_expressions
-  = head:assignment_expression tail:(__ ',' __ assignment_expression)* {
-    return tail.reduce(function(previous, current) {
-      previous.push(current[3]);
-      return previous;
-    }, [head]);
-  }
-
-assignment_expression
-  = name:identifier __ '=' __ value:non_item_terminator+ {
-    return {
-      type: 'assignment_expression',
-      name: name,
-      value: value.join('')
-    };
-  }
-
-non_item_terminator
-  = [^ ,)}]
+non_assignment_terminator
+  = [^,)]
 
 when_clause
   = when_token __ code:braced {
@@ -116,6 +89,14 @@ braced
 
 non_parenthesis
   = [^()]+
+
+actions
+  = head:action tail:(__ action)* {
+    return tail.reduce(function(previous, current) {
+      previous.push(current[1]);
+      return previous;
+    }, [head]);
+  }
 
 action
   = name:identifier __ ':' __ action_token __
@@ -140,7 +121,7 @@ action_clause
 
 create_clause
   = create_token __ node:(node_assignment_expression / node_expression) __
-  '(' __ attributes:assignment_expressions __ ')' {
+  '(' __ attributes:assignment_expressions? __ ')' {
     return {
       type: 'create_clause',
       node: node,
@@ -160,19 +141,41 @@ node_assignment_expression
 node_expression
   = node_type
 
+assignment_expressions
+  = head:assignment_expression tail:(__ ',' __ assignment_expression)* {
+    return tail.reduce(function(previous, current) {
+      previous.push(current[3]);
+      return previous;
+    }, [head]);
+  }
+
+assignment_expression
+  = name:identifier __ '=' __ value:non_assignment_terminator+ {
+    return {
+      type: 'assignment_expression',
+      name: name,
+      value: value.join('')
+    };
+  }
+
+
 next_clause
-  = next_token __ object:non_item_terminator+ {
+  = next_token __ object:non_left_parenthesis+ __
+  '(' __ environment:assignment_expressions? __ ')' __ {
     // Termintor of last line is \n.
     if (object[object.length - 1] === '\n')
       object.length -= 1;
     return {
       type: 'next_clause',
+      environment: environment,
       object: object.join('')
     };
   }
+
+non_left_parenthesis
+  = [^(]
 
 node_type
   = node:( 'tree_node' / 'tree_edge') !identifier_part {
     return node;
   }
-
