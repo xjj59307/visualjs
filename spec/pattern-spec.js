@@ -10,15 +10,21 @@ describe('Pattern', function() {
   });
 
   it('operator pattern: exec action', function() {
-    var match = _.first(pattern.matches); 
-    expect(match.actionName).toBe('plus');
-    expect(match.conditionCode).toBe('this.op === 0');
+    var firstMatch = pattern.matches[0]; 
+    expect(firstMatch.actionName).toBe('plus');
+    expect(firstMatch.conditionCode).toBe('self.op === 0');
 
-    var environment = {
-      op: '\'+\'',
-      parent: 'node'
-    };
-    expect(match.environment).toEqual(environment);
+    var secondMatch = pattern.matches[1];
+    expect(secondMatch.actionName).toBe('minus');
+    expect(secondMatch.conditionCode).toBe('self.op === 1');
+
+    var thirdMatch = pattern.matches[2];
+    expect(thirdMatch.actionName).toBe('times');
+    expect(thirdMatch.conditionCode).toBe('self.op === 2');
+
+    var fourthMatch = pattern.matches[3];
+    expect(fourthMatch.actionName).toBe('divide');
+    expect(fourthMatch.conditionCode).toBe('self.op === 3');
   });
 });
 

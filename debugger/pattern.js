@@ -5,11 +5,6 @@ var Match = function(execNode) {
 
   this.actionName = execNode.name;
   this.conditionCode = execNode.condition.code;
-  this.environment = {};
-
-  _.each(execNode.environment, function(variable) {
-    self.environment[variable.name] = variable.value;
-  });
 };
 
 var Pattern = function(patternNode) {

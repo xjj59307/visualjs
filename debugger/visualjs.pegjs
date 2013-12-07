@@ -158,7 +158,6 @@ assignment_expression
     };
   }
 
-
 next_clause
   = next_token __ object:non_left_parenthesis+ __
   '(' __ environment:assignment_expressions? __ ')' __ {
