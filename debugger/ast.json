@@ -76,6 +76,7 @@
         },
         {
           "type": "next_clause",
+          "object": "self.left",
           "environment": [
             {
               "type": "assignment_expression",
@@ -87,11 +88,11 @@
               "name": "parent",
               "value": "node"
             }
-          ],
-          "object": "self.left"
+          ]
         },
         {
           "type": "next_clause",
+          "object": "self.right",
           "environment": [
             {
               "type": "assignment_expression",
@@ -103,8 +104,7 @@
               "name": "parent",
               "value": "node"
             }
-          ],
-          "object": "self.right"
+          ]
         }
       ]
     },
@@ -145,6 +145,7 @@
         },
         {
           "type": "next_clause",
+          "object": "self.left",
           "environment": [
             {
               "type": "assignment_expression",
@@ -156,11 +157,11 @@
               "name": "parent",
               "value": "node"
             }
-          ],
-          "object": "self.left"
+          ]
         },
         {
           "type": "next_clause",
+          "object": "self.right",
           "environment": [
             {
               "type": "assignment_expression",
@@ -172,8 +173,7 @@
               "name": "parent",
               "value": "node"
             }
-          ],
-          "object": "self.right"
+          ]
         }
       ]
     },
@@ -214,6 +214,7 @@
         },
         {
           "type": "next_clause",
+          "object": "self.left",
           "environment": [
             {
               "type": "assignment_expression",
@@ -225,11 +226,11 @@
               "name": "parent",
               "value": "node"
             }
-          ],
-          "object": "self.left"
+          ]
         },
         {
           "type": "next_clause",
+          "object": "self.right",
           "environment": [
             {
               "type": "assignment_expression",
@@ -241,8 +242,7 @@
               "name": "parent",
               "value": "node"
             }
-          ],
-          "object": "self.right"
+          ]
         }
       ]
     },
@@ -283,6 +283,7 @@
         },
         {
           "type": "next_clause",
+          "object": "self.left",
           "environment": [
             {
               "type": "assignment_expression",
@@ -294,11 +295,11 @@
               "name": "parent",
               "value": "node"
             }
-          ],
-          "object": "self.left"
+          ]
         },
         {
           "type": "next_clause",
+          "object": "self.right",
           "environment": [
             {
               "type": "assignment_expression",
@@ -310,8 +311,7 @@
               "name": "parent",
               "value": "node"
             }
-          ],
-          "object": "self.right"
+          ]
         }
       ]
     }

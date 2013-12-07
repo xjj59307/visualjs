@@ -166,8 +166,8 @@ next_clause
       object.length -= 1;
     return {
       type: 'next_clause',
-      environment: environment,
-      object: object.join('')
+      object: object.join(''),
+      environment: environment
     };
   }
 

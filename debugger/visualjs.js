@@ -193,8 +193,8 @@ module.exports = (function() {
               object.length -= 1;
             return {
               type: 'next_clause',
-              environment: environment,
-              object: object.join('')
+              object: object.join(''),
+              environment: environment
             };
           },
         peg$c54 = /^[^(]/,
