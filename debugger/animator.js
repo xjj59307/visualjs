@@ -102,7 +102,6 @@ Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
           // Create visual object and push it back.
           var visualObject = new VisualObject(
             handle.handle,
-            matched.environment,
             action.createActions
           );
           self.visualObjects.push(visualObject);
