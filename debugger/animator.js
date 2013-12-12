@@ -5,6 +5,7 @@ var visualjs = require('./visualjs');
 var Pattern = require('./pattern');
 var Action = require('./action');
 var VisualObject = require('./visual-object');
+var Environment = require('./environment')
 
 // One animator controls animation logic for one object.
 // It provides animation initialization and updating interface.
@@ -43,6 +44,8 @@ Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
   };
   var rootTask = {
     index: taskIndex,
+    // Create an empty environment for root task.
+    environment: new Environment({}),
     object: self.root
   };
   queue.push(rootTask, function(err) {
@@ -102,16 +105,23 @@ Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
           // Create visual object and push it back.
           var visualObject = new VisualObject(
             handle.handle,
+            task.environment,
             action.createActions
           );
           self.visualObjects.push(visualObject);
 
           // Create new iteration task of next actions.
-          var nextTasks = _.map(action.nextActions, function(nextAction) {
-            var nextTask = {
+          var nextTasks = [];
+          async.eachSeries(action.nextActions, function(nextAction, _callback) {
+            var environment = new Environment(
+              nextAction.environment, visualObject, evaluate, _callback
+            );
+
+            nextTasks.push({
               index: taskIndex++,
+              environment: environment,
               object: nextAction.next
-            };
+            });
             queue.push(nextTask, function(err) {
               if (err) throw new Error(err);
             });

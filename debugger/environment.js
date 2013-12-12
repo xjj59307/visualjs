@@ -1,4 +1,6 @@
 var Environment = function(environment, visualObject, evaluate, callback) {
+  callback = callback || function() {};
+
   var self = this;
   this.nodeTable = {};
   this.variableTable = {};
@@ -17,15 +19,15 @@ var Environment = function(environment, visualObject, evaluate, callback) {
         _callback(err);
       });
     }
-  }, function(err) { callback(); });
+  }, function(err) { callback(err); });
 };
 
 Environment.prototype.getValue = function(name) {
-  return this.variableTable[name];
+  return _.has(this.variableTable, name) ? this.variableTable[name] : null;
 };
 
 Environment.prototype.getNode = function(name) {
-  return this.nodeTable[name];
+  return _.has(this.nodeTable, name) ? this.nodeTable[name] : null;
 };
 
 module.exports = Environment;
