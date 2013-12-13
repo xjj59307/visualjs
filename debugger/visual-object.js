@@ -7,8 +7,8 @@ var VisualNode = function(name, type, attributes) {
   this.attributes = attributes;
 };
 
-var VisualObject =
-  function(objectHandle, environment, createActions, evaluate, callback) {
+var VisualObject = function(
+    objectHandle, environment, createActions, evaluate, callback) {
   callback = callback || function() {};
 
   var self = this;
@@ -39,8 +39,7 @@ var VisualObject =
       }
     }, function(err) {
       if (!err) self.visualNodes.push(
-        new VisualNode(createAction.name, createAction.node_type, attributes)
-      );
+        new VisualNode(createAction.name, createAction.node_type, attributes));
       callback(err);
     });
   }, function(err) { callback(err); });
