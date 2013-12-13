@@ -12,8 +12,8 @@ var Environment = function(environment, visualObject, evaluate, callback) {
     var name = pair[0];
     var valueStr = pair[1];
 
-    if (visualObject.isNode(name)) {
-      self.nodeTable[name] = visualObject.getNode(name);
+    if (visualObject.isNode(valueStr)) {
+      self.nodeTable[name] = visualObject.getNode(valueStr);
       callback();
     } else {
       evaluate(valueStr, function(err, value) {

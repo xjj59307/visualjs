@@ -10,6 +10,7 @@ var Environment = require('./environment')
 // One animator controls animation logic for one object.
 // It provides animation initialization and updating interface.
 var Animator = function(root, code, browserInterface) {
+  var self = this;
   this.root = root;
   this.browserInterface = browserInterface;
   this.visualObjects = [];
@@ -107,10 +108,7 @@ Animator.prototype.getInitialPlot = function(callback) {
           // Create visual object and push it back.
           var createVisualObject = function(callback) {
             var visualObject = new VisualObject(
-              handle.handle,
-              task.environment,
-              action.createActions,
-              evaluate,
+              handle.handle, task.environment, action.createActions, evaluate,
               function(err) {
                 if (!err) self.visualObjects.push(visualObject);
                 callback(err, visualObject);
@@ -124,17 +122,16 @@ Animator.prototype.getInitialPlot = function(callback) {
             async.eachSeries(action.nextActions,
               function(nextAction, callback) {
               var environment = new Environment(
-                nextAction.environment, visualObject, evaluate, callback
+                nextAction.environment, visualObject, evaluate,
+                function(err) {
+                  if (!err) nextTasks.push({
+                    index: taskIndex++,
+                    environment: environment,
+                    object: nextAction.next
+                  });
+                  callback(err);
+                }
               );
-
-              nextTasks.push({
-                index: taskIndex++,
-                environment: environment,
-                object: nextAction.next
-              });
-              queue.push(_.last(nextTasks), function(err) {
-                if (err) throw new Error(err);
-              });
             }, function(err) { callback(err, nextTasks); });
           }
 
@@ -142,6 +139,10 @@ Animator.prototype.getInitialPlot = function(callback) {
           var bindNextParent = function(nextTasks, callback) {
             evaluate(format('handles[%d] = self', handle.handle), function() {
               async.each(nextTasks, function(nextTask, callback) {
+                queue.push(nextTask, function(err) {
+                  if (err) throw new Error(err);
+                });
+
                 var code = format(
                   'nextParents[%d] = handles[%d]',
                   nextTask.index, handle.handle
