@@ -29,7 +29,7 @@ var Animator = function(root, code, browserInterface) {
 };
 
 // TODO: Solve the problem of name collision.
-Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
+Animator.prototype.getInitialPlot = function(callback) {
   var self = this;
   var root = true;
   var taskIndex = 0;
@@ -39,9 +39,7 @@ Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
   var queue = async.queue(function(task, callback) {
     iterate(task, callback);
   });
-  queue.drain = function() {
-    getInitialPlotCallback();
-  };
+  queue.drain = function() { callback(); };
   var rootTask = {
     index: taskIndex,
     // Create an empty environment for root task.
@@ -62,7 +60,7 @@ Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
     });
   };
 
-  function iterate(task, iterateCallback) {
+  function iterate(task, callback) {
     var roll = function(callback) {
       var code = 'parents = nextParents.slice(0)';
       evaluate(code, function() { taskIndex = 0; callback(); });
@@ -73,10 +71,14 @@ Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
       var code;
 
       if (root) {
-        code = format('self = %s, nextParents = [], handles = {}', task.object);
+        code = format(
+          'self = %s, nextParents = [], handles = {}', task.object
+        );
         root = false;
       } else {
-        code = format('self = parents[%d], self = %s', task.index, task.object);
+        code = format(
+          'self = parents[%d], self = %s', task.index, task.object
+        );
       }
 
       evaluate(code, function(err, object) { 
@@ -111,18 +113,18 @@ Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
               evaluate,
               function(err) {
                 if (!err) self.visualObjects.push(visualObject);
-                callback(err);
+                callback(err, visualObject);
               }
             );
           };
 
           // Create new iteration task of next actions.
-          var createNextTask = function(callback) {
+          var createNextTask = function(visualObject, callback) {
             var nextTasks = [];
             async.eachSeries(action.nextActions,
-              function(nextAction, _callback) {
+              function(nextAction, callback) {
               var environment = new Environment(
-                nextAction.environment, visualObject, evaluate, _callback
+                nextAction.environment, visualObject, evaluate, callback
               );
 
               nextTasks.push({
@@ -130,28 +132,26 @@ Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
                 environment: environment,
                 object: nextAction.next
               });
-              queue.push(nextTask, function(err) {
+              queue.push(_.last(nextTasks), function(err) {
                 if (err) throw new Error(err);
               });
-
-              return nextTask;
-            }, function(err) { callback(err); });
+            }, function(err) { callback(err, nextTasks); });
           }
 
           // Call callback to emit termination signal.
-          var bindNextParent = function(callback) {
+          var bindNextParent = function(nextTasks, callback) {
             evaluate(format('handles[%d] = self', handle.handle), function() {
-              async.each(nextTasks, function(nextTask, _callback) {
+              async.each(nextTasks, function(nextTask, callback) {
                 var code = format(
                   'nextParents[%d] = handles[%d]',
                   nextTask.index, handle.handle
                 );
-                evaluate(code, function(err) { _callback(err); });
+                evaluate(code, function(err) { callback(err); });
               }, function(err) { callback(err); });
             });
           };
 
-          async.series(
+          async.waterfall(
             [createVisualObject, createNextTask, bindNextParent],
             function(err) { callback(err); }
           );
@@ -160,7 +160,7 @@ Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
     };
 
     // Execute above processes seriesly.
-    var finial = function(err) { iterateCallback(err); }
+    var finial = function(err) { callback(err); }
     var tasks;
 
     if (!root && task.index === 0) tasks = [roll, bind, match];

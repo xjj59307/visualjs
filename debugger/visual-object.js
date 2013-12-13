@@ -17,22 +17,23 @@ var VisualObject =
   this.visualNodes = [];
 
   // Create visual nodes using create actions.
-  async.eachSeries(createActions, function(createAction, createCallback) {
+  async.eachSeries(createActions, function(createAction, callback) {
     var attributes = {};
-    async.each(_.pairs(createAction.attributes), function(pair, evalCallback) {
+    async.each(_.pairs(createAction.attributes), function(pair, callback) {
       var name = pair[0];
       // TODO: Value has three possiblities: visual node, environment variable
       // or javascript expression. Here only handled tree layout.
       var value;
       if (name === 'from' || name === 'to') {
-        attributes[name] = environment.getNode(pair[1]);
-        evalCallback();
+        attributes[name] =
+          environment.getNode(pair[1]) || self.getNode(pair[1]);
+        callback();
       } else {
         value = environment.getValue(pair[1]);
         if (!value) {
           evaluate(pair[1], function(err, value) {
-            if (!err) attribute[name] = value;
-            evalCallback(err);
+            if (!err) attributes[name] = value;
+            callback(err);
           });
         }
       }
@@ -40,7 +41,7 @@ var VisualObject =
       if (!err) self.visualNodes.push(
         new VisualNode(createAction.name, createAction.node_type, attributes)
       );
-      createCallback(err);
+      callback(err);
     });
   }, function(err) { callback(err); });
 };

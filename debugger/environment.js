@@ -8,17 +8,17 @@ var Environment = function(environment, visualObject, evaluate, callback) {
   this.nodeTable = {};
   this.variableTable = {};
 
-  async.each(_.pairs(environment), function(pair, _callback) {
+  async.each(_.pairs(environment), function(pair, callback) {
     var name = pair[0];
     var valueStr = pair[1];
 
     if (visualObject.isNode(name)) {
       self.nodeTable[name] = visualObject.getNode(name);
-      _callback();
+      callback();
     } else {
       evaluate(valueStr, function(err, value) {
         self.variableTable[name] = value; 
-        _callback(err);
+        callback(err);
       });
     }
   }, function(err) { callback(err); });
