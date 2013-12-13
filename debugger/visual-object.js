@@ -1,4 +1,5 @@
 var _ = require('underscore');
+var async = require('async');
 
 var VisualNode = function(name, type, attributes) {
   this.name = name;
@@ -16,7 +17,7 @@ var VisualObject =
   this.visualNodes = [];
 
   // Create visual nodes using create actions.
-  async.each(createActions, function(createAction, createCallback) {
+  async.eachSeries(createActions, function(createAction, createCallback) {
     var attributes = {};
     async.each(_.pairs(createAction.attributes), function(pair, evalCallback) {
       var name = pair[0];
@@ -30,17 +31,13 @@ var VisualObject =
         value = environment.getValue(pair[1]);
         if (!value) {
           evaluate(pair[1], function(err, value) {
-            if (err) {
-              evalCallback(err);
-            } else {
-              attribute[name] = value;
-              evalCallback();
-            }
+            if (!err) attribute[name] = value;
+            evalCallback(err);
           });
         }
       }
     }, function(err) {
-      self.visualNodes.push(
+      if (!err) self.visualNodes.push(
         new VisualNode(createAction.name, createAction.node_type, attributes)
       );
       createCallback(err);
@@ -48,7 +45,7 @@ var VisualObject =
   }, function(err) { callback(err); });
 };
 
-VisualObject.prototype.isNode = funciton(name) {
+VisualObject.prototype.isNode = function(name) {
   return _.some(this.visualNodes, function(node) {
     return node.name === name;
   });
@@ -58,6 +55,6 @@ VisualObject.prototype.getNode = function(name) {
   return _.find(this.visualNodes, function(node) {
     return node.name === name; 
   });
-}
+};
 
 module.exports = VisualObject;

@@ -103,42 +103,58 @@ Animator.prototype.getInitialPlot = function(getInitialPlotCallback) {
           });
 
           // Create visual object and push it back.
-          var visualObject = new VisualObject(
-            handle.handle,
-            task.environment,
-            action.createActions
-          );
-          self.visualObjects.push(visualObject);
+          var createVisualObject = function(callback) {
+            var visualObject = new VisualObject(
+              handle.handle,
+              task.environment,
+              action.createActions,
+              evaluate,
+              function(err) {
+                if (!err) self.visualObjects.push(visualObject);
+                callback(err);
+              }
+            );
+          };
 
           // Create new iteration task of next actions.
-          var nextTasks = [];
-          async.eachSeries(action.nextActions, function(nextAction, _callback) {
-            var environment = new Environment(
-              nextAction.environment, visualObject, evaluate, _callback
-            );
+          var createNextTask = function(callback) {
+            var nextTasks = [];
+            async.eachSeries(action.nextActions,
+              function(nextAction, _callback) {
+              var environment = new Environment(
+                nextAction.environment, visualObject, evaluate, _callback
+              );
 
-            nextTasks.push({
-              index: taskIndex++,
-              environment: environment,
-              object: nextAction.next
-            });
-            queue.push(nextTask, function(err) {
-              if (err) throw new Error(err);
-            });
+              nextTasks.push({
+                index: taskIndex++,
+                environment: environment,
+                object: nextAction.next
+              });
+              queue.push(nextTask, function(err) {
+                if (err) throw new Error(err);
+              });
 
-            return nextTask;
-          });
+              return nextTask;
+            }, function(err) { callback(err); });
+          }
 
           // Call callback to emit termination signal.
-          evaluate(format('handles[%d] = self', handle.handle), function() {
-            async.each(nextTasks, function(nextTask, _callback) {
-              var code = format(
-                'nextParents[%d] = handles[%d]',
-                nextTask.index, handle.handle
-              );
-              evaluate(code, function() { _callback(); });
-            }, function() { callback(); });
-          });
+          var bindNextParent = function(callback) {
+            evaluate(format('handles[%d] = self', handle.handle), function() {
+              async.each(nextTasks, function(nextTask, _callback) {
+                var code = format(
+                  'nextParents[%d] = handles[%d]',
+                  nextTask.index, handle.handle
+                );
+                evaluate(code, function(err) { _callback(err); });
+              }, function(err) { callback(err); });
+            });
+          };
+
+          async.series(
+            [createVisualObject, createNextTask, bindNextParent],
+            function(err) { callback(err); }
+          );
         });
       });
     };

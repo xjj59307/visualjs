@@ -1,3 +1,6 @@
+var _ = require('underscore');
+var async = require('async');
+
 var Environment = function(environment, visualObject, evaluate, callback) {
   callback = callback || function() {};
 
@@ -12,8 +15,7 @@ var Environment = function(environment, visualObject, evaluate, callback) {
     if (visualObject.isNode(name)) {
       self.nodeTable[name] = visualObject.getNode(name);
       _callback();
-    }
-    else {
+    } else {
       evaluate(valueStr, function(err, value) {
         self.variableTable[name] = value; 
         _callback(err);

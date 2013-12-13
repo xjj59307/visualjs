@@ -2,33 +2,39 @@ operator: pattern {
   exec plus when (self.op === 0),
   exec minus when (self.op === 1),
   exec times when (self.op === 2),
-  exec divide when (self.op === 3)
+  exec divide when (self.op === 3),
+  exec value when (typeof self === 'number')
 }
 
 plus: action {
-  create node=tree_node(label = op),
+  create node=tree_node(label = '+'),
   create tree_edge(from = parent, to = node),
   next self.left(op = '+', parent = node),
   next self.right(op = '+', parent = node)
 }
 
 minus: action {
-  create node=tree_node(label = op),
+  create node=tree_node(label = '-'),
   create tree_edge(from = parent, to = node),
   next self.left(op = '-', parent = node),
   next self.right(op = '-', parent = node)
 }
 
 times: action {
-  create node=tree_node(label = op),
+  create node=tree_node(label = '*'),
   create tree_edge(from = parent, to = node),
   next self.left(op = '*', parent = node),
   next self.right(op = '*', parent = node)
 }
 
 divide: action {
-  create node=tree_node(label = op),
+  create node=tree_node(label = '/'),
   create tree_edge(from = parent, to = node),
   next self.left(op = '/', parent = node),
   next self.right(op = '/', parent = node)
+}
+
+value: action {
+  create node=tree_node(label = self),
+  create tree_edge(from = parent, to = node)
 }
