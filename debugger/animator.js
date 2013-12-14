@@ -6,7 +6,6 @@ var Pattern = require('./pattern');
 var Action = require('./action');
 var VisualObject = require('./visual-object');
 var Environment = require('./environment');
-var TreeNode = require('./layout').TreeNode;
 
 // One animator controls animation logic for one object.
 // It provides animation initialization and updating interface.

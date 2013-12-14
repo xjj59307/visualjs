@@ -8,44 +8,44 @@
 <link rel="stylesheet" href="stylesheets/bar-chart.css" type="text/css"/>
 
 <div class="container-fluid">
-    <div class="row-fluid">
-        <div class="span7">
-            <div class="visualization-window">
-                <div class="input-append">
-                    <input class="span8" type="text">
-                    <button class="btn" title="submit">Submit</button>
-                </div>
-                <svg/>
-            </div>
+  <div class="row-fluid">
+    <div class="span7">
+      <div class="visualization-window">
+        <div class="input-append">
+          <input class="span8" type="text">
+          <button class="btn" title="submit">Submit</button>
         </div>
-
-        <div class="span5">
-            <div class="row-fluid">
-                <div class="span12">
-                    <div class="btn-group">
-                        <button class="btn btn-large" title="Run/Pause">
-                            <i class=icon-play></i>
-                        </button>
-                        <button class="btn btn-large" title="Step over">
-                            <i class=icon-share-alt></i>
-                        </button>
-                        <button class="btn btn-large" title="Step in">
-                            <i class=icon-arrow-down></i>
-                        </button>
-                        <button class="btn btn-large" title="Step out">
-                            <i class=icon-arrow-up></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- this span is always displayed with left margin,
-                so I delete it manually -->
-                <div class="span12" style="margin-left:0px">
-                    <div id="editor"/>
-                </div>
-            </div>
-        </div>
+        <svg/>
+      </div>
     </div>
+
+    <div class="span5">
+      <div class="row-fluid">
+        <div class="span12">
+          <div class="btn-group">
+            <button class="btn btn-large" title="Run/Pause">
+              <i class=icon-play></i>
+            </button>
+            <button class="btn btn-large" title="Step over">
+              <i class=icon-share-alt></i>
+            </button>
+            <button class="btn btn-large" title="Step in">
+              <i class=icon-arrow-down></i>
+            </button>
+            <button class="btn btn-large" title="Step out">
+              <i class=icon-arrow-up></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- this span is always displayed with left margin,
+        so I delete it manually -->
+        <div class="span12" style="margin-left:0px">
+          <div id="editor"/>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="javascripts/lib/require-config.js"></script>

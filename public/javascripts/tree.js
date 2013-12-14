@@ -1,9 +1,9 @@
 define(["lib/d3.v3"], function (d3) {
 
-  var width = 1280,
-  height = 800,
-  index = 0,
-  treeSize = [3000, 3000];
+  var width = 1280;
+  var height = 800;
+  var index = 0;
+  var treeSize = [3000, 3000];
 
   var tree = d3.layout.tree().size(treeSize);
 

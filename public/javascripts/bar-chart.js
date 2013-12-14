@@ -1,94 +1,94 @@
 define(["lib/d3.v3"], function (d3) {
 
-    var margin = { top: 20, right: 20, bottom: 30, left: 40 },
-        width = 850 - margin.left - margin.right,
-        height = 600 - margin.top - margin.bottom;
+  var margin = { top: 20, right: 20, bottom: 30, left: 40 };
+  var width = 850 - margin.left - margin.right;
+  var height = 600 - margin.top - margin.bottom;
 
-    var x = d3.scale.ordinal()
-        .rangeRoundBands([0, width], 0.1, 1);
+  var x = d3.scale.ordinal()
+    .rangeRoundBands([0, width], 0.1, 1);
 
-    var y = d3.scale.linear()
-        .range([height, 0]);
+  var y = d3.scale.linear()
+    .range([height, 0]);
 
-    var xAxis = d3.svg.axis()
-        .scale(x)
-        .orient("bottom");
+  var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
 
-    var yAxis = d3.svg.axis()
-        .scale(y)
-        .orient("left");
+  var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
 
-    var svg = d3.select("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  var svg = d3.select("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    var initial = true;
+  var initial = true;
 
-    var plot = function(data) {
-        if (!data) return;
-        initial ? initialPlot(data) : update(data);
-    };
+  var plot = function(data) {
+    if (!data) return;
+    initial ? initialPlot(data) : update(data);
+  };
 
-    var initialPlot = function(data) {
-        initial = false;
+  var initialPlot = function(data) {
+    initial = false;
 
-        x.domain(data.map(function(d) { return d.id; }));
-        y.domain([0, d3.max(data, function(d) { return d.value; })]);
+    x.domain(data.map(function(d) { return d.id; }));
+    y.domain([0, d3.max(data, function(d) { return d.value; })]);
 
-        svg.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")")
-            .call(xAxis);
+    svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
 
-        svg.append("g")
-            .attr("class", "y axis")
-            .call(yAxis);
+    svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis);
 
-        svg.selectAll(".bar")
-            .data(data)
-            .enter().append("rect")
-            .attr("class", "bar")
-            .attr("x", function(d) { return x(d.id); })
-            .attr("width", x.rangeBand())
-            .attr("y", function(d) { return y(d.value); })
-            .attr("height", function(d) { return height - y(d.value); });
-    };
+    svg.selectAll(".bar")
+      .data(data)
+      .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", function(d) { return x(d.id); })
+      .attr("width", x.rangeBand())
+      .attr("y", function(d) { return y(d.value); })
+      .attr("height", function(d) { return height - y(d.value); });
+  };
 
-    // smooth animation for sorting
-    var update = function (data) {
-        x.domain(data.map(function(d) { return d.id; }));
-        y.domain([0, d3.max(data, function(d) { return d.value; })]);
+  // smooth animation for sorting
+  var update = function (data) {
+    x.domain(data.map(function(d) { return d.id; }));
+    y.domain([0, d3.max(data, function(d) { return d.value; })]);
 
-        svg.selectAll(".bar")
-            .data(data)
-            .enter().append("rect")
-            .attr("class", "bar");
+    svg.selectAll(".bar")
+      .data(data)
+      .enter().append("rect")
+      .attr("class", "bar");
 
-        var transition = svg.transition().duration(500),
-            delay = function(d, i) { return i * 300; };
+    var transition = svg.transition().duration(500),
+    delay = function(d, i) { return i * 300; };
 
-        transition.selectAll(".bar")
-            .delay(delay)
-            .attr("x", function(d) { return x(d.id); })
-            .attr("width", x.rangeBand())
-            .attr("y", function(d) { return y(d.value); })
-            .attr("height", function(d) { return height - y(d.value); });
+    transition.selectAll(".bar")
+      .delay(delay)
+      .attr("x", function(d) { return x(d.id); })
+      .attr("width", x.rangeBand())
+      .attr("y", function(d) { return y(d.value); })
+      .attr("height", function(d) { return height - y(d.value); });
 
-        transition.select(".x.axis")
-            .call(xAxis)
-            .selectAll("g")
-            .delay(delay);
+    transition.select(".x.axis")
+      .call(xAxis)
+      .selectAll("g")
+      .delay(delay);
 
-        transition.select(".y.axis")
-            .call(yAxis)
-            .selectAll("g")
-            .delay(delay);
-    };
+    transition.select(".y.axis")
+      .call(yAxis)
+      .selectAll("g")
+      .delay(delay);
+  };
 
-    return {
-        plot: plot
-    };
+  return {
+    plot: plot
+  };
 
 });

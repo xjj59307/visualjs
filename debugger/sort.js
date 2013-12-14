@@ -1,13 +1,7 @@
-var left = { op: 2, left: 1, right: 2};
-var right = { op: 3, left: 3, right: 4};
-var root = { op: 0, left: left, right: right};
-console.log(root);
-
-/*
 var data = [];
 
 (function() {
-    for (var i = 1; i <= 25; ++i) {
+    for (var i = 1; i <= 10; ++i) {
         var value = Math.random();
         var element = { id: i, value: value };
 
@@ -18,11 +12,10 @@ var data = [];
 data.sort(function(a, b) {
     return b.value - a.value;
 });
-*/
 
 /*
 var data = [],
-    length = 25;
+    length = 10;
 
 (function() {
     for (var i = 0; i < length; ++i) {

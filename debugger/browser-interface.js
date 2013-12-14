@@ -112,9 +112,9 @@ BrowserInterface.prototype.finishTask = function(task) {
 
 BrowserInterface.prototype.addExpr = function(expr) {
   // TODO: Code about Animator here is temporary.
-  var fs = require('fs');
-  var code = '' + fs.readFileSync('./debugger/math.visjs');
-  var animator = new Animator(expr, code, this);
+  // var fs = require('fs');
+  // var code = '' + fs.readFileSync('./debugger/math.visjs');
+  // var animator = new Animator(expr, code, this);
 
   this.exprSet.add(expr);
 };
@@ -196,8 +196,8 @@ BrowserInterface.prototype.evaluate = function(code, callback, isStmt) {
       if (err && !isSyntaxError(err)) callback(err);
 
       if (typeof res === 'function' &&
-        /^[\r\n\s]*function/.test(code) ||
-        err) {
+          /^[\r\n\s]*function/.test(code) ||
+          err) {
         self.evaluate(code, callback, true);
       } else {
         // Request object by handles
@@ -217,10 +217,9 @@ BrowserInterface.prototype.requireSource = function(callback) {
 
   var delta = 5;
 
-  var self = this,
-  client = this.client,
-  from = client.currentLine - delta + 1,
-  to = client.currentLine + delta + 1;
+  var client = this.client;
+  var from = client.currentLine - delta + 1;
+  var to = client.currentLine + delta + 1;
 
   client.requireSource(from, to, function(err, res) {
     if (err || !res)
@@ -248,9 +247,7 @@ BrowserInterface.prototype.requireSource = function(callback) {
 BrowserInterface.prototype._stepThrough = function(type, count, callback) {
   if (!this._requireConnection()) return;
 
-  var self = this;
-
-  self.client.step(type, count, function(err, res) {
+  this.client.step(type, count, function(err) {
     if (err) throw new Error(err);
     if (callback) callback();
   });
