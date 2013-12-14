@@ -57,16 +57,15 @@ var addListeners = function(browserInterface, jobQueue) {
     jobQueue.addTask(TASK.NEW_EXPRESSION);
 
     var expr = job.data;
-    browserInterface.addExpr(expr);
-    browserInterface.finishTask(TASK.NEW_EXPRESSION);
+    browserInterface.addExpr(expr, function() {
+      browserInterface.finishTask(TASK.NEW_EXPRESSION);
+    });
   });
 };
 
 var BrowserInterface = function() {
   var self = this;
 
-  this.stdin = process.stdin;
-  this.stdout = process.stdout;
   // expression list to evluate when stepping through
   this.exprSet = new buckets.Set();
   this.jobQueue = new JobQueue();
@@ -110,13 +109,21 @@ BrowserInterface.prototype.finishTask = function(task) {
   this.jobQueue.finishTask(task);
 };
 
-BrowserInterface.prototype.addExpr = function(expr) {
-  // TODO: Code about Animator here is temporary.
-  // var fs = require('fs');
-  // var code = '' + fs.readFileSync('./debugger/math.visjs');
-  // var animator = new Animator(expr, code, this);
+BrowserInterface.prototype.addExpr = function(expr, callback) {
+  var self = this;
 
-  this.exprSet.add(expr);
+  // TODO: Read visjs file from client.
+  var fs = require('fs');
+  var code = '' + fs.readFileSync('./debugger/math.visjs');
+
+  var animator = new Animator(expr, code, this, function() {
+    self.exprSet.add(expr);
+    var visualNodes = animator.getInitialGraph();
+    var inspect = require('util').inspect;
+    process.stdout.write(inspect(visualNodes));
+
+    callback();
+  });
 };
 
 BrowserInterface.prototype.getExprList = function() {
