@@ -6,6 +6,7 @@ var Pattern = require('./pattern');
 var Action = require('./action');
 var VisualObject = require('./visual-object');
 var Environment = require('./environment');
+var TreeNode = require('./layout').TreeNode;
 
 // One animator controls animation logic for one object.
 // It provides animation initialization and updating interface.
@@ -170,7 +171,9 @@ Animator.prototype._initialize = function(callback) {
 
 // Generate initial graph based on visual objects.
 Animator.prototype.getInitialGraph = function() {
-
+  return _.reduce(this.visualObjects, function(previous, current) {
+    return previous.concat(current.visualNodes);
+  }, []);
 };
 
 module.exports = Animator;
