@@ -10,7 +10,6 @@ var Environment = require('./environment');
 // One animator controls animation logic for one object.
 // It provides animation initialization and updating interface.
 var Animator = function(root, code, browserInterface, callback) {
-  var self = this;
   this.root = root;
   this.browserInterface = browserInterface;
   this.visualObjects = [];
@@ -23,11 +22,11 @@ var Animator = function(root, code, browserInterface, callback) {
     return actions;
   }, []);
 
-  this._initialize(callback);
+  this._update(callback);
 };
 
 // TODO: Solve the problem of name collision.
-Animator.prototype._initialize = function(callback) {
+Animator.prototype._update = function(callback) {
   var self = this;
   var root = true;
   var taskIndex = 0;

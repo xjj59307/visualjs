@@ -1,7 +1,8 @@
 define(["lib/d3.v3"], function (d3) {
 
-  var width = 1280;
-  var height = 800;
+  var margin = { top: 20, right: 20, bottom: 30, left: 40 };
+  var width = 1200 - margin.left - margin.right;
+  var height = 800 - margin.top - margin.bottom;
   var index = 0;
   var treeSize = [3000, 3000];
 

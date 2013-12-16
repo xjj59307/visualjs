@@ -1,23 +1,21 @@
 var util = require('util');
 var buckets = require('buckets');
 var Client = require('./client');
-var tool = require('./tool');
 var JobQueue = require('./job-queue');
 var JOB = require('./enum').JOB;
 var TASK = require('./enum').TASK;
 var Animator = require('./animator');
-var colors = require('colors');
 
 var addListeners = function(browserInterface, jobQueue) {
   var handleStepJob = function(task) {
     jobQueue.addTask(task);
     jobQueue.addTask(TASK.REQUIRE_SOURCE);
     browserInterface.getExprList().forEach(function(expr) {
-      jobQueue.addTask(expr, 1);
+      jobQueue.addTask(expr);
     });
   };
 
-  jobQueue.on(JOB.STEP_IN, function(job) {
+  jobQueue.on(JOB.STEP_IN, function() {
     handleStepJob(TASK.STEP_IN);
 
     browserInterface.in(function() {
@@ -25,7 +23,7 @@ var addListeners = function(browserInterface, jobQueue) {
     });
   });
 
-  jobQueue.on(JOB.STEP_OVER, function(job) {
+  jobQueue.on(JOB.STEP_OVER, function() {
     handleStepJob(TASK.STEP_OVER);
 
     browserInterface.over(function() {
@@ -33,7 +31,7 @@ var addListeners = function(browserInterface, jobQueue) {
     });
   });
 
-  jobQueue.on(JOB.STEP_OUT, function(job) {
+  jobQueue.on(JOB.STEP_OUT, function() {
     handleStepJob(TASK.STEP_OUT);
 
     browserInterface.out(function() {
@@ -41,7 +39,7 @@ var addListeners = function(browserInterface, jobQueue) {
     });
   });
 
-  jobQueue.on(JOB.REQUIRE_SOURCE, function(job) {
+  jobQueue.on(JOB.REQUIRE_SOURCE, function() {
     jobQueue.addTask(TASK.REQUIRE_SOURCE);
 
     browserInterface.requireSource(function(source, currentLine) {
@@ -57,7 +55,8 @@ var addListeners = function(browserInterface, jobQueue) {
     jobQueue.addTask(TASK.NEW_EXPRESSION);
 
     var expr = job.data;
-    browserInterface.addExpr(expr, function() {
+    browserInterface.addExpr(expr, function(visualNodes) {
+      browserInterface.getSocket().emit('update view', visualNodes);
       browserInterface.finishTask(TASK.NEW_EXPRESSION);
     });
   });
@@ -82,7 +81,7 @@ var BrowserInterface = function() {
 
   // TODO: handle exception
   this.client.on('exception', function(res) {
-    throw new Error('unknown exception');
+    throw new Error(res);
   });
 
   this.client.connectToNode();
@@ -93,7 +92,7 @@ BrowserInterface.prototype.setSocket = function(socket) {
   this.jobQueue.reset();
 };
 
-BrowserInterface.prototype.getSocket = function(socket) {
+BrowserInterface.prototype.getSocket = function() {
   return this.socket;
 };
 
@@ -118,11 +117,7 @@ BrowserInterface.prototype.addExpr = function(expr, callback) {
 
   var animator = new Animator(expr, code, this, function() {
     self.exprSet.add(expr);
-    var visualNodes = animator.getInitialGraph();
-    var inspect = require('util').inspect;
-    process.stdout.write(inspect(visualNodes));
-
-    callback();
+    callback(animator.getInitialGraph());
   });
 };
 

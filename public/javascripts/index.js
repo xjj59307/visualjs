@@ -1,5 +1,5 @@
-define(["lib/jquery-1.8.2", "lib/socket.io", "bar-chart", "lib/ace/ace"],
-    function ($, io, barChart, ace) {
+define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace"],
+    function ($, io, tree, ace) {
 
   var socket = io.connect('http://localhost');
   var nextJobSeq = 0;
@@ -21,19 +21,21 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "bar-chart", "lib/ace/ace"],
 
     // delete last program counter
     // TODO: support multi-file
-    if (lastLine !== undefined) editor.getSession().removeGutterDecoration(lastLine, "program-counter");
+    if (lastLine !== undefined)
+      editor.getSession().removeGutterDecoration(lastLine, "program-counter");
     lastLine = data.currentLine;
 
     // add new program counter
     // if (!editor.isFocused()) editor.focus();
     // editor.gotoLine(data.currentLine + 1);
     editor.scrollToLine(data.currentLine + 1, true, true);
-    editor.getSession().addGutterDecoration(data.currentLine, "program-counter");
+    editor.getSession().addGutterDecoration(
+      data.currentLine, "program-counter");
   });
 
   // TODO: update multi-view
   socket.on("update view", function(data) {
-    barChart.plot(data.result);
+    // barChart.plot(data.result);
   });
 
   $("button[title='submit']").on("click", function(event) {
