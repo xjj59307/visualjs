@@ -35,7 +35,7 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace"],
 
   // TODO: update multi-view
   socket.on("update view", function(data) {
-    // barChart.plot(data.result);
+    tree.plot(data);
   });
 
   $("button[title='submit']").on("click", function(event) {
@@ -47,17 +47,14 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace"],
   });
 
   $("button[title='Step in']").on("click", function(event) {
-    // $.post("http://localhost:3000/step/in");
     emitNewJob("step in");
   });
 
   $("button[title='Step over']").on("click", function(event) {
-    // $.post("http://localhost:3000/step/over");
     emitNewJob("step over");
   });
 
   $("button[title='Step out']").on("click", function(event) {
-    // $.post("http://localhost:3000/step/out");
     emitNewJob("step out");
   });
 

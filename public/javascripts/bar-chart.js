@@ -87,8 +87,6 @@ define(["lib/d3.v3"], function (d3) {
       .delay(delay);
   };
 
-  return {
-    plot: plot
-  };
+  return { plot: plot };
 
 });

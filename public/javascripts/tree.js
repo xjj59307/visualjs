@@ -1,10 +1,10 @@
-define(["lib/d3.v3"], function (d3) {
+define(["lib/d3.v3", "lib/underscore"], function (d3, _) {
 
   var margin = { top: 20, right: 20, bottom: 30, left: 40 };
-  var width = 1200 - margin.left - margin.right;
+  var width = 1000 - margin.left - margin.right;
   var height = 800 - margin.top - margin.bottom;
   var index = 0;
-  var treeSize = [3000, 3000];
+  var treeSize = [800, 800];
 
   var tree = d3.layout.tree().size(treeSize);
 
@@ -12,21 +12,43 @@ define(["lib/d3.v3"], function (d3) {
     return [d.x, d.y];
   });
 
-  var svg = d3.select("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .attr("pointer-events", "all")
-    .append("g")
-    .call(d3.behavior.zoom().on("zoom", onZoom))
-    .append("g");
-
   function onZoom() {
     var translate = "translate(" + d3.event.translate + ")";
     var scale = "scale(" + d3.event.scale + ")";
     svg.attr("transform", translate + " " + scale);
   }
 
-  d3.json("../javascripts/data/flare.json", function(err, root) {
+  var svg = d3.select("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g")
+    .call(d3.behavior.zoom().on("zoom", onZoom))
+    .append("g");
+
+  var convert = function(visualNodes) {
+    var treeNodes = _.reduce(visualNodes, function(previous, current) {
+      if (current.type === 'tree_node') {
+        previous.push(current);
+      } else if (_.has(current.attributes, 'from')) {
+        var attributes = current.attributes;
+        var from = visualNodes[attributes['from']];
+
+        if (!_.has(from, 'children')) from.children = [];
+        from.children.push(visualNodes[attributes['to']]);
+      }
+
+      return previous;
+    }, []);
+
+    return _.map(treeNodes, function(treeNode) {
+      treeNode.name = treeNode.attributes['label'];
+      return _.omit(treeNode, 'type', 'attributes');
+    });
+  };
+
+  var plot = function(visualNodes) {
+    root = convert(visualNodes)[0];
+
     root.x0 = 0;
     root.y0 = 0;
     update(root);
@@ -139,14 +161,8 @@ define(["lib/d3.v3"], function (d3) {
       link.enter().insert("path", "g")
         .attr("class", "edge")
         .attr("d", function(d) {
-          var object = {
-            x: source.x0,
-            y: source.y0
-          };
-          return diagonal({
-            source: object,
-            target: object
-          });
+          var object = { x: source.x0, y: source.y0 };
+          return diagonal({ source: object, target: object });
         })
         .transition()
         .duration(duration)
@@ -160,32 +176,20 @@ define(["lib/d3.v3"], function (d3) {
       link.exit().transition()
         .duration(duration)
         .attr("d", function(d) {
-          var object = {
-            x: source.x,
-            y: source.y
-          };
-          return diagonal({
-            source: object,
-            target: object
-          });
+          var object = { x: source.x, y: source.y };
+          return diagonal({ source: object, target: object });
         })
         .remove();
 
-      nodes.forEach(function(d) {
-        d.x0 = d.x;
-        d.y0 = d.y;
-      });
+      nodes.forEach(function(d) { d.x0 = d.x; d.y0 = d.y; });
     }
 
     function toggle(d) {
-      if (d.children) {
-        d._children = d.children;
-        d.children = null;
-      } else {
-        d.children = d._children;
-        d._children = null;
-      }
+      if (d.children) { d._children = d.children; d.children = null; }
+      else { d.children = d._children; d._children = null; }
     }
-  });
+  };
+
+  return { plot: plot };
 
 });

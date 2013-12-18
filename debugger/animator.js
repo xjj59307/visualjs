@@ -166,9 +166,27 @@ Animator.prototype._update = function(callback) {
 
 // Generate initial graph based on visual objects.
 Animator.prototype.getInitialGraph = function() {
-  return _.reduce(this.visualObjects, function(previous, current) {
-    return previous.concat(current.visualNodes);
-  }, []);
+  var visualNodes = [];
+  var id = 0;
+
+  // Generate unique id for each visual node.
+  _.each(this.visualObjects, function(visualObject) {
+    _.each(visualObject.visualNodes, function(visualNode) {
+      visualNode.id = id++;
+      visualNodes.push(visualNode);
+    });
+  });
+
+  // Use id to replace object reference.
+  _.each(visualNodes, function(visualNode) {
+    var attributes = visualNode.attributes;
+    _.each(['from', 'to'], function(name) {
+      if (_.has(attributes, name) && attributes[name])
+        attributes[name] = attributes[name].id;
+    });
+  });
+
+  return visualNodes;
 };
 
 module.exports = Animator;
