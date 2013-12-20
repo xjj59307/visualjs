@@ -66,8 +66,8 @@ define(["lib/d3.v3"], function (d3) {
       .enter().append("rect")
       .attr("class", "bar");
 
-    var transition = svg.transition().duration(500),
-    delay = function(d, i) { return i * 300; };
+    var transition = svg.transition().duration(500);
+    var delay = function(d, i) { return i * 300; };
 
     transition.selectAll(".bar")
       .delay(delay)

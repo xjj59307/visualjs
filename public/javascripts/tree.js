@@ -1,4 +1,4 @@
-define(["lib/d3.v3", "lib/underscore"], function (d3, _) {
+define(["lib/d3.v3", "lib/jquery-1.8.2", "lib/underscore"], function (d3, $, _) {
 
   var margin = { top: 20, right: 20, bottom: 30, left: 40 };
   var width = 1000 - margin.left - margin.right;
@@ -40,10 +40,13 @@ define(["lib/d3.v3", "lib/underscore"], function (d3, _) {
       return previous;
     }, []);
 
-    return _.map(treeNodes, function(treeNode) {
+    _.each(treeNodes, function(treeNode, index) {
       treeNode.name = treeNode.attributes['label'];
-      return _.omit(treeNode, 'type', 'attributes');
+      delete treeNode['type'];
+      delete treeNode['attributes'];
     });
+
+    return treeNodes;
   };
 
   var plot = function(visualNodes) {
@@ -51,6 +54,8 @@ define(["lib/d3.v3", "lib/underscore"], function (d3, _) {
 
     root.x0 = 0;
     root.y0 = 0;
+    // Remove all nodes of last object.
+    $('g.node, path.edge').remove();
     update(root);
 
     function update(source) {
@@ -60,15 +65,11 @@ define(["lib/d3.v3", "lib/underscore"], function (d3, _) {
       var nodes = tree.nodes(root);
 
       // Normalize for fixed-depth
-      nodes.forEach(function(d) {
-        d.y = d.depth * 180;
-      });
+      nodes.forEach(function(d) { d.y = d.depth * 180; });
 
       // Update the nodes
       var node = svg.selectAll("g.node")
-        .data(nodes, function(d) {
-          return d.id || (d.id = ++index);
-        });
+        .data(nodes, function(d) { return d.id; });
 
       // Enter any new nodes at the parent's previous position
       var nodeEnter = node.enter().append("g")
@@ -77,7 +78,10 @@ define(["lib/d3.v3", "lib/underscore"], function (d3, _) {
           return "translate(" + source.x0 + "," + source.y0 + ")";
         })
         .on("click", function(d) {
-          toggle(d);
+          // Toggle children nodes.
+          if (d.children) { d._children = d.children; d.children = null; }
+          else { d.children = d._children; d._children = null; }
+
           update(d);
         });
 
@@ -182,11 +186,6 @@ define(["lib/d3.v3", "lib/underscore"], function (d3, _) {
         .remove();
 
       nodes.forEach(function(d) { d.x0 = d.x; d.y0 = d.y; });
-    }
-
-    function toggle(d) {
-      if (d.children) { d._children = d.children; d.children = null; }
-      else { d.children = d._children; d._children = null; }
     }
   };
 
