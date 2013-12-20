@@ -11,9 +11,13 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace"],
 
   // initialize editor
   var editor = ace.edit("editor");
+  var Range = ace.require('./range').Range;
   editor.getSession().setMode("ace/mode/javascript");
   editor.setReadOnly(true);
+  editor.setHighlightActiveLine(false);
+  editor.setHighlightGutterLine(false);
   var lastLine;
+  var lastMarker;
 
   // get code chunk from server
   socket.on("update source", function(data) {
@@ -21,16 +25,19 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace"],
 
     // delete last program counter
     // TODO: support multi-file
-    if (lastLine !== undefined)
+    if (!_.isUndefined(lastLine))
       editor.getSession().removeGutterDecoration(lastLine, "program-counter");
     lastLine = data.currentLine;
 
     // add new program counter
-    // if (!editor.isFocused()) editor.focus();
-    // editor.gotoLine(data.currentLine + 1);
     editor.scrollToLine(data.currentLine + 1, true, true);
     editor.getSession().addGutterDecoration(
       data.currentLine, "program-counter");
+
+    if (!_.isUndefined(lastMarker))
+      editor.getSession().removeMarker(lastMarker);
+    lastMarker = editor.getSession().addMarker(
+      new Range(data.currentLine, 0, data.currentLine), 'warning', 'line');
   });
 
   // TODO: update multi-view

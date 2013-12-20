@@ -1,29 +1,36 @@
 .visualization-div {
-    margin-top: 30px;
-    border: 1px solid #E1E1E8;
-    padding: 10px;
-    float: right;
+  margin-top: 30px;
+  border: 1px solid #E1E1E8;
+  padding: 10px;
+  float: right;
 }
 
 /*binding data input area*/
 .input-append {
-    float: right;
+  float: right;
 }
 
 /*step through button group*/
 .btn-group {
-    margin-top: 30px;
+  margin-top: 30px;
 }
 
 #editor {
-    margin-top: 30px;
-    width: 600px;
-    height: 500px;
-    border: 1px solid #E1E1E8;
+  margin-top: 30px;
+  width: 600px;
+  height: 500px;
+  border: 1px solid #E1E1E8;
 }
 
 .program-counter {
-    border-radius: 20px 0px 0px 20px;
-    box-shadow: inset 0px 0px 2px 2px red;
-    background: #f0d0d0;
+  border-radius: 20px 0px 0px 20px;
+  box-shadow: inset 0px 0px 2px 2px red;
+  background: #f0d0d0;
+}
+
+.warning {
+  background: rgba(100, 180, 255, 0.3);
+  position: absolute;
+  width: 100% !important;
+  left: 0 !important;
 }
