@@ -5,3 +5,5 @@
 .idea
 node_modules/*
 !node_modules/buckets.js
+documents/*
+!documents/*.tex
