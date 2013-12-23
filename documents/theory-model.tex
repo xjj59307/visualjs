@@ -1,6 +1,30 @@
-\documentclass[12pt]{report}
+\documentclass[11pt]{article}
+\usepackage{stmaryrd}
 \begin{document}
 
-VisualJS
+\section{Introduction}
+The typical process of using debugger in IDE is to step through the program with examining program state (values of variables and the call stack) to understand the program and detect bugs.
+
+\noindent In visualJS, our goal is to animate an arbitrary data structure implementation without breaking the normal debugging experience. To achieve this goal, we won't insert anything into source code and permit users to select and modified visualization method and target object dynamically. Most of current tools can't meet these two requirements. Consequently, their  usage scenarios are limited. 
+
+\section{Animation Mechanism}
+To generate valid data structure animation, we must prove the consistency between the visualization and program. A program is composed of a series of instructions which are executed orderly. Under the control of debugger, program is being paused until step requests come. Every time the program pauses, it represents a new program state. What we need to prove is that every time the new program state has been generated, the animation will respond to it correctly.
+
+\subsection{Visual Nodes}
+Object graph details the relationships between objects. We can get one object graph \(G = (V, E)\) for a given object at certain program state. The vertex set $V_P$ is defined by objects which refer to that given object directly or indirectly, and the edge set $E$ is defined by reference relationships among those objects.
+
+\noindent By iterating the object graph using next actions, we will get a subgraph of it, \(G_p = (V_p, E_p)\). Based on $G_p$, we can define a new graph \(G_v = (V_v, E_v)\). Here the vertex set is defined by visual nodes which are generated from a non-injective and surjective function \(f:V_p\shortrightarrow V_v\), (\textbf{\textit{TODO}}: illustration) and the edge set is defined by attributes indicated in create actions.
+
+\subsection{Visualization State}
+
+\section{Example Explanation}
+operator: pattern \{
+\\\indent exec plus when (self.op === 0),
+\\\indent exec minus when (self.op === 1),
+\\\indent exec times when (self.op === 2),
+\\\indent exec divide when (self.op === 3),
+\\\indent exec value when (typeof self === 'number')
+\\ \}
 
 \end{document}
+
