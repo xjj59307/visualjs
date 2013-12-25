@@ -13,9 +13,12 @@ To generate valid data structure animation, we must prove the consistency betwee
 \subsection{Visual Nodes}
 Object graph details the relationships between objects. We can get one object graph \(G = (V, E)\) for a given object at certain program state. The vertex set $V_P$ is defined by objects which refer to that given object directly or indirectly, and the edge set $E$ is defined by reference relationships among those objects.
 
-\noindent By iterating the object graph using next actions, we will get a subgraph of it, \(G_p = (V_p, E_p)\). Based on $G_p$, we can define a new graph \(G_v = (V_v, E_v)\). Here the vertex set is defined by visual nodes which are generated from a non-injective and surjective function \(f:V_p\shortrightarrow V_v\), (\textbf{\textit{TODO}}: illustration) and the edge set is defined by attributes indicated in create actions.
+\noindent By iterating the object graph using next actions, we will get a subgraph of it, \(G_p = (V_p, E_p)\). Visual nodes are defined based on this graph. 
+
+\noindent Visual nodes including two types, node and edge, are created by create actions. They are also a graph, \(G_v = (V_v, E_v)\). The vertex set is defined by visual nodes of node type. They are related to $V_p$. The relationships can be defined as a non-injective and surjective function \(f:V_p\shortrightarrow V_v\) (\textbf{\textit{TODO}}: illustration). The edge set is defined by visual nodes of edge type.
 
 \subsection{Visualization State}
+
 
 \section{Example Explanation}
 operator: pattern \{
