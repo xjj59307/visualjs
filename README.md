@@ -3,13 +3,13 @@ VisualJS
 
 Bind visual elements with program dynamic information from `node --debug-brk` using v8 protocol, and make algorithm animation in browser using d3.js
 
-### To run
+## Installation and Running 
 
 1. Install project dependencies with `npm install`.
 2. Start debugger on target with `node app file-to-debug.js`.
 3. Open http://localhost:3000/.
 
-### Example
+## Example
 
 The javascript program generates a math expression tree.
 ```js
