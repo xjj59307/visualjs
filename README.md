@@ -11,6 +11,7 @@ Bind visual elements with program dynamic information from `node --debug-brk` us
 
 ### Example
 
+The javascript program generates a math expression tree.
 ```js
 // Generate a math expression tree with height 4.
 var generate = function(depth) {
@@ -26,6 +27,7 @@ var left = root.left;
 var right = root.right;
 ```
 
+The script showed how to create program driven visualization.
 ```
 operator: pattern {
   exec plus when (self.op === 0),
@@ -69,4 +71,5 @@ value: action {
 }
 ```
 
+Screenshot of above example. 
 ![ScreenShot](https://raw.github.com/xjj59307/visualjs/master/screenshots/screenshot-mathexpression.png)
