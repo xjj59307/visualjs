@@ -183,12 +183,14 @@ var isSyntaxError = function(err) {
 // statements e.g. 'for (var i = 0; i < 10; i++) console.log(i);'
 // First attempt to evaluate as expression with parens.
 // This catches '{a : 1}' properly.
-BrowserInterface.prototype.evaluate = function(code, callback, isStmt) {
+// If dpeth equals to -1, it means infinity.
+BrowserInterface.prototype.evaluate = function(code, callback, isStmt, depth) {
   if (!this._requireConnection()) return;
 
-  var self = this,
-  client = this.client,
-  frame = client.currentFrame;
+  var self = this;
+  var client = this.client;
+  var frame = client.currentFrame;
+  var depth = depth ? depth : 3;
 
   // Request remote evaluation globally or in current frame
   client.requireFrameEval(
@@ -203,7 +205,7 @@ BrowserInterface.prototype.evaluate = function(code, callback, isStmt) {
         self.evaluate(code, callback, true);
       } else {
         // Request object by handles
-        client.mirrorObject(res, 3, function(err, mirror) {
+        client.mirrorObject(res, depth, function(err, mirror) {
           if (err) callback(err);
           callback(null, mirror);
         });

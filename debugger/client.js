@@ -199,6 +199,7 @@ Client.prototype.step = function(action, count, callback) {
   this.send(req, callback);
 };
 
+// If dpeth equals to -1, it means infinity.
 Client.prototype.mirrorObject = function(handle, depth, callback) {
   var self = this;
 
@@ -237,7 +238,7 @@ Client.prototype.mirrorObject = function(handle, depth, callback) {
           name: property.name,
           value: mirrorValue
         };
-        if (value && value.handle && depth > 0) {
+        if (value && value.handle && depth !== 0) {
           waiting++;
           self.mirrorObject(value, depth - 1, function(err, result) {
             if (!err) keyValues[index].value = result;
