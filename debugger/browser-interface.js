@@ -55,8 +55,8 @@ var addListeners = function(browserInterface, jobQueue) {
     jobQueue.addTask(TASK.NEW_EXPRESSION);
 
     var expr = job.data;
-    browserInterface.addExpr(expr, function(visualNodes) {
-      browserInterface.getSocket().emit('update view', visualNodes);
+    browserInterface.addExpr(expr, function(err, visualNodes) {
+      browserInterface.getSocket().emit('update view', err || visualNodes);
       browserInterface.finishTask(TASK.NEW_EXPRESSION);
     });
   });
@@ -117,7 +117,7 @@ BrowserInterface.prototype.addExpr = function(expr, callback) {
 
   var animator = new Animator(expr, code, this, function(err) {
     if (!err) self.exprSet.add(expr);
-    callback(err || animator.getInitialGraph());
+    callback(err, animator.getInitialGraph());
   });
 };
 
