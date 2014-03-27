@@ -24,7 +24,7 @@ var Animator = function(objectStr, code, browserInterface, callback) {
   browserInterface.evaluate(objectStr, function(err, object) {
     if (!err) self._update(object, callback);
     callback(err);
-  }, false, -1);
+  });
 };
 
 // Update visual objects.

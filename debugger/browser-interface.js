@@ -115,9 +115,9 @@ BrowserInterface.prototype.addExpr = function(expr, callback) {
   var fs = require('fs');
   var code = '' + fs.readFileSync('./debugger/math.visjs');
 
-  var animator = new Animator(expr, code, this, function() {
-    self.exprSet.add(expr);
-    callback(animator.getInitialGraph());
+  var animator = new Animator(expr, code, this, function(err) {
+    if (!err) self.exprSet.add(expr);
+    callback(err || animator.getInitialGraph());
   });
 };
 
@@ -179,39 +179,21 @@ var isSyntaxError = function(err) {
     err.match(/\n    at Object.parse \(native\)\n/));
 };
 
-// Try to evaluate both expressions e.g. '{ a : 1 }' and
-// statements e.g. 'for (var i = 0; i < 10; i++) console.log(i);'
-// First attempt to evaluate as expression with parens.
-// This catches '{a : 1}' properly.
-// If dpeth equals to -1, it means infinity.
-BrowserInterface.prototype.evaluate = function(code, callback, isStmt, depth) {
+BrowserInterface.prototype.evaluate = function(code, callback) {
   if (!this._requireConnection()) return;
 
   var self = this;
   var client = this.client;
   var frame = client.currentFrame;
-  var depth = depth ? depth : 3;
 
   // Request remote evaluation globally or in current frame
-  client.requireFrameEval(
-    isStmt ? code : "(" + code + ")",
-    frame,
-    function(err, res) {
-      if (err && !isSyntaxError(err)) callback(err);
+  client.requireFrameEval(code, frame, function(err, res) {
+      if (err) { callback(err); return; }
 
-      if (typeof res === 'function' &&
-          /^[\r\n\s]*function/.test(code) ||
-          err) {
-        self.evaluate(code, callback, true);
-      } else {
-        // Request object by handles
-        client.mirrorObject(res, depth, function(err, mirror) {
-          if (err) callback(err);
-          callback(null, mirror);
-        });
-      }
-    }
-  );
+      client.mirrorObject(res, -1, function(err, mirror) {
+        callback(err, mirror);
+      });
+  });
 };
 
 // Get running code chunk around current line

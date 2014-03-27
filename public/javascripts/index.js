@@ -42,6 +42,7 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace"],
 
   // TODO: update multi-view
   socket.on("update view", function(data) {
+    if (typeof data === 'string') { alert(data); return; }
     tree.plot(data);
   });
 
