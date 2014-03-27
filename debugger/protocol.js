@@ -14,7 +14,9 @@ var Protocol = function(obj) {
 util.inherits(Protocol, net.Stream);
 
 Protocol.prototype._handleResponse = function(response) {
+  var self = this;
   var requestSeq = response.request_seq;
+
   if (self.sendedRequests[requestSeq]) {
     // Response for sended request
     var request = self.sendedRequests[requestSeq];
@@ -26,11 +28,8 @@ Protocol.prototype._handleResponse = function(response) {
         err = response.body.message || true;
       }
 
-      request.callback.call(
-        self,
-        err,
-        response.body && response.body.body || response.body, response
-      );
+      request.callback.call(self, err,
+        response.body && response.body.body || response.body, response);
     }
     delete self.sendedRequests[requestSeq];
   } else {
@@ -45,10 +44,7 @@ Protocol.prototype._handleResponse = function(response) {
 };
 
 Protocol.prototype._newResponse = function(raw) {
-  this.response = {
-    raw: raw || '',
-    headers: {}
-  };
+  this.response = { raw: raw || '', headers: {} };
   this.state = 'headers';
   this._execute('');
 };
@@ -91,15 +87,10 @@ Protocol.prototype._execute = function(data) {
         ).toString('utf8');
         response.body = response.body.length ? JSON.parse(response.body) : {};
 
-        if (this.contentLength) {
-          this._handleResponse(response.body);
-        }
+        if (this.contentLength) this._handleResponse(response.body);
 
-        this._newResponse(
-          buf.slice(
-            this.bodyStartByteIndex + this.contentLength
-          ).toString('utf8')
-        );
+        this._newResponse(buf.slice(
+            this.bodyStartByteIndex + this.contentLength).toString('utf8'));
       }
       break;
     default:
@@ -108,10 +99,10 @@ Protocol.prototype._execute = function(data) {
 };
 
 Protocol.prototype.connectToNode = function(callback) {
-  var inHeader = true,
-  body = '',
-  currentLength = 0;
-  self = this;
+  var inHeader = true;
+  var body = '';
+  var currentLength = 0;
+  var self = this;
 
   self.setEncoding('utf8');
   self.on('error', function() {

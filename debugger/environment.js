@@ -1,27 +1,21 @@
 var _ = require('underscore');
 var async = require('async');
 
-var Environment = function(environment, visualObject, evaluate, callback) {
-  callback = callback || function() {};
-
-  var self = this;
+// TODO: Nested environment.
+var Environment = function(origin, visualObject) {
+  var environment = this;
   this.nodeTable = {};
   this.variableTable = {};
 
-  async.each(_.pairs(environment), function(pair, callback) {
+  _.each(_.pairs(origin), function(pair) {
     var name = pair[0];
     var valueStr = pair[1];
 
-    if (visualObject.isNode(valueStr)) {
-      self.nodeTable[name] = visualObject.getNode(valueStr);
-      callback();
-    } else {
-      evaluate(valueStr, function(err, value) {
-        self.variableTable[name] = value; 
-        callback(err);
-      });
-    }
-  }, function(err) { callback(err); });
+    if (visualObject.isNode(valueStr))
+      environment.nodeTable[name] = visualObject.getNode(valueStr);
+    else
+      environment.variableTable[name] = eval(valueStr); 
+  });
 };
 
 Environment.prototype.getValue = function(name) {

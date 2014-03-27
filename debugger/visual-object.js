@@ -7,42 +7,34 @@ var VisualNode = function(name, type, attributes) {
   this.attributes = attributes;
 };
 
-var VisualObject = function(
-    objectHandle, environment, createActions, evaluate, callback) {
-  callback = callback || function() {};
-
-  var self = this;
-  this.objectHandle = objectHandle; 
+var VisualObject = function(environment, createActions) {
+  var visualObject = this;
   this.environment = environment;
   this.visualNodes = [];
 
   // Create visual nodes using create actions.
-  async.eachSeries(createActions, function(createAction, callback) {
+  _.each(createActions, function(createAction) {
     var attributes = {};
-    async.each(_.pairs(createAction.attributes), function(pair, callback) {
+
+    _.each(_.pairs(createAction.attributes), function(pair) {
       var name = pair[0];
+      var valueStr = pair[1];
+
       // TODO: Value has three possiblities: visual node, environment variable
       // or javascript expression. Here only handled tree layout.
-      var value;
       if (name === 'from' || name === 'to') {
         attributes[name] =
-          environment.getNode(pair[1]) || self.getNode(pair[1]);
-        callback();
+          environment.getNode(valueStr) || visualObject.getNode(valueStr);
       } else {
-        value = environment.getValue(pair[1]);
-        if (!value) {
-          evaluate(pair[1], function(err, value) {
-            if (!err) attributes[name] = value;
-            callback(err);
-          });
-        }
+        var value = environment.getValue(valueStr);
+        if (_.isNull(value)) value = eval(valueStr);
+        attributes[name] = value;
       }
-    }, function(err) {
-      if (!err) self.visualNodes.push(
-        new VisualNode(createAction.name, createAction.node_type, attributes));
-      callback(err);
     });
-  }, function(err) { callback(err); });
+
+    visualObject.visualNodes.push(
+      new VisualNode(createAction.name, createAction.node_type, attributes));
+  });
 };
 
 VisualObject.prototype.isNode = function(name) {
