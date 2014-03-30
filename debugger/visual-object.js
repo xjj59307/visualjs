@@ -8,7 +8,7 @@ var VisualNode = function(name, type, attributes) {
 };
 
 var VisualObject = function(environment, createActions) {
-  var visualObject = this;
+  var self = this;
   this.environment = environment;
   this.visualNodes = [];
 
@@ -24,7 +24,7 @@ var VisualObject = function(environment, createActions) {
       // or javascript expression. Here only handled tree layout.
       if (name === 'from' || name === 'to') {
         attributes[name] =
-          environment.getNode(valueStr) || visualObject.getNode(valueStr);
+          environment.getNode(valueStr) || self.getNode(valueStr);
       } else {
         var value = environment.getValue(valueStr);
         if (_.isNull(value)) value = eval(valueStr);
@@ -32,7 +32,7 @@ var VisualObject = function(environment, createActions) {
       }
     });
 
-    visualObject.visualNodes.push(
+    self.visualNodes.push(
       new VisualNode(createAction.name, createAction.node_type, attributes));
   });
 };

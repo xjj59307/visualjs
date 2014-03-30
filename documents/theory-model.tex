@@ -5,7 +5,7 @@
 \section{Introduction}
 The typical process of using debugger in IDE is to step through the program with examining program state (values of variables and the call stack) to understand the program and detect bugs.
 
-\noindent In visualJS, our goal is to animate an arbitrary data structure implementation without breaking the normal debugging experience. To achieve this goal, we won't insert anything into source code and permit users to select and modified visualization method and target object dynamically. Most of current tools can't meet these two requirements. Consequently, their  usage scenarios are limited. 
+\noindent In visualJS, our goal is to animate an arbitrary data structure implementation without breaking the normal debugging experience. To achieve this goal, source code will not be edited, and users can modify visualization method dynamically. Most of current tools can't meet these two requirements. Consequently, their usage scenarios are limited. 
 
 \section{Animation Mechanism}
 To generate valid data structure animation, we must prove the consistency between the visualization and program. A program is composed of a series of instructions which are executed orderly. Under the control of debugger, program is being paused until step requests come. Every time the program pauses, it represents a new program state. What we need to prove is that every time the new program state has been generated, the animation will respond to it correctly.

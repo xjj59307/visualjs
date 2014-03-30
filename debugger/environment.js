@@ -3,7 +3,7 @@ var async = require('async');
 
 // TODO: Nested environment.
 var Environment = function(origin, visualObject) {
-  var environment = this;
+  var self = this;
   this.nodeTable = {};
   this.variableTable = {};
 
@@ -12,9 +12,9 @@ var Environment = function(origin, visualObject) {
     var valueStr = pair[1];
 
     if (visualObject.isNode(valueStr))
-      environment.nodeTable[name] = visualObject.getNode(valueStr);
+      self.nodeTable[name] = visualObject.getNode(valueStr);
     else
-      environment.variableTable[name] = eval(valueStr); 
+      self.variableTable[name] = eval(valueStr); 
   });
 };
 
