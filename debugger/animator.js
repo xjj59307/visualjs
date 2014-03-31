@@ -30,12 +30,13 @@ var Animator = function(objectStr, code, browserInterface, callback) {
 // Update visual objects.
 // TODO: Handle exception thrown by eval calling.
 Animator.prototype._update = function(object) {
-  // self will be used for evaluting.
+  // Variable name self might be used in following eval.
+  // Avoid using any variable naming self in realted code!
   var animator = this;
 
   var iterate = function(target, environment) {
     // Bind self keyword for current node.
-    eval(format('self = %s', target));
+    eval(format('global.self = %s;', target));
 
     // Filter exec actions based on its condition code.
     var matched = _.find(animator.pattern.matches, function(match) {
@@ -53,13 +54,13 @@ Animator.prototype._update = function(object) {
     var visualObject = new VisualObject(environment, matchedAction.createActions);
     animator.visualObjects.push(visualObject);
 
-    var currentSelf = self;
+    var currentSelf = global.self;
 
     // Handle next iterations.
     _.each(matchedAction.nextActions, function(nextAction) {
       var environment = new Environment(nextAction.environment, visualObject);
       iterate(nextAction.next, environment);
-      self = currentSelf;
+      global.self = currentSelf;
     });
   };
 

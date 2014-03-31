@@ -8,7 +8,8 @@ var VisualNode = function(name, type, attributes) {
 };
 
 var VisualObject = function(environment, createActions) {
-  var self = this;
+  // Variable name self might be used in following eval.
+  var instance = this;
   this.environment = environment;
   this.visualNodes = [];
 
@@ -24,7 +25,7 @@ var VisualObject = function(environment, createActions) {
       // or javascript expression. Here only handled tree layout.
       if (name === 'from' || name === 'to') {
         attributes[name] =
-          environment.getNode(valueStr) || self.getNode(valueStr);
+          environment.getNode(valueStr) || instance.getNode(valueStr);
       } else {
         var value = environment.getValue(valueStr);
         if (_.isNull(value)) value = eval(valueStr);
@@ -32,7 +33,7 @@ var VisualObject = function(environment, createActions) {
       }
     });
 
-    self.visualNodes.push(
+    instance.visualNodes.push(
       new VisualNode(createAction.name, createAction.node_type, attributes));
   });
 };

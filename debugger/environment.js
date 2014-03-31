@@ -3,7 +3,8 @@ var async = require('async');
 
 // TODO: Nested environment.
 var Environment = function(origin, visualObject) {
-  var self = this;
+  // Variable name self might be used in following eval.
+  var instance = this;
   this.nodeTable = {};
   this.variableTable = {};
 
@@ -12,9 +13,9 @@ var Environment = function(origin, visualObject) {
     var valueStr = pair[1];
 
     if (visualObject.isNode(valueStr))
-      self.nodeTable[name] = visualObject.getNode(valueStr);
+      instance.nodeTable[name] = visualObject.getNode(valueStr);
     else
-      self.variableTable[name] = eval(valueStr); 
+      instance.variableTable[name] = eval(valueStr); 
   });
 };
 
