@@ -32,27 +32,28 @@ var Animator = function(objectStr, code, browserInterface, callback) {
 Animator.prototype._update = function(object) {
   // Variable name self might be used in following eval.
   // Avoid using any variable naming self in realted code!
-  var animator = this;
+  var instance = this;
 
   var iterate = function(target, environment) {
     // Bind self keyword for current node.
     eval(format('global.self = %s;', target));
 
     // Filter exec actions based on its condition code.
-    var matched = _.find(animator.pattern.matches, function(match) {
+    var matched = _.find(instance.pattern.matches, function(match) {
       var result = eval(match.conditionCode);
       return (typeof result === 'boolean') ? result : false;
     });
     if (_.isUndefined(matched)) return;
 
     // Get action to be executed.
-    var matchedAction = _.find(animator.actions, function(action) {
+    var matchedAction = _.find(instance.actions, function(action) {
       return action.name === matched.actionName;
     });
 
     // Create visual object and push it back.
-    var visualObject = new VisualObject(environment, matchedAction.createActions);
-    animator.visualObjects.push(visualObject);
+    var visualObject =
+      new VisualObject(environment, matchedAction.createActions);
+    instance.visualObjects.push(visualObject);
 
     var currentSelf = global.self;
 

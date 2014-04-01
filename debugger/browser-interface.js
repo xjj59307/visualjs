@@ -186,14 +186,25 @@ BrowserInterface.prototype.evaluate = function(code, callback) {
   var client = this.client;
   var frame = client.currentFrame;
 
-  // Request remote evaluation globally or in current frame
-  client.requireFrameEval(code, frame, function(err, res) {
+  // Target is variable name the first time or handle from the second time.
+  if (typeof code === 'string') {
+    // Request remote evaluation globally or in current frame
+    client.requireFrameEval(code, frame, function(err, res) {
+        if (err) { callback(err); return; }
+
+        client.mirrorObject(res, -1, function(err, mirror) {
+          callback(err, mirror);
+        });
+    });
+  } else if (typeof code === 'number'){
+    client.requireLookup([code], function(err, res) { 
       if (err) { callback(err); return; }
 
-      client.mirrorObject(res, -1, function(err, mirror) {
+      client.mirrorObject(res[code], -1, function(err, mirror) {
         callback(err, mirror);
       });
-  });
+    });
+  } else { callback(new Error()); }
 };
 
 // Get running code chunk around current line

@@ -202,7 +202,6 @@ Client.prototype.step = function(action, count, callback) {
 // If dpeth equals to -1, it means infinity.
 Client.prototype.mirrorObject = function(handle, depth, callback) {
   var self = this;
-
   var value;
 
   if (handle.type === 'object') {
@@ -212,13 +211,10 @@ Client.prototype.mirrorObject = function(handle, depth, callback) {
 
     callback = callback || function() {};
     this.requireLookup(propertyRefs, function(err, res) {
-      if (err) {
-        callback(err, handle);
-        return;
-      }
+      if (err) { callback(err, handle); return; }
 
-      var mirror,
-      waiting = 1;
+      var mirror;
+      var waiting = 1;
 
       if (handle.className === 'Array') mirror = [];
       else if (handle.className === 'Date') mirror = new Date(handle.value);
@@ -257,9 +253,9 @@ Client.prototype.mirrorObject = function(handle, depth, callback) {
         }
       }
     });
+
     return;
   } else if (handle.type === 'function') {
-    // value = function() {};
     value = '[Function]';
   } else if (handle.type === 'null') {
     value = null;
@@ -270,6 +266,7 @@ Client.prototype.mirrorObject = function(handle, depth, callback) {
   } else {
     value = handle;
   }
+
   process.nextTick(function() {
     callback(null, value);
   });
