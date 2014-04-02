@@ -185,6 +185,7 @@ BrowserInterface.prototype.evaluate = function(code, callback) {
   var self = this;
   var client = this.client;
   var frame = client.currentFrame;
+  global._objectToHandle = {};
 
   // Target is variable name the first time or handle from the second time.
   if (typeof code === 'string') {
@@ -193,7 +194,7 @@ BrowserInterface.prototype.evaluate = function(code, callback) {
         if (err) { callback(err); return; }
 
         client.mirrorObject(res, -1, function(err, mirror) {
-          callback(err, mirror);
+          callback(err, mirror, res.handle);
         });
     });
   } else if (typeof code === 'number'){
@@ -201,7 +202,7 @@ BrowserInterface.prototype.evaluate = function(code, callback) {
       if (err) { callback(err); return; }
 
       client.mirrorObject(res[code], -1, function(err, mirror) {
-        callback(err, mirror);
+        callback(err, mirror, res[code].handle);
       });
     });
   } else { callback(new Error()); }

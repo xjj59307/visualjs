@@ -20,11 +20,14 @@ var Animator = function(objectStr, code, browserInterface, callback) {
     return actions;
   }, []);
 
-  // Get deep copy of the object and update its visual objects.
-  browserInterface.evaluate(objectStr, function(err, object) {
+  var update = function(err, object, handle) {
     if (!err) self._update(object, callback);
+    self.rootHandle = handle;
     callback(err);
-  });
+  };
+
+  // Get deep copy of the object and update its visual objects.
+  browserInterface.evaluate(objectStr, update);
 };
 
 // Update visual objects.

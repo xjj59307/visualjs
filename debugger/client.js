@@ -220,6 +220,8 @@ Client.prototype.mirrorObject = function(handle, depth, callback) {
       else if (handle.className === 'Date') mirror = new Date(handle.value);
       else mirror = {};
 
+      global._objectToHandle[handle.handle] = mirror;
+
       var keyValues = [];
       handle.properties.forEach(function(property, index) {
         var value = res[property.ref];
