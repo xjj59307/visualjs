@@ -220,7 +220,8 @@ Client.prototype.mirrorObject = function(handle, depth, callback) {
       else if (handle.className === 'Date') mirror = new Date(handle.value);
       else mirror = {};
 
-      global._objectToHandle[handle.handle] = mirror;
+      // Store object handle in mirror object.
+      mirror.__handle__ = handle.handle;
 
       var keyValues = [];
       handle.properties.forEach(function(property, index) {
@@ -282,32 +283,22 @@ Client.prototype.requireContinue = function(callback) {
 };
 
 Client.prototype.setBreakpoint = function(req, callback) {
-  var command = {
-    command: 'setbreakpoint',
-    arguments: req
-  };
-
+  var command = { command: 'setbreakpoint', arguments: req };
   this.send(command, callback);
 };
 
 Client.prototype.clearBreakpoint = function(req, callback) {
-  var command = {
-    command: 'clearbreakpoint',
-    arguments: req
-  };
-
+  var command = { command: 'clearbreakpoint', arguments: req };
   this.send(command, callback);
 };
 
 Client.prototype.continue = function(callback) {
   var req = { command: 'continue' };
-
   this.send(req, callback);
 };
 
 Client.prototype.listBreakpoints = function(callback) {
   var req = { command: 'listbreakpoints' };
-
   this.send(req, callback);
 };
 

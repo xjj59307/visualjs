@@ -185,7 +185,6 @@ BrowserInterface.prototype.evaluate = function(code, callback) {
   var self = this;
   var client = this.client;
   var frame = client.currentFrame;
-  global._objectToHandle = {};
 
   // Target is variable name the first time or handle from the second time.
   if (typeof code === 'string') {

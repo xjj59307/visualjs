@@ -1,13 +1,14 @@
 var _ = require('underscore');
 var async = require('async');
 
-var VisualNode = function(name, type, attributes) {
+var VisualNode = function(name, type, handle, attributes) {
   this.name = name;
   this.type = type;
+  this.handle = handle;
   this.attributes = attributes;
 };
 
-var VisualObject = function(environment, createActions) {
+var VisualObject = function(handle, environment, createActions) {
   // Variable name self might be used in following eval.
   var instance = this;
   this.environment = environment;
@@ -33,8 +34,8 @@ var VisualObject = function(environment, createActions) {
       }
     });
 
-    instance.visualNodes.push(
-      new VisualNode(createAction.name, createAction.node_type, attributes));
+    instance.visualNodes.push(new VisualNode(
+      createAction.name, createAction.node_type, handle, attributes));
   });
 };
 

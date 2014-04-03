@@ -54,8 +54,8 @@ Animator.prototype._update = function(object) {
     });
 
     // Create visual object and push it back.
-    var visualObject =
-      new VisualObject(environment, matchedAction.createActions);
+    var visualObject = new VisualObject(
+      global.self.__handle__, environment, matchedAction.createActions);
     instance.visualObjects.push(visualObject);
 
     var currentSelf = global.self;
