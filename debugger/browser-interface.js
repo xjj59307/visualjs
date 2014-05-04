@@ -1,3 +1,4 @@
+var _ = require('underscore');
 var util = require('util');
 var buckets = require('buckets');
 var Client = require('./client');
@@ -10,9 +11,6 @@ var addListeners = function(browserInterface, jobQueue) {
   var handleStepJob = function(task) {
     jobQueue.addTask(task);
     jobQueue.addTask(TASK.REQUIRE_SOURCE);
-    browserInterface.getExprList().forEach(function(expr) {
-      jobQueue.addTask(expr);
-    });
   };
 
   jobQueue.on(JOB.STEP_IN, function() {
@@ -66,7 +64,6 @@ var BrowserInterface = function() {
   var self = this;
 
   // expression list to evluate when stepping through
-  this.exprSet = new buckets.Set();
   this.jobQueue = new JobQueue();
   addListeners(this, this.jobQueue);
 
@@ -115,14 +112,9 @@ BrowserInterface.prototype.addExpr = function(expr, callback) {
   var fs = require('fs');
   var code = '' + fs.readFileSync('./debugger/math.visjs');
 
-  var animator = new Animator(expr, code, this, function(err) {
-    if (!err) self.exprSet.add(expr);
-    callback(err, animator.getInitialGraph());
+  this.animator = new Animator(expr, code, this, function(err) {
+    callback(err, self.animator.getInitialGraph());
   });
-};
-
-BrowserInterface.prototype.getExprList = function() {
-  return this.exprSet.toArray();
 };
 
 BrowserInterface.prototype._requireConnection = function() {
@@ -141,26 +133,21 @@ BrowserInterface.prototype._handleBreak = function(res) {
   this.client.currentFrame = 0;
 
   // inform client to update source
-  if (this.socket) this.requireSource(function(source, currentLine) {
-    self.socket.emit('update source', {
-      source: source,
-      currentLine: currentLine
+  if (_.has(this, 'socket'))
+    this.requireSource(function(source, currentLine) {
+      self.socket.emit('update source', {
+        source: source,
+        currentLine: currentLine
+      });
+      self.jobQueue.finishTask(TASK.REQUIRE_SOURCE);
     });
-    self.jobQueue.finishTask(TASK.REQUIRE_SOURCE);
-  });
 
   // inform client to update view
-  this.getExprList().forEach(function(expr) {
-    self.evaluate(expr, function(err, obj) {
-      if (err) {
-        // TODO: Handle server error on the client side.
-        self.emit('server error', err);
-      } else {
-        self.socket.emit('update view', { expr: expr, result: obj });
-        self.jobQueue.finishTask(expr);
-      }
+  if (_.has(this, 'animator'))
+    this.animator.update(function(err) {
+      var visualNodes = self.animator.getInitialGraph();
+      self.getSocket().emit('update view', err || visualNodes);
     });
-  });
 };
 
 // Returns `true` if "err" is a SyntaxError, `false` otherwise.
@@ -190,18 +177,21 @@ BrowserInterface.prototype.evaluate = function(code, callback) {
   if (typeof code === 'string') {
     // Request remote evaluation globally or in current frame
     client.requireFrameEval(code, frame, function(err, res) {
-        if (err) { callback(err); return; }
+      if (err) { callback(err); return; }
 
-        client.mirrorObject(res, -1, function(err, mirror) {
-          callback(err, mirror, res.handle);
-        });
+      client.mirrorObject(res, -1, function(err, mirror) {
+        callback(err, mirror, res.handle);
+      });
     });
-  } else if (typeof code === 'number'){
+  } else if (typeof code === 'number') {
+    // TODO: magic
+    client.requireFrameEval('global', frame, function(err, res) {});
+
     client.requireLookup([code], function(err, res) { 
       if (err) { callback(err); return; }
 
       client.mirrorObject(res[code], -1, function(err, mirror) {
-        callback(err, mirror, res[code].handle);
+        callback(err, mirror);
       });
     });
   } else { callback(new Error()); }

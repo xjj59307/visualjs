@@ -11,6 +11,7 @@ var Environment = require('./environment');
 var Animator = function(objectStr, code, browserInterface, callback) {
   var self = this;
   this.visualObjects = [];
+  this.browserInterface = browserInterface;
 
   // Construct pattern object and action objects from visualjs code.
   var ast = visualjs.parse(code);
@@ -20,14 +21,22 @@ var Animator = function(objectStr, code, browserInterface, callback) {
     return actions;
   }, []);
 
-  var update = function(err, object, handle) {
+  // Get deep copy of the object and update its visual objects.
+  browserInterface.evaluate(objectStr, function(err, object, handle) {
     if (!err) self._update(object, callback);
     self.rootHandle = handle;
     callback(err);
-  };
+  });
+};
 
-  // Get deep copy of the object and update its visual objects.
-  browserInterface.evaluate(objectStr, update);
+Animator.prototype.update = function(callback) {
+  var self = this;
+  this.visualObjects = [];
+
+  this.browserInterface.evaluate(this.rootHandle, function(err, object) {
+    if (!err) self._update(object, callback);
+    callback(err);
+  });
 };
 
 // Update visual objects.
