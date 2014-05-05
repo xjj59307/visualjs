@@ -66,8 +66,10 @@ define(["lib/d3.v3", "lib/jquery-1.8.2", "lib/underscore"], function (d3, $, _) 
 
     root.x0 = 0;
     root.y0 = 0;
+
     // Remove all nodes of last object.
     $('g.node, path.edge').remove();
+
     update(root);
 
     function update(source) {

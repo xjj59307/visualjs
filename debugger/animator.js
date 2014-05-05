@@ -10,6 +10,7 @@ var Environment = require('./environment');
 // It provides animation initialization and updating interface.
 var Animator = function(objectStr, code, browserInterface, callback) {
   var self = this;
+  this.root = objectStr;
   this.visualObjects = [];
   this.browserInterface = browserInterface;
 
@@ -22,9 +23,8 @@ var Animator = function(objectStr, code, browserInterface, callback) {
   }, []);
 
   // Get deep copy of the object and update its visual objects.
-  browserInterface.evaluate(objectStr, function(err, object, handle) {
+  browserInterface.evaluate(objectStr, function(err, object) {
     if (!err) self._update(object, callback);
-    self.rootHandle = handle;
     callback(err);
   });
 };
@@ -33,7 +33,7 @@ Animator.prototype.update = function(callback) {
   var self = this;
   this.visualObjects = [];
 
-  this.browserInterface.evaluate(this.rootHandle, function(err, object) {
+  this.browserInterface.evaluate(this.root, function(err, object) {
     if (!err) self._update(object, callback);
     callback(err);
   });

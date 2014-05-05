@@ -3,7 +3,7 @@ operator: pattern {
   exec minus when (self.op === 1),
   exec times when (self.op === 2),
   exec divide when (self.op === 3),
-  exec value when (typeof self === 'number')
+  exec value when (typeof self.value === 'number')
 }
 
 plus: action {
@@ -35,6 +35,6 @@ divide: action {
 }
 
 value: action {
-  create node=tree_node(label = self),
+  create node=tree_node(label = self.value),
   create tree_edge(from = parent, to = node)
 }

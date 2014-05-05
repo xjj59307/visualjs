@@ -11,6 +11,7 @@ var addListeners = function(browserInterface, jobQueue) {
   var handleStepJob = function(task) {
     jobQueue.addTask(task);
     jobQueue.addTask(TASK.REQUIRE_SOURCE);
+    jobQueue.addTask(TASK.UPDATE_VIS);
   };
 
   jobQueue.on(JOB.STEP_IN, function() {
@@ -139,7 +140,7 @@ BrowserInterface.prototype._handleBreak = function(res) {
         source: source,
         currentLine: currentLine
       });
-      self.jobQueue.finishTask(TASK.REQUIRE_SOURCE);
+      self.finishTask(TASK.REQUIRE_SOURCE);
     });
 
   // inform client to update view
@@ -147,7 +148,10 @@ BrowserInterface.prototype._handleBreak = function(res) {
     this.animator.update(function(err) {
       var visualNodes = self.animator.getInitialGraph();
       self.getSocket().emit('update view', err || visualNodes);
+      self.finishTask(TASK.UPDATE_VIS);
     });
+  else
+    self.finishTask(TASK.UPDATE_VIS);
 };
 
 // Returns `true` if "err" is a SyntaxError, `false` otherwise.
@@ -180,18 +184,18 @@ BrowserInterface.prototype.evaluate = function(code, callback) {
       if (err) { callback(err); return; }
 
       client.mirrorObject(res, -1, function(err, mirror) {
-        callback(err, mirror, res.handle);
+        callback(err, mirror);
       });
     });
   } else if (typeof code === 'number') {
-    // TODO: magic
-    client.requireFrameEval('global', frame, function(err, res) {});
+    // TODO: requireLookup can't be called at first
+    client.requireFrameEval('1', frame, function() {
+      client.requireLookup([code], function(err, res) { 
+        if (err) { callback(err); return; }
 
-    client.requireLookup([code], function(err, res) { 
-      if (err) { callback(err); return; }
-
-      client.mirrorObject(res[code], -1, function(err, mirror) {
-        callback(err, mirror);
+        client.mirrorObject(res[code], -1, function(err, mirror) {
+          callback(err, mirror);
+        });
       });
     });
   } else { callback(new Error()); }
