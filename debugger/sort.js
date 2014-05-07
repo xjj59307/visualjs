@@ -7,9 +7,8 @@ var generate = function(depth) {
   return { op: operator, left: generate(depth+1), right: generate(depth+1) };
 };
 
-var node = generate(0);
+var root = generate(0);
+root.left.value = 200000000;
+root.right.value *= 2;
 
-node.left.value *= 2;
-
-console.log(node);
-
+root.left = { op: 2, left: { value: 1 }, right: { value: 1 } };
