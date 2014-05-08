@@ -56,6 +56,7 @@ Animator.prototype._update = function(object) {
   var iterate = function(target, environment) {
     // Bind self keyword for current node.
     eval(format('global.self = %s;', target));
+    if (_.isUndefined(global.self) || _.isNull(global.self)) return;
 
     // Filter exec actions based on its condition code.
     var matched = _.find(instance.pattern.matches, function(match) {

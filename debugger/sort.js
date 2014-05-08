@@ -8,7 +8,7 @@ var generate = function(depth) {
 };
 
 var root = generate(0);
-root.left.value = 200000000;
+root.left.value *= 2;
 root.right.value *= 2;
 
-root.left = { op: 2, left: { value: 1 }, right: { value: 1 } };
+root.left = null;
