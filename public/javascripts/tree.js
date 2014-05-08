@@ -13,7 +13,7 @@ define(["lib/d3.v3", "lib/jquery-1.8.2", "lib/underscore"], function (d3, $, _) 
     return [d.x, d.y];
   });
 
-  function onZoom() {
+  var onZoom = function() {
     var translate = "translate(" + d3.event.translate + ")";
     var scale = "scale(" + d3.event.scale + ")";
     svg.attr("transform", translate + " " + scale);
