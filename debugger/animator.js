@@ -5,6 +5,7 @@ var Pattern = require('./pattern');
 var Action = require('./action');
 var VisualObject = require('./visual-object');
 var Environment = require('./environment');
+var TARGET = '__visualObject__'; 
 
 // One animator controls animation logic for one object.
 // It provides animation initialization and updating interface.
@@ -21,25 +22,44 @@ var Animator = function(objectStr, code, browserInterface, callback) {
     return actions;
   }, []);
 
-  var assignment = format('__visualjsObject__ = %s', objectStr);
+  // Get deep copy of the object and update its visual objects.
+  this._assignGUID(objectStr, function(err, object) {
+    if (!err) self._update(object);
+
+    callback(err);
+  });
+};
+
+Animator.prototype._assignGUID = function(target, callback) {
+  // generation of RFC 4122 UUIDS
+  var guid = function guid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+      return v.toString(16);
+    });
+  };
+
+  var assign = function assign(object) {
+    if (typeof object !== 'object') return;
+
+    if (!object.__handle__) object.__handle__ = guid();
+
+    for (prop in object)
+      if (typeof object[prop] === 'object') assign(object[prop]);
+  }; 
+
+  var code = format('%s = %s;', TARGET, target) + guid.toString() +
+    assign.toString() + format('assign(%s);', TARGET) + TARGET;
 
   // Get deep copy of the object and update its visual objects.
-  this.browserInterface.evaluate(assignment, function(err) {
-    if (err) { callback(err); return; }
-
-    self.browserInterface.evaluate(objectStr, function(err, object) {
-      if (!err) self._update(object);
-
-      callback(err);
-    });
-  });
+  this.browserInterface.evaluate(code, callback);
 };
 
 Animator.prototype.update = function(callback) {
   var self = this;
   this.visualObjects = [];
 
-  this.browserInterface.evaluate('__visualjsObject__', function(err, object) {
+  this._assignGUID(TARGET, function(err, object) {
     if (!err) self._update(object);
 
     callback(err);
