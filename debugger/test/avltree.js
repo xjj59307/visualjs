@@ -1,10 +1,3 @@
-// AVLTree ///////////////////////////////////////////////////////////////////
-//   This file is originally from the Concentré XML project (version 0.2.1)
-//   Licensed under GPL and LGPL
-//
-//   Modified by Jeremy Stephens.
-
-// Pass in the attribute you want to use for comparing
 function AVLTree(n, attr) {
     this.init(n, attr);
 }
@@ -161,4 +154,10 @@ AVLTree.prototype.findBest = function(value) {
       return [];
     }
     return this.elements;
+}
+
+var tree = new AVLTree({ value: 0 }, 'value');
+
+for (var i = 0; i < 10; ++i) {
+  tree.add({ value: Math.random() });
 }
