@@ -6,7 +6,7 @@ var io = require('socket.io');
 var exec = require('child_process').exec;
 
 // open debugger in node
-var debuggee = process.argv[2] || "debugger/sort.js";
+var debuggee = process.argv[2] || "debugger/test/math-exp.js";
 var child = exec('node --debug-brk=8000 ' + debuggee, function (error) {
   if (error !== null) {
     console.log('exec error: ' + error);
