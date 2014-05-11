@@ -85,6 +85,10 @@ var BrowserInterface = function() {
   this.client.connectToNode();
 };
 
+BrowserInterface.prototype.setSource = function(source) {
+  this.source = source;
+};
+
 BrowserInterface.prototype.setSocket = function(socket) {
   this.socket = socket;
   this.jobQueue.reset();
@@ -110,8 +114,9 @@ BrowserInterface.prototype.addExpr = function(expr, callback) {
   var self = this;
 
   // TODO: Read visjs file from client.
-  var fs = require('fs');
-  var code = '' + fs.readFileSync('./debugger/test/avltree.visjs');
+  // the filename of visjs file must be consistent with js file
+  var code =
+    '' + require('fs').readFileSync(this.source.slice(0, -2) + 'visjs');
 
   this.animator = new Animator(expr, code, this, function(err) {
     callback(err, self.animator.getInitialGraph());
