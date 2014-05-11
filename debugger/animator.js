@@ -44,8 +44,11 @@ Animator.prototype._assignGUID = function(target, callback) {
 
     if (!object.__handle__) object.__handle__ = guid();
 
-    for (prop in object)
-      if (typeof object[prop] === 'object') assign(object[prop]);
+    for (prop in object) {
+      // typeof null is 'object'
+      if (typeof object[prop] === 'object' && object[prop])
+        assign(object[prop]);
+    }
   }; 
 
   var code = format('%s = %s;', TARGET, target) + guid.toString() +

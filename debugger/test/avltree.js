@@ -159,5 +159,5 @@ AVLTree.prototype.findBest = function(value) {
 var tree = new AVLTree({ value: 0 }, 'value');
 
 for (var i = 0; i < 10; ++i) {
-  tree.add({ value: Math.random() });
+  tree.add({ value: Math.floor(Math.random()*1000) });
 }

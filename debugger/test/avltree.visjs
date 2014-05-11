@@ -1,0 +1,10 @@
+operator: pattern {
+  exec avltree when (true)
+}
+
+avltree: action {
+  create node=tree_node(label = self.node[self.attr]),
+  create tree_edge(from = parent, to = node),
+  next self.left(parent = node),
+  next self.right(parent = node)
+}

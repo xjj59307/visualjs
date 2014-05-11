@@ -111,7 +111,7 @@ BrowserInterface.prototype.addExpr = function(expr, callback) {
 
   // TODO: Read visjs file from client.
   var fs = require('fs');
-  var code = '' + fs.readFileSync('./debugger/test/math-exp.visjs');
+  var code = '' + fs.readFileSync('./debugger/test/avltree.visjs');
 
   this.animator = new Animator(expr, code, this, function(err) {
     callback(err, self.animator.getInitialGraph());
