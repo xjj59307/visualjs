@@ -2,7 +2,7 @@ var _ = require('underscore');
 var Pattern = require('../debugger/pattern');
 
 describe('Pattern', function() {
-  var tree = require('../debugger/ast.json');
+  var tree = require('../debugger/test/ast.json');
   var pattern = new Pattern(tree.pattern);
 
   it('operator pattern: name', function() {

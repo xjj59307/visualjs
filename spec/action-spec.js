@@ -2,7 +2,7 @@ var _ = require('underscore');
 var Action = require('../debugger/action');
 
 describe('Action', function() {
-  var tree = require('../debugger/ast.json');
+  var tree = require('../debugger/test/ast.json');
   var actions = _.reduce(tree.actions, function(actions, actionNode) {
     actions.push(new Action(actionNode));
     return actions;
