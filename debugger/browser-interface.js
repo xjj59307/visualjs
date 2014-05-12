@@ -264,4 +264,8 @@ BrowserInterface.prototype.out = function(callback) {
   this._stepThrough('out', 1, callback);
 };
 
+BrowserInterface.prototype.run = function(callback) {
+  this.client.requireContinue(callback);
+};
+
 module.exports = BrowserInterface;

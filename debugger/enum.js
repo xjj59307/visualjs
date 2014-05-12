@@ -4,6 +4,7 @@ exports.STATE = {
 };
 
 exports.JOB = {
+  RUN: 'run',
   STEP_IN: 'step in',
   STEP_OVER: 'step over',
   STEP_OUT: 'step out',
@@ -13,6 +14,7 @@ exports.JOB = {
 
 // expression evaluating task can't be listed
 exports.TASK = {
+  RUN: 'run',
   STEP_IN: 'step in',
   STEP_OVER: 'step over',
   STEP_OUT: 'step out',

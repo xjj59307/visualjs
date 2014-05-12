@@ -19,6 +19,17 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace"],
   var lastLine;
   var lastMarker;
 
+  // handle mousedown event to (re)set breakpoint
+  editor.on("guttermousedown", function(e){ 
+    var target = e.domEvent.target; 
+    if (target.className.indexOf("ace_gutter-cell") == -1) return; 
+    if (!editor.isFocused()) return; 
+
+    var row = e.getDocumentPosition().row;
+    editor.getSession().addGutterDecoration(row, "program-counter");
+    e.stop();
+  }); 
+
   // get code chunk from server
   socket.on("update source", function(data) {
     editor.getSession().setValue(data.source);
@@ -52,6 +63,10 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace"],
     if (!expr) return;
 
     emitNewJob("new expression", expr);
+  });
+
+  $("button[title='Run/Pause']").on("click", function(event) {
+    emitNewJob("run");
   });
 
   $("button[title='Step in']").on("click", function(event) {
