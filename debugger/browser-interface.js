@@ -38,6 +38,20 @@ var addListeners = function(browserInterface, jobQueue) {
     });
   });
 
+  jobQueue.on(JOB.SET_BREAKPOINT, function(job) {
+    browserInterface.setBreakpoint(job.data, function(err, line) {
+      browserInterface.getSocket().emit('set breakpoint', err || line);
+      browserInterface.finishTask(TASK.SET_BREAKPOINT);
+    });
+  });
+
+  jobQueue.on(JOB.CLEAR_BREAKPOINT, function(job) {
+    browserInterface.clearBreakpoint(job.data, function(err, line) {
+      browserInterface.getSocket().emit('clear breakpoint', err || line);
+      browserInterface.finishTask(TASK.CLEAR_BREAKPOINT);
+    });
+  });
+
   jobQueue.on(JOB.REQUIRE_SOURCE, function() {
     jobQueue.addTask(TASK.REQUIRE_SOURCE);
 
@@ -265,7 +279,64 @@ BrowserInterface.prototype.out = function(callback) {
 };
 
 BrowserInterface.prototype.run = function(callback) {
+  if (!this._requireConnection()) return;
+
   this.client.requireContinue(callback);
+};
+
+BrowserInterface.prototype.setBreakpoint = function(line, callback) {
+  if (!this._requireConnection()) return;
+
+  var self = this;
+  var script = this.client.currentScript;
+  var scriptId = _.find(_.pairs(this.client.scripts), function(pair) {
+    return pair[1].name.indexOf(script) !== -1;
+  })[0];
+
+  var request = {
+    type: 'scriptId',
+    target: scriptId,
+    line: line,
+  };
+
+  this.client.setBreakpoint(request, function(err, res) {
+    if (err) { callback(err); return; }
+
+    self.client.breakpoints.push({
+      id: res.breakpoint,
+      scriptId: scriptId,
+      line: line
+    });
+
+    callback(err, line);
+  });
+};
+
+BrowserInterface.prototype.clearBreakpoint = function(line, callback) {
+  if (!this._requireConnection()) return;
+
+  var self = this;
+  var script = this.client.currentScript;
+  var scriptId = _.find(_.pairs(this.client.scripts), function(pair) {
+    return pair[1].name.indexOf(script) !== -1;
+  })[0];
+
+  var breakpointId;
+  var breakpointIndex;
+
+  _.each(this.client.breakpoints, function(breakpoint, index) {
+    if (breakpoint.scriptId === scriptId && breakpoint.line === line)
+      breakpointId = breakpoint.id;
+      breakpointIndex = index;
+  });
+
+  self.client.clearBreakpoint({ breakpoint: breakpointId }, function(err) {
+    if (err) { callback(err); return; }
+
+    self.client.breakpoints.splice(breakpointIndex, 1);
+
+    callback(err, line);
+  });
 };
 
 module.exports = BrowserInterface;

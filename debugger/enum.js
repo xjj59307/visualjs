@@ -9,7 +9,9 @@ exports.JOB = {
   STEP_OVER: 'step over',
   STEP_OUT: 'step out',
   REQUIRE_SOURCE: 'require source',
-  NEW_EXPRESSION: 'new expression'
+  NEW_EXPRESSION: 'new expression',
+  SET_BREAKPOINT: 'set breakpoint',
+  CLEAR_BREAKPOINT: 'clear breakpoint'
 };
 
 // expression evaluating task can't be listed
@@ -20,5 +22,7 @@ exports.TASK = {
   STEP_OUT: 'step out',
   REQUIRE_SOURCE: 'require source',
   NEW_EXPRESSION: 'new expression',
-  UPDATE_VIS: 'update visual nodes'
+  UPDATE_VIS: 'update visual nodes',
+  SET_BREAKPOINT: 'set breakpoint',
+  CLEAR_BREAKPOINT: 'clear breakpoint'
 };

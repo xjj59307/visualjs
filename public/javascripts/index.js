@@ -22,28 +22,38 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace"],
   // handle mousedown event to (re)set breakpoint
   editor.on("guttermousedown", function(e){ 
     var target = e.domEvent.target; 
-    if (target.className.indexOf("ace_gutter-cell") == -1) return; 
-    if (!editor.isFocused()) return; 
-
     var row = e.getDocumentPosition().row;
-    editor.getSession().addGutterDecoration(row, "program-counter");
+
+    if (target.className.indexOf("ace_gutter-cell") === -1) return; 
+
+    if (target.className.indexOf("program-counter") == -1)
+      emitNewJob("set breakpoint", row);
+    else
+      emitNewJob("clear breakpoint", row);
+
     e.stop();
   }); 
+
+  socket.on("set breakpoint", function(data) { 
+    if (typeof data === 'number')
+      editor.getSession().addGutterDecoration(data, "program-counter");
+    else
+      alert(data);
+  });
+
+  socket.on("clear breakpoint", function(data) { 
+    if (typeof data === 'number')
+      editor.getSession().removeGutterDecoration(data, "program-counter");
+    else
+      alert(data);
+  });
 
   // get code chunk from server
   socket.on("update source", function(data) {
     editor.getSession().setValue(data.source);
-
-    // delete last program counter
-    // TODO: support multi-file
-    if (!_.isUndefined(lastLine))
-      editor.getSession().removeGutterDecoration(lastLine, "program-counter");
     lastLine = data.currentLine;
 
-    // add new program counter
     editor.scrollToLine(data.currentLine + 1, true, true);
-    editor.getSession().addGutterDecoration(
-      data.currentLine, "program-counter");
 
     if (!_.isUndefined(lastMarker))
       editor.getSession().removeMarker(lastMarker);
@@ -51,7 +61,6 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace"],
       new Range(data.currentLine, 0, data.currentLine), 'warning', 'line');
   });
 
-  // TODO: update multi-view
   socket.on("update view", function(data) {
     if (typeof data === 'string') { alert(data); return; }
     tree.plot(data);
