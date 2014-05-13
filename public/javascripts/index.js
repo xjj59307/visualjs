@@ -72,6 +72,8 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace"],
     if (!expr) return;
 
     emitNewJob("new expression", expr);
+
+    $("input").val("");
   });
 
   $("button[title='Run/Pause']").on("click", function(event) {
