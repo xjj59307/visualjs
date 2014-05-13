@@ -14,6 +14,14 @@ var addListeners = function(browserInterface, jobQueue) {
     jobQueue.addTask(TASK.UPDATE_VIS);
   };
 
+  jobQueue.on(JOB.RUN, function() {
+    handleStepJob(TASK.RUN);
+
+    browserInterface.run(function() {
+      browserInterface.finishTask(TASK.RUN);
+    });
+  });
+
   jobQueue.on(JOB.STEP_IN, function() {
     handleStepJob(TASK.STEP_IN);
 
