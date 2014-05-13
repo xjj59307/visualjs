@@ -77,7 +77,11 @@ var addListeners = function(browserInterface, jobQueue) {
 
     var expr = job.data;
     browserInterface.addExpr(expr, function(err, visualNodes) {
+      if (visualNodes.length === 0) err = err || 'target object has no shape';
+
       browserInterface.getSocket().emit('update view', err || visualNodes);
+
+      if (err || visualNodes.length === 0) delete browserInterface.animator;
       browserInterface.finishTask(TASK.NEW_EXPRESSION);
     });
   });
