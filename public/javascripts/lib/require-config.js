@@ -1,7 +1,5 @@
 var require = {
-
     baseUrl: "../javascripts",
-
     paths: {
         "layout": "object-graph/layout",
         "utility": "object-graph/utility",
@@ -13,15 +11,14 @@ var require = {
         "position": "object-graph/position",
         "prim": "object-graph/prim"
     },
-
     shim: {
         "lib/d3.v3": { exports: "d3" },
         "lib/underscore": { exports: "_" },
         "lib/buckets": { exports: "buckets" },
         "lib/priority-queue": { exports: "priorityQueue" },
         "lib/jquery-1.8.2": { exports: "$" },
-        "lib/ace/ace": { exports: "ace" }
+        "lib/ace/ace": { exports: "ace" },
+        "lib/jquery.terminal-0.8.7": {}
     }
-
 };
 

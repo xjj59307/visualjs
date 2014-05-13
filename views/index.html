@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="stylesheets/index.css", type="text/css/">
 <link rel="stylesheet" href="stylesheets/bar-chart.css" type="text/css"/>
 <link rel="stylesheet" href="stylesheets/graph-demo.css" type="text/css"/>
+<link rel="stylesheet" href="stylesheets/jquery.terminal.css" type="text/css"/>
 
 <div class="container-fluid">
   <div class="row-fluid">
@@ -39,10 +40,14 @@
           </div>
         </div>
 
-        <!-- this span is always displayed with left margin,
-        so I delete it manually -->
+        <!-- following spans are always displayed with left margin,
+        so I reset it manually -->
         <div class="span12" style="margin-left:0px">
           <div id="editor"/>
+        </div>
+
+        <div class="span12" style="margin-left:0px">
+          <div id="terminal"/>
         </div>
       </div>
     </div>

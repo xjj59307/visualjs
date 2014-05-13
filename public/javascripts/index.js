@@ -1,6 +1,5 @@
-define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace"],
-    function ($, io, tree, ace) {
-
+define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace",
+       "lib/jquery.terminal-0.8.7"], function ($, io, tree, ace) {
   var socket = io.connect('http://localhost');
   var nextJobSeq = 0;
 
@@ -33,6 +32,10 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace"],
 
     e.stop();
   }); 
+
+  $('#terminal').terminal(function() {}, {
+    greetings: '',
+    prompt: '> '});
 
   socket.on("set breakpoint", function(data) { 
     if (typeof data === 'number')
