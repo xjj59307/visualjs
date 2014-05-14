@@ -1,5 +1,6 @@
 define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace",
-       "lib/jquery.terminal-0.8.7"], function ($, io, tree, ace) {
+       "lib/jquery.terminal-0.8.7", "lib/jquery.mousewheel"],
+       function ($, io, tree, ace) {
   var socket = io.connect('http://localhost');
   var nextJobSeq = 0;
 
@@ -33,9 +34,15 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace",
     e.stop();
   }); 
 
-  $('#terminal').terminal(function() {}, {
-    greetings: '',
-    prompt: '> '});
+  var terminal = $('#terminal').terminal(function(command, term) {
+    emitNewJob('evaluate', command);
+    term.pause();
+  }, { greetings: '', prompt: '> '});
+
+  socket.on('evaluate', function(object) {
+    terminal.echo("[[i;#0066CC;]" + JSON.stringify(object, null, "  ") + "]");
+    terminal.resume();
+  });
 
   socket.on("set breakpoint", function(data) { 
     if (typeof data === 'number')

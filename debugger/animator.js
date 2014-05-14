@@ -55,7 +55,7 @@ Animator.prototype._assignGUID = function(target, callback) {
     assign.toString() + format('assign(%s);', TARGET) + TARGET;
 
   // Get deep copy of the object and update its visual objects.
-  this.browserInterface.evaluate(code, callback);
+  this.browserInterface.evaluate(code, -1, callback);
 };
 
 Animator.prototype.update = function(callback) {

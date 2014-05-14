@@ -85,6 +85,17 @@ var addListeners = function(browserInterface, jobQueue) {
       browserInterface.finishTask(TASK.NEW_EXPRESSION);
     });
   });
+
+  jobQueue.on(JOB.EVALUATE, function(job) {
+    jobQueue.addTask(TASK.EVALUATE);
+
+    var expr = job.data;
+    browserInterface.evaluate(expr, 1, function(err, object) {
+      browserInterface.getSocket().emit('evaluate', err || object);
+
+      browserInterface.finishTask(TASK.EVALUATE);
+    });
+  });
 };
 
 var BrowserInterface = function() {
@@ -201,35 +212,20 @@ var isSyntaxError = function(err) {
     err.match(/\n    at Object.parse \(native\)\n/));
 };
 
-BrowserInterface.prototype.evaluate = function(code, callback) {
+BrowserInterface.prototype.evaluate = function(code, depth, callback) {
   if (!this._requireConnection()) return;
 
   var self = this;
   var client = this.client;
   var frame = client.currentFrame;
 
-  // Target is variable name the first time or handle from the second time.
-  if (typeof code === 'string') {
-    // Request remote evaluation globally or in current frame
-    client.requireFrameEval(code, frame, function(err, res) {
-      if (err) { callback(err); return; }
+  client.requireFrameEval(code, frame, function(err, res) {
+    if (err) { callback(err); return; }
 
-      client.mirrorObject(res, -1, function(err, mirror) {
-        callback(err, mirror);
-      });
+    client.mirrorObject(res, depth, function(err, mirror) {
+      callback(err, mirror);
     });
-  } else if (typeof code === 'number') {
-    // TODO: requireLookup can't be called at first
-    client.requireFrameEval('1', frame, function() {
-      client.requireLookup([code], function(err, res) { 
-        if (err) { callback(err); return; }
-
-        client.mirrorObject(res[code], -1, function(err, mirror) {
-          callback(err, mirror);
-        });
-      });
-    });
-  } else { callback(new Error()); }
+  });
 };
 
 // Get running code chunk around current line
