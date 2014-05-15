@@ -18,8 +18,8 @@ var require = {
     "lib/priority-queue": { exports: "priorityQueue" },
     "lib/jquery-1.8.2": { exports: "$" },
     "lib/ace/ace": { exports: "ace" },
-    "lib/jquery.terminal-0.8.7": {},
-    "lib/jquery.mousewheel": {},
+    "lib/jquery.terminal-0.8.7": { deps: ["lib/jquery-1.8.2"] },
+    "lib/jquery.mousewheel": { deps: ["lib/jquery-1.8.2"] }
   }
 };
 
