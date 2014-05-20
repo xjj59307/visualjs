@@ -8,3 +8,4 @@ node_modules/*
 documents/*
 !documents/*.tex
 !documents/*.pdf
+!documents/*.bib
