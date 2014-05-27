@@ -99,6 +99,18 @@ var addListeners = function(browserInterface, jobQueue) {
 
     var expr = job.data;
     browserInterface.evaluate(expr, 1, function(err, object) {
+      // delete __handle__ from object
+      (function removeHandle(object) {
+        if (typeof object !== 'object') return;
+
+        delete object.__handle__;
+
+        // typeof null is 'object'
+        _.each(_.values(object), function(value) {
+          if (typeof value === 'object' && value) removeHandle(value);
+        });
+      })(object);
+
       browserInterface.getSocket().emit('evaluate', err || object);
 
       browserInterface.finishTask(TASK.EVALUATE);
