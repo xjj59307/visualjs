@@ -71,35 +71,40 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace",
       new Range(data.currentLine, 0, data.currentLine), 'warning', 'line');
   });
 
-  socket.on("update view", function(data) {
-    if (typeof data === 'string') { alert(data); return; }
-    tree.plot(data);
+  socket.on("update view", function(err, visualNodes, handles) {
+    if (err) { alert(err); return; }
+    tree.plot(visualNodes);
   });
 
   $("button[title='submit']").on("click", function(event) {
-    var expr = $("input").val();
+    var expr = $("input[placeholder='Visualize']").val();
     // evaluate empty expression will contribute to exception from v8
     if (!expr) return;
 
-    emitNewJob("new expression", expr);
+    var watch = $("input[placeholder='Watch']").val().trim().split(',');
+    emitNewJob("new expression", { expr: expr, watch: watch });
 
-    $("input").val("");
+    $("input[placeholder='Visualize']").val("");
   });
 
   $("button[title='Run/Pause']").on("click", function(event) {
-    emitNewJob("run");
+    var watch = $("input[placeholder='Watch']").val().trim().split(',');
+    emitNewJob("run", watch);
   });
 
   $("button[title='Step in']").on("click", function(event) {
-    emitNewJob("step in");
+    var watch = $("input[placeholder='Watch']").val().trim().split(',');
+    emitNewJob("step in", watch);
   });
 
   $("button[title='Step over']").on("click", function(event) {
-    emitNewJob("step over");
+    var watch = $("input[placeholder='Watch']").val().trim().split(',');
+    emitNewJob("step over", watch);
   });
 
   $("button[title='Step out']").on("click", function(event) {
-    emitNewJob("step out");
+    var watch = $("input[placeholder='Watch']").val().trim().split(',');
+    emitNewJob("step out", watch);
   });
 
   // get initial source

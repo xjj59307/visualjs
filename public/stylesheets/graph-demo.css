@@ -4,6 +4,12 @@
   fill: #fff;
 }
 
+.node-highlight rect {
+  stroke-width: 1.5px;
+  stroke: red;
+  fill: #fff;
+}
+
 #node-CLOSED rect {
   stroke-width: 3px;
   fill: #f88;

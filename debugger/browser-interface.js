@@ -1,5 +1,6 @@
 var _ = require('underscore');
 var util = require('util');
+var async = require('async');
 var buckets = require('buckets');
 var Client = require('./client');
 var JobQueue = require('./job-queue');
@@ -75,14 +76,17 @@ var addListeners = function(browserInterface, jobQueue) {
   jobQueue.on(JOB.NEW_EXPRESSION, function(job) {
     jobQueue.addTask(TASK.NEW_EXPRESSION);
 
-    var expr = job.data;
+    var expr = job.data.expr;
     browserInterface.addExpr(expr, function(err, visualNodes) {
       if (visualNodes.length === 0) err = err || 'target object has no shape';
 
-      browserInterface.getSocket().emit('update view', err || visualNodes);
+      browserInterface.getHandles(job.data.watch, function(handles) {
+        browserInterface.getSocket().emit(
+          'update view', err, visualNodes, handles);
 
-      if (err || visualNodes.length === 0) delete browserInterface.animator;
-      browserInterface.finishTask(TASK.NEW_EXPRESSION);
+        if (err) delete browserInterface.animator;
+        browserInterface.finishTask(TASK.NEW_EXPRESSION);
+      });
     });
   });
 
@@ -189,7 +193,7 @@ BrowserInterface.prototype._handleBreak = function(res) {
   if (_.has(this, 'animator'))
     this.animator.update(function(err) {
       var visualNodes = self.animator.getInitialGraph();
-      self.getSocket().emit('update view', err || visualNodes);
+      self.getSocket().emit('update view', err, visualNodes);
       self.finishTask(TASK.UPDATE_VIS);
     });
   else
@@ -225,6 +229,25 @@ BrowserInterface.prototype.evaluate = function(code, depth, callback) {
     client.mirrorObject(res, depth, function(err, mirror) {
       callback(err, mirror);
     });
+  });
+};
+
+BrowserInterface.prototype.getHandles = function(watch, callback) {
+  if (!this._requireConnection()) return;
+
+  var self = this;
+  var client = this.client;
+  var frame = client.currentFrame;
+
+  var iterator = function(object, callback) {
+    client.requireFrameEval(object + '.__handle__', frame, function(err, res) {
+      callback(err, res);
+    });
+  };
+
+  async.map(watch, iterator, function(err, handles) {
+    if (err) handles = [];
+    callback(handles);
   });
 };
 
