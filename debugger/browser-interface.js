@@ -241,7 +241,7 @@ BrowserInterface.prototype.getHandles = function(watch, callback) {
 
   var iterator = function(object, callback) {
     client.requireFrameEval(object + '.__handle__', frame, function(err, res) {
-      callback(err, res);
+      callback(err, res && res.value);
     });
   };
 

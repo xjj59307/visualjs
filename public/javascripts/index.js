@@ -73,7 +73,7 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace",
 
   socket.on("update view", function(err, visualNodes, handles) {
     if (err) { alert(err); return; }
-    tree.plot(visualNodes);
+    tree.plot(visualNodes, handles);
   });
 
   $("button[title='submit']").on("click", function(event) {

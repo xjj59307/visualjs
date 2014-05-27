@@ -62,16 +62,16 @@ define(["lib/d3.v3", "lib/jquery-1.8.2", "lib/underscore"], function (d3, $, _) 
     return _.has(treeNode, 'handle') ? treeNode.handle : treeNode.id;
   };
 
-  var plot = function(visualNodes) {
+  var plot = function(visualNodes, handles) {
     // Update model
     root = convert(visualNodes)[0];
     if (!_.has(root, 'x0')) root.x0 = 0;
     if (!_.has(root, 'y0')) root.y0 = 0;
 
-    updateView(root);
+    updateView(root, handles);
   };
 
-  var updateView = function(source) {
+  var updateView = function(source, handles) {
     var duration = d3.event && d3.event.altKey ? 5000 : 500;
 
     // Compute the new tree layout
@@ -147,9 +147,21 @@ define(["lib/d3.v3", "lib/jquery-1.8.2", "lib/underscore"], function (d3, $, _) 
       .attr("height", function(d) {
         return d.height;
       })
+      .style("stroke", function() { return "darkgreen"; })
+      .style("stroke-width", function() { return 1.5; })
       .style("fill", function(d) {
         return d._children ? "lightsteelblue" : "#fff";
       });
+
+    // Highlight nodes related to objects being watched
+    nodeUpdate.filter(function(d) {
+      return _.find(handles, function(handle) {
+        return handle === d.handle;
+      });
+    })
+    .select("rect")
+    .style("stroke", function() { return "red"; })
+    .style("stroke-width", function() { return 3.5; });
 
     nodeUpdate.select("text")
       .style("fill-opacity", 1);
