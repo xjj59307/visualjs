@@ -15,34 +15,38 @@ var addListeners = function(browserInterface, jobQueue) {
     jobQueue.addTask(TASK.UPDATE_VIS);
   };
 
-  jobQueue.on(JOB.RUN, function() {
+  jobQueue.on(JOB.RUN, function(job) {
     handleStepJob(TASK.RUN);
 
     browserInterface.run(function() {
+      browserInterface.handles = job.data;
       browserInterface.finishTask(TASK.RUN);
     });
   });
 
-  jobQueue.on(JOB.STEP_IN, function() {
+  jobQueue.on(JOB.STEP_IN, function(job) {
     handleStepJob(TASK.STEP_IN);
 
     browserInterface.in(function() {
+      browserInterface.handles = job.data;
       browserInterface.finishTask(TASK.STEP_IN);
     });
   });
 
-  jobQueue.on(JOB.STEP_OVER, function() {
+  jobQueue.on(JOB.STEP_OVER, function(job) {
     handleStepJob(TASK.STEP_OVER);
 
     browserInterface.over(function() {
+      browserInterface.handles = job.data;
       browserInterface.finishTask(TASK.STEP_OVER);
     });
   });
 
-  jobQueue.on(JOB.STEP_OUT, function() {
+  jobQueue.on(JOB.STEP_OUT, function(job) {
     handleStepJob(TASK.STEP_OUT);
 
     browserInterface.out(function() {
+      browserInterface.handles = job.data;
       browserInterface.finishTask(TASK.STEP_OUT);
     });
   });
@@ -192,9 +196,11 @@ BrowserInterface.prototype._handleBreak = function(res) {
   // inform client to update view
   if (_.has(this, 'animator'))
     this.animator.update(function(err) {
-      var visualNodes = self.animator.getInitialGraph();
-      self.getSocket().emit('update view', err, visualNodes);
-      self.finishTask(TASK.UPDATE_VIS);
+      self.getHandles(self.handles, function(handles) {
+        var visualNodes = self.animator.getInitialGraph();
+        self.getSocket().emit('update view', err, visualNodes, handles);
+        self.finishTask(TASK.UPDATE_VIS); 
+      });
     });
   else
     self.finishTask(TASK.UPDATE_VIS);
