@@ -16,15 +16,16 @@
 }
 
 #editor {
-  margin-top: 30px;
+  margin-top: 20px;
   width: 600px;
   height: 500px;
   border: 1px solid #E1E1E8;
+  font-size: 11px;
 }
 
 #terminal {
-  margin-top: 30px;
-  width: 600px;
+  margin-top: 20px;
+  width: 580px;
   height: 200px;
   border: 1px solid #E1E1E8;
 }

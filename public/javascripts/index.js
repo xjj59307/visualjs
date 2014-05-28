@@ -40,7 +40,8 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace",
   }, { greetings: '', prompt: '> '});
 
   socket.on('evaluate', function(object) {
-    terminal.echo("[[i;#0066CC;]" + JSON.stringify(object, null, "  ") + "]");
+    // terminal.echo("[[;#0066CC;]" + JSON.stringify(object, null, "  ") + "]");
+    terminal.echo(JSON.stringify(object, null, "  "));
     terminal.resume();
   });
 
