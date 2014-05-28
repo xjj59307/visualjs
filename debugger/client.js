@@ -143,6 +143,7 @@ Client.prototype.requireFrameEval = function(expression, frame, callback) {
     req.arguments.global = true;
   } else {
     req.arguments.frame = frame;
+    req.arguments.global = false;
   }
 
   callback = callback || function() {};

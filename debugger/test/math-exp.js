@@ -16,6 +16,6 @@ var modify = function(node) {
     modify(node.left);
 };
 
-var root = generate(0);
-modify(root);
+var node = generate(0);
+modify(node);
 console.log(root);

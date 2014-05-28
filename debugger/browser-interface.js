@@ -354,11 +354,11 @@ BrowserInterface.prototype.setBreakpoint = function(line, callback) {
 
     self.client.breakpoints.push({
       id: res.breakpoint,
-      scriptId: scriptId,
-      line: line
+      scriptId: res.actual_locations[0].script_id,
+      line: res.actual_locations[0].line
     });
 
-    callback(err, line);
+    callback(err, res.actual_locations[0].line);
   });
 };
 
@@ -367,9 +367,9 @@ BrowserInterface.prototype.clearBreakpoint = function(line, callback) {
 
   var self = this;
   var script = this.client.currentScript;
-  var scriptId = _.find(_.pairs(this.client.scripts), function(pair) {
+  var scriptId = parseInt(_.find(_.pairs(this.client.scripts), function(pair) {
     return pair[1].name.indexOf(script) !== -1;
-  })[0];
+  })[0]);
 
   var breakpointId;
   var breakpointIndex;
