@@ -259,13 +259,14 @@ BrowserInterface.prototype.getHandles = function(watch, callback) {
 
   var iterator = function(object, callback) {
     client.requireFrameEval(object + '.__handle__', frame, function(err, res) {
-      callback(err, res && res.value);
+      callback(undefined, res && res.value);
     });
   };
 
   async.map(watch, iterator, function(err, handles) {
-    if (err) handles = [];
-    callback(handles);
+    callback(_.uniq(_.reject(handles, function(handle) {
+      return _.isUndefined(handle);
+    })));
   });
 };
 
