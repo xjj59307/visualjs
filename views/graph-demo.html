@@ -3,7 +3,42 @@
 <meta charset="utf-8">
 <title>Object Graph</title>
 
-<!-- <svg width=0 height=0>
+<style>
+
+.node rect {
+  stroke-width: 1.5px;
+  stroke: darkgreen;
+  fill: #fff;
+}
+
+#node-CLOSED rect {
+  stroke-width: 3px;
+  fill: #f88;
+}
+
+.node text {
+  font: 300 14px "Trebuchet MS";
+}
+
+.node:hover {
+  cursor: pointer;
+  opacity: 0.4;
+}
+
+path.edge {
+  fill: none;
+  stroke: #333;
+  stroke-width: 1.5px;
+}
+
+.edge:hover {
+  cursor: pointer;
+  opacity: 0.4;
+}
+
+</style>
+
+<svg width=0 height=0>
 	<defs>
 	<marker id="arrowhead"
 		viewBox="0 0 10 10"
@@ -18,9 +53,6 @@
 	</marker>
 </defs>
 </svg>
- -->
 
 <script src="javascripts/lib/require-config.js"></script>
-<svg></svg>
-<link rel="stylesheet" href="stylesheets/graph-demo.css" type="text/css"/>
 <script data-main="object-graph/graph-demo" src="javascripts/lib/require.js"></script>
