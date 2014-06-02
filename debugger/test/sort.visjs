@@ -1,0 +1,12 @@
+array: pattern {
+  exec array when (self instanceof Array),
+  exec bar when (typeof self === 'object')
+}
+
+array: action {
+  foreach_next()
+}
+
+bar: action {
+  create bar(value = self.value)
+}

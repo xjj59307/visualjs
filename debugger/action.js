@@ -3,6 +3,7 @@ var _ = require('underscore');
 var CreateAction = function(subActionNode) {
   var self = this;
 
+  this.iterate_type = subActionNode.iterate_type;
   this.name = _.has(subActionNode.node, 'name') ?
     subActionNode.node.name : null;
   this.node_type = _.has(subActionNode.node, 'node_type') ?
@@ -36,8 +37,6 @@ var Action = function(actionNode) {
     switch (subActionNode.type) {
       case 'create_clause':
         self.createActions.push(new CreateAction(subActionNode));
-        break;
-      case 'foreach_create_clause':
         break;
       case 'next_clause':
         self.nextActions.push(new NextAction(subActionNode));

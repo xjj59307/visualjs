@@ -45,11 +45,15 @@ Animator.prototype._assignGUID = function(target, callback) {
     if (!object.__handle__) object.__handle__ = guid();
 
     // typeof null is 'object'
-    for (prop in object) {
-      if (typeof object[prop] === 'object' && object[prop])
-        assign(object[prop]);
+    if (object instanceof Array) {
+      object.forEach(function(element) { assign(element); });
+    } else {
+      for (prop in object) {
+        if (typeof object[prop] === 'object' && object[prop])
+          assign(object[prop]);
+      }
     }
-  }; 
+  };
 
   var code = format('%s = %s;', TARGET, target) + guid.toString() +
     assign.toString() + format('assign(%s);', TARGET) + TARGET;
@@ -104,9 +108,17 @@ Animator.prototype._update = function(object) {
 
     // Handle next iterations.
     _.each(matchedAction.nextActions, function(nextAction) {
-      var environment = new Environment(nextAction.environment, visualObject);
-      iterate(nextAction.next, environment);
-      global.self = currentSelf;
+      if (_.isUndefined(nextAction.next)) {
+        _.each(global.self, function(element, index) {
+          var environment = new Environment(nextAction.environment, visualObject);
+          iterate('self[' + index + ']', environment);
+          global.self = currentSelf;
+        });
+      } else {
+        var environment = new Environment(nextAction.environment, visualObject);
+        iterate(nextAction.next, environment);
+        global.self = currentSelf;
+      }
     });
   };
 

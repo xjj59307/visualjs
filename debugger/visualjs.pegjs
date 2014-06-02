@@ -30,7 +30,6 @@ reserved_word
       pattern_token
       / action_token
       / create_token
-      / foreach_create_token
       / next_token
       / exec_token
       / when_token
@@ -40,8 +39,8 @@ reserved_word
 pattern_token = 'pattern' !identifier_part
 action_token = 'action' !identifier_part
 create_token = 'create' !identifier_part
-foreach_create_token = 'foreach_create' !identifier_part
 next_token = 'next' !identifier_part
+foreach_next_token = 'foreach_next' !identifier_part
 exec_token = 'exec' !identifier_part
 when_token = 'when' !identifier_part
 
@@ -122,10 +121,10 @@ action_clause
   = create_clause / next_clause
 
 create_clause
-  = type:(create_token / foreach_create_token) __ node:(node_assignment_expression / node_expression) __
+  = create_token __ node:(node_assignment_expression / node_expression) __
   '(' __ attributes:assignment_expressions? __ ')' {
     return {
-      type: type[0] + '_clause',
+      type: 'create_clause',
       node: node,
       attributes: attributes 
     };
@@ -161,6 +160,9 @@ assignment_expression
   }
 
 next_clause
+  = next_object_clause / foreach_clause
+
+next_object_clause
   = next_token __ object:non_left_parenthesis+ __
   '(' __ environment:assignment_expressions? __ ')' __ {
     // Termintor of last line is \n.
@@ -173,10 +175,15 @@ next_clause
     };
   }
 
+foreach_clause
+  = foreach_next_token __ '(' __ environment:assignment_expressions? __ ')' __ {
+    return { type: 'next_clause', environment: environment };
+  }
+
 non_left_parenthesis
   = [^(]
 
 node_type
-  = node:( 'tree_node' / 'tree_edge') !identifier_part {
+  = node:('tree_node' / 'tree_edge' / 'bar') !identifier_part {
     return node;
   }
