@@ -30,6 +30,7 @@ reserved_word
       pattern_token
       / action_token
       / create_token
+      / foreach_create_token
       / next_token
       / exec_token
       / when_token
@@ -39,6 +40,7 @@ reserved_word
 pattern_token = 'pattern' !identifier_part
 action_token = 'action' !identifier_part
 create_token = 'create' !identifier_part
+foreach_create_token = 'foreach_create' !identifier_part
 next_token = 'next' !identifier_part
 exec_token = 'exec' !identifier_part
 when_token = 'when' !identifier_part
@@ -120,10 +122,10 @@ action_clause
   = create_clause / next_clause
 
 create_clause
-  = create_token __ node:(node_assignment_expression / node_expression) __
+  = type:(create_token / foreach_create_token) __ node:(node_assignment_expression / node_expression) __
   '(' __ attributes:assignment_expressions? __ ')' {
     return {
-      type: 'create_clause',
+      type: type[0] + '_clause',
       node: node,
       attributes: attributes 
     };

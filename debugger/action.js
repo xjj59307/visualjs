@@ -37,6 +37,8 @@ var Action = function(actionNode) {
       case 'create_clause':
         self.createActions.push(new CreateAction(subActionNode));
         break;
+      case 'foreach_create_clause':
+        break;
       case 'next_clause':
         self.nextActions.push(new NextAction(subActionNode));
         break;

@@ -1,5 +1,5 @@
 operator: pattern {
-  exec avltree when (true)
+  exec avltree
 }
 
 avltree: action {

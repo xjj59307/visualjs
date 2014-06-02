@@ -83,6 +83,8 @@ Animator.prototype._update = function(object) {
 
     // Filter exec actions based on its condition code.
     var matched = _.find(instance.pattern.matches, function(match) {
+      if (_.isUndefined(match.conditionCode)) return true;
+
       var result = eval(match.conditionCode);
       return (typeof result === 'boolean') ? result : false;
     });
