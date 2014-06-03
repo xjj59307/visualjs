@@ -11,8 +11,6 @@
 
 .bar {
   fill: #fff;
-  stroke: darkgreen;
-  stroke-width: 1.5;
 }
 
 .x.axis path {

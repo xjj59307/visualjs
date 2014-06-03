@@ -42,16 +42,16 @@ define(["lib/d3.v3", "lib/underscore"], function (d3, _) {
     return _.has(bar, 'handle') ? bar.handle : bar.id;
   };
 
-  var plot = function(visualNodes) {
+  var plot = function(visualNodes, handles) {
     if (!visualNodes) return;
 
     var bars = convert(visualNodes);
 
-    if (initial === true) initialPlot(bars);
-    else update(bars);
+    if (initial === true) initialPlot(bars, handles);
+    else update(bars, handles);
   };
 
-  var initialPlot = function(data) {
+  var initialPlot = function(data, handles) {
     initial = false;
 
     x.domain(data.map(function(d) { return d.id; }));
@@ -73,11 +73,23 @@ define(["lib/d3.v3", "lib/underscore"], function (d3, _) {
       .attr("x", function(d) { return x(d.id); })
       .attr("width", x.rangeBand())
       .attr("y", function(d) { return y(d.value); })
-      .attr("height", function(d) { return height - y(d.value); });
+      .attr("height", function(d) { return height - y(d.value); })
+      .style("stroke", function() { return "darkgreen"; })
+      .style("stroke-width", function() { return 1.5; });
+
+    // Highlight nodes related to objects being watched
+    svg.selectAll(".bar")
+      .filter(function(d) {
+        return _.find(handles, function(handle) {
+          return handle === d.handle;
+        });
+      })
+      .style("stroke", function() { return "red"; })
+      .style("stroke-width", function() { return 3.5; });
   };
 
   // smooth animation for sorting
-  var update = function (data) {
+  var update = function (data, handles) {
     x.domain(data.map(function(d) { return d.id; }));
     y.domain([0, d3.max(data, function(d) { return d.value; })]);
 
@@ -94,7 +106,19 @@ define(["lib/d3.v3", "lib/underscore"], function (d3, _) {
       .attr("x", function(d) { return x(d.id); })
       .attr("width", x.rangeBand())
       .attr("y", function(d) { return y(d.value); })
-      .attr("height", function(d) { return height - y(d.value); });
+      .attr("height", function(d) { return height - y(d.value); })
+      .style("stroke", function() { return "darkgreen"; })
+      .style("stroke-width", function() { return 1.5; });
+
+    // Highlight nodes related to objects being watched
+    transition.selectAll(".bar")
+      .filter(function(d) {
+        return _.find(handles, function(handle) {
+          return handle === d.handle;
+        });
+      })
+      .style("stroke", function() { return "red"; })
+      .style("stroke-width", function() { return 3.5; });
 
     transition.select(".x.axis")
       .call(xAxis)
