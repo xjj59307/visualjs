@@ -210,6 +210,8 @@ BrowserInterface.prototype._handleBreak = function(res) {
     this.animator.update(function(err) {
       self.getHandles(self.handles, function(handles) {
         var visualNodes = self.animator.getInitialGraph();
+        if (visualNodes.length === 0) err = err || 'target object has no shape';
+
         self.getSocket().emit('update view', err, visualNodes, handles);
         self.finishTask(TASK.UPDATE_VIS); 
       });

@@ -10,8 +10,9 @@
 }
 
 .bar {
-  fill: steelblue;
-  fill-opacity: .9;
+  fill: #fff;
+  stroke: darkgreen;
+  stroke-width: 1.5;
 }
 
 .x.axis path {

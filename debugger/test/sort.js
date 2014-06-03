@@ -1,14 +1,14 @@
 var data = [];
 
-(function() {
-  for (var i = 1; i <= 25; ++i) {
-    var value = Math.random();
-    var element = { id: i, value: value };
+var swap = function(lIndex, rIndex) {
+  data[rIndex] = [data[lIndex], data[lIndex] = data[rIndex]][0];
+};
 
-    data.push(element);
-  }
-})();
+for (var i = 1; i <= 25; ++i)
+  data.push({ value: Math.random() });
 
-data.sort(function(a, b) {
-  return b.value - a.value;
-});
+swap(0, 1);
+swap(2, 3);
+
+data[0].value /= 2;
+data[1].value /= 2;

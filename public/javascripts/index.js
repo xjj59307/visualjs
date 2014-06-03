@@ -1,6 +1,6 @@
-define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace",
+define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "bar-chart", "lib/ace/ace",
        "lib/jquery.terminal-0.8.7", "lib/jquery.mousewheel"],
-       function ($, io, tree, ace) {
+       function ($, io, tree, barChart, ace) {
   var socket = io.connect('http://localhost');
   var nextJobSeq = 0;
 
@@ -74,7 +74,9 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "lib/ace/ace",
 
   socket.on("update view", function(err, visualNodes, handles) {
     if (err) { alert(err); return; }
-    tree.plot(visualNodes, handles);
+
+    if (visualNodes[0].type === 'bar') barChart.plot(visualNodes, handles);
+    else tree.plot(visualNodes, handles);
   });
 
   $("button[title='submit']").on("click", function(event) {
