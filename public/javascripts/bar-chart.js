@@ -25,8 +25,6 @@ define(["lib/d3.v3", "lib/underscore"], function (d3, _) {
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  var initial = true;
-
   var convert = function(visualNodes) {
     _.each(visualNodes, function(visualNode) {
       visualNode.value = visualNode.attributes['value'];
@@ -45,61 +43,35 @@ define(["lib/d3.v3", "lib/underscore"], function (d3, _) {
   var plot = function(visualNodes, handles) {
     if (!visualNodes) return;
 
-    var bars = convert(visualNodes);
-
-    if (initial === true) initialPlot(bars, handles);
-    else update(bars, handles);
+    update(convert(visualNodes), handles);
   };
 
-  var initialPlot = function(data, handles) {
-    initial = false;
-
+  var update = function(data, handles) {
     x.domain(data.map(function(d) { return d.id; }));
     y.domain([0, d3.max(data, function(d) { return d.value; })]);
 
-    svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis);
+    if (svg.selectAll(".axis")[0].length === 0) {
+      svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
 
-    svg.append("g")
-      .attr("class", "y axis")
-      .call(yAxis);
+      svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+    }
 
     svg.selectAll(".bar")
       .data(data, function(d) { return getKey(d); })
       .enter().append("rect")
       .attr("class", "bar")
       .attr("x", function(d) { return x(d.id); })
-      .attr("width", x.rangeBand())
       .attr("y", function(d) { return y(d.value); })
-      .attr("height", function(d) { return height - y(d.value); })
       .style("stroke", function() { return "darkgreen"; })
       .style("stroke-width", function() { return 1.5; });
 
-    // Highlight nodes related to objects being watched
-    svg.selectAll(".bar")
-      .filter(function(d) {
-        return _.find(handles, function(handle) {
-          return handle === d.handle;
-        });
-      })
-      .style("stroke", function() { return "red"; })
-      .style("stroke-width", function() { return 3.5; });
-  };
-
-  // smooth animation for sorting
-  var update = function (data, handles) {
-    x.domain(data.map(function(d) { return d.id; }));
-    y.domain([0, d3.max(data, function(d) { return d.value; })]);
-
-    svg.selectAll(".bar")
-      .data(data, function(d) { return getKey(d); })
-      .enter().append("rect")
-      .attr("class", "bar");
-
     var transition = svg.transition().duration(500);
-    var delay = function(d, i) { return i * 300; };
+    var delay = function(d, i) { return i * 150; };
 
     transition.selectAll(".bar")
       .delay(delay)
