@@ -27,10 +27,10 @@ define(["lib/d3.v3", "lib/underscore"], function (d3, _) {
 
   var convert = function(visualNodes) {
     _.each(visualNodes, function(visualNode) {
-      visualNode.value = visualNode.attributes['value'];
-      delete visualNode['attributes'];
-      delete visualNode['name'];
-      delete visualNode['type'];
+      visualNode.value = visualNode.attributes.value;
+      delete visualNode.attributes;
+      delete visualNode.name;
+      delete visualNode.type;
     });
 
     return visualNodes; 
@@ -71,10 +71,8 @@ define(["lib/d3.v3", "lib/underscore"], function (d3, _) {
       .style("stroke-width", function() { return 1.5; });
 
     var transition = svg.transition().duration(500);
-    var delay = function(d, i) { return i * 150; };
 
     transition.selectAll(".bar")
-      .delay(delay)
       .attr("x", function(d) { return x(d.id); })
       .attr("width", x.rangeBand())
       .attr("y", function(d) { return y(d.value); })
@@ -94,13 +92,11 @@ define(["lib/d3.v3", "lib/underscore"], function (d3, _) {
 
     transition.select(".x.axis")
       .call(xAxis)
-      .selectAll("g")
-      .delay(delay);
+      .selectAll("g");
 
     transition.select(".y.axis")
       .call(yAxis)
-      .selectAll("g")
-      .delay(delay);
+      .selectAll("g");
   };
 
   return { plot: plot };
