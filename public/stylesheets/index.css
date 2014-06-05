@@ -9,14 +9,20 @@
   float: left;
 }
 
-.watch-div {
+.watch-red-div, .watch-blue-div {
   float: right;
 }
 
-.watch-div > input {
+.watch-red-div > input {
   border-top-color: red;
   border-left-color: red;
   border-bottom-color: red;
+}
+
+.watch-blue-div > input {
+  border-top-color: blue;
+  border-left-color: blue;
+  border-bottom-color: blue;
 }
 
 /*step through button group*/
