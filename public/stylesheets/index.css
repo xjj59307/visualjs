@@ -9,14 +9,22 @@
   float: left;
 }
 
-.watch-div {
+.watch-red-div, .watch-blue-div {
   float: right;
 }
 
-.watch-div > input {
-  border-top-color: red;
-  border-left-color: red;
-  border-bottom-color: red;
+.watch-red-div > input {
+  color: #FF4500;
+  border-top-color: #FF4500;
+  border-left-color: #FF4500;
+  border-bottom-color: #FF4500;
+}
+
+.watch-blue-div > input {
+  color: #87CEEB;
+  border-top-color: #87CEEB;
+  border-left-color: #87CEEB;
+  border-bottom-color: #87CEEB;
 }
 
 /*step through button group*/

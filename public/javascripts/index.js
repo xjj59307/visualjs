@@ -90,7 +90,7 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "bar-chart", "lib/ace/ace",
     else tree.highlight(handles);
   });
 
-  $(".visualize-btn").on("click", function(event) {
+  $(".visualize-div > button").on("click", function(event) {
     var expr = $("input[placeholder='Visualize']").val();
     // evaluate empty expression will contribute to exception from v8
     if (!expr) return;
@@ -101,7 +101,7 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "bar-chart", "lib/ace/ace",
     $("input[placeholder='Visualize']").val("");
   });
 
-  $(".watch-btn").on("click", function(event) {
+  $(".watch-red-div > button").on("click", function(event) {
     var expr = $("input[placeholder='Watch']").val();
     if (!expr) return;
 
