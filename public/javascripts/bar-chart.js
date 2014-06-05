@@ -64,7 +64,7 @@ define(["lib/d3.v3", "lib/underscore"], function (d3, _) {
           return handle === d.handle;
         });
       })
-      .style("stroke", function() { return "#"+((1<<24)*Math.random()|0).toString(16); })
+      .style("stroke", function() { return "red"; })
       .style("stroke-width", function() { return 3.5; });
   };
 

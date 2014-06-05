@@ -71,6 +71,40 @@ define(["lib/d3.v3", "lib/jquery-1.8.2", "lib/underscore"], function (d3, $, _) 
     updateView(root, handles);
   };
 
+  // Highlight nodes related to objects being watched
+  var highlight = function(handles) {
+    var duration = d3.event && d3.event.altKey ? 5000 : 500;
+    var transition = svg.selectAll("g.node").transition().duration(duration);
+
+    transition.select("rect")
+      .attr("x", function (d) {
+        return -(d.bbox.width / 2 + nodePadding);
+      })
+      .attr("y", function (d) {
+        return -(d.bbox.height / 2 + nodePadding);
+      })
+      .attr("width", function(d) {
+        return d.width;
+      })
+      .attr("height", function(d) {
+        return d.height;
+      })
+      .style("stroke", function() { return "darkgreen"; })
+      .style("stroke-width", function() { return 1.5; })
+      .style("fill", function(d) {
+        return d._children ? "lightsteelblue" : "#fff";
+      });
+
+    transition.filter(function(d) {
+      return _.find(handles, function(handle) {
+        return handle === d.handle;
+      });
+    })
+    .select("rect")
+    .style("stroke", function() { return "red"; })
+    .style("stroke-width", function() { return 3.5; });
+  };
+
   var updateView = function(source, handles) {
     // Compute the new tree layout
     var nodes = tree.nodes(root);
@@ -214,6 +248,6 @@ define(["lib/d3.v3", "lib/jquery-1.8.2", "lib/underscore"], function (d3, $, _) 
     nodes.forEach(function(d) { d.x0 = d.x; d.y0 = d.y; });
   };
 
-  return { plot: plot };
+  return { plot: plot, highlight: highlight };
 
 });
