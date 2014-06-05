@@ -46,6 +46,28 @@ define(["lib/d3.v3", "lib/underscore"], function (d3, _) {
     update(convert(visualNodes), handles);
   };
 
+  // Highlight nodes related to objects being watched
+  var highlight = function(handles) {
+    var transition = svg.transition().duration(500);
+
+    transition.selectAll(".bar")
+      .attr("x", function(d) { return x(d.id); })
+      .attr("width", x.rangeBand())
+      .attr("y", function(d) { return y(d.value); })
+      .attr("height", function(d) { return height - y(d.value); })
+      .style("stroke", function() { return "darkgreen"; })
+      .style("stroke-width", function() { return 1.5; });
+
+    transition.selectAll(".bar")
+      .filter(function(d) {
+        return _.find(handles, function(handle) {
+          return handle === d.handle;
+        });
+      })
+      .style("stroke", function() { return "#"+((1<<24)*Math.random()|0).toString(16); })
+      .style("stroke-width", function() { return 3.5; });
+  };
+
   var update = function(data, handles) {
     x.domain(data.map(function(d) { return d.id; }));
     y.domain([0, d3.max(data, function(d) { return d.value; })]);
@@ -99,6 +121,6 @@ define(["lib/d3.v3", "lib/underscore"], function (d3, _) {
       .selectAll("g");
   };
 
-  return { plot: plot };
+  return { plot: plot, highlight: highlight };
 
 });

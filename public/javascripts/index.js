@@ -3,6 +3,7 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "bar-chart", "lib/ace/ace",
        function ($, io, tree, barChart, ace) {
   var socket = io.connect('http://localhost');
   var nextJobSeq = 0;
+  var animatorType;
 
   var emitNewJob = function(name, data) {
     var job = { name: name, seq: nextJobSeq++, data: data };
@@ -75,11 +76,18 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "bar-chart", "lib/ace/ace",
   socket.on("update view", function(err, visualNodes, handles) {
     if (err) { alert(err); return; }
 
-    if (visualNodes[0].type === 'bar') barChart.plot(visualNodes, handles);
+    animatorType = visualNodes[0].type;
+
+    if (animatorType === 'bar') barChart.plot(visualNodes, handles);
     else tree.plot(visualNodes, handles);
   });
 
-  $("button[title='submit']").on("click", function(event) {
+  socket.on("highlight", function(handles) {
+    if (animatorType === 'bar') barChart.highlight(handles);
+    else tree.highlight(handles);
+  });
+
+  $(".visualize-btn").on("click", function(event) {
     var expr = $("input[placeholder='Visualize']").val();
     // evaluate empty expression will contribute to exception from v8
     if (!expr) return;
@@ -88,6 +96,14 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "bar-chart", "lib/ace/ace",
     emitNewJob("new expression", { expr: expr, watch: watch });
 
     $("input[placeholder='Visualize']").val("");
+  });
+
+  $(".watch-btn").on("click", function(event) {
+    var expr = $("input[placeholder='Watch']").val();
+    if (!expr) return;
+
+    var watch = $("input[placeholder='Watch']").val().trim().split(',');
+    emitNewJob("highlight", watch);
   });
 
   $("button[title='Run/Pause']").on("click", function(event) {

@@ -94,6 +94,16 @@ var addListeners = function(browserInterface, jobQueue) {
     });
   });
 
+  jobQueue.on(JOB.HIGHLIGHT, function(job) {
+    jobQueue.addTask(TASK.HIGHLIGHT);
+
+    browserInterface.getHandles(job.data, function(handles) {
+      browserInterface.getSocket().emit('highlight', handles);
+
+      browserInterface.finishTask(TASK.HIGHLIGHT);
+    });
+  });
+
   jobQueue.on(JOB.EVALUATE, function(job) {
     jobQueue.addTask(TASK.EVALUATE);
 

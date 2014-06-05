@@ -12,7 +12,8 @@ exports.JOB = {
   NEW_EXPRESSION: 'new expression',
   SET_BREAKPOINT: 'set breakpoint',
   CLEAR_BREAKPOINT: 'clear breakpoint',
-  EVALUATE: 'evaluate'
+  EVALUATE: 'evaluate',
+  HIGHLIGHT: 'highlight'
 };
 
 // expression evaluating task can't be listed
@@ -26,5 +27,6 @@ exports.TASK = {
   UPDATE_VIS: 'update visual nodes',
   SET_BREAKPOINT: 'set breakpoint',
   CLEAR_BREAKPOINT: 'clear breakpoint',
-  EVALUATE: 'evaluate'
+  EVALUATE: 'evaluate',
+  HIGHLIGHT: 'highlight'
 };

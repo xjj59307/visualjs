@@ -3,8 +3,8 @@
 <meta charset="utf-8">
 <title>VisualJS</title>
 
-<link rel="stylesheet" href="bootstrap/css/bootstrap.css", type="text/css/">
-<link rel="stylesheet" href="stylesheets/index.css", type="text/css/">
+<link rel="stylesheet" href="bootstrap/css/bootstrap.css" type="text/css/">
+<link rel="stylesheet" href="stylesheets/index.css" type="text/css/">
 <link rel="stylesheet" href="stylesheets/bar-chart.css" type="text/css"/>
 <link rel="stylesheet" href="stylesheets/tree.css" type="text/css"/>
 <link rel="stylesheet" href="stylesheets/jquery.terminal.css" type="text/css"/>
@@ -15,9 +15,16 @@
       <div class="visualization-div">
         <div class="input-append">
           <input type="text" placeholder="Visualize">
-          <button class="btn" title="submit">Go</button>
+          <button class="btn visualize-btn" title="submit">
+            <i class=icon-plus></i>
+          </button>
         </div>
-        <input type="text" placeholder="Watch">
+        <div class="input-append" style="float:left">
+          <input type="text" placeholder="Watch">
+          <button class="btn watch-btn" title="submit">
+            <i class=icon-search></i>
+          </button>
+        </div>
         <div><svg/></div>
       </div>
     </div>
