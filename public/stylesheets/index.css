@@ -5,9 +5,18 @@
   float: right;
 }
 
-/*binding data input area*/
-.input-append {
+.visualization-div {
+  float: left;
+}
+
+.watch-div {
   float: right;
+}
+
+.watch-div > input {
+  border-top-color: red;
+  border-left-color: red;
+  border-bottom-color: red;
 }
 
 /*step through button group*/

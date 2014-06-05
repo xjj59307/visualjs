@@ -77,12 +77,15 @@ define(["lib/jquery-1.8.2", "lib/socket.io", "tree", "bar-chart", "lib/ace/ace",
     if (err) { alert(err); return; }
 
     animatorType = visualNodes[0].type;
+    if (_.isUndefined(animatorType)) return;
 
     if (animatorType === 'bar') barChart.plot(visualNodes, handles);
     else tree.plot(visualNodes, handles);
   });
 
   socket.on("highlight", function(handles) {
+    if (_.isUndefined(animatorType)) return;
+
     if (animatorType === 'bar') barChart.highlight(handles);
     else tree.highlight(handles);
   });
