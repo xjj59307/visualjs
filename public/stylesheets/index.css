@@ -5,11 +5,7 @@
   float: right;
 }
 
-.visualization-div {
-  float: left;
-}
-
-.watch-red-div, .watch-blue-div {
+.visualize-div {
   float: right;
 }
 
