@@ -1,0 +1,29 @@
+\documentclass [a4paper,11pt,fleqn]{report}
+
+\usepackage {fancyhdr}
+\pagestyle {fancy}
+
+\usepackage {amsmath, amsfonts}
+
+\title {JavaScript Debugger\\Using Data Structure Visualization\\JavaScriptのデータ構造可視化\\を用いたデバッガ}
+\author {東京工業大学大学院\\情報理工学研究科数理・計算科学\\学籍番号：12M54060\\徐駿剣}
+\date {\today}
+
+\begin {document}
+
+\maketitle
+
+\begin {abstract}
+Debugger is used to test and debug target programs by stepping through the program and examining the current program state by evaluating the values of expressions or checking the stack trace. However, the character-based expressions evaluation provides limited insight into the current program state. This paper examines how a debugger can provide a higher-level, more informative visualization based on data structure. Except static view, the debugger also allows generating animation while target object is modified. However, high-level visualization typically relies on user augmented source code. This paper enables the debugger to understand the data structure of target object by externally supplied semantic information which is written in a declarative language.
+\end {abstract}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\input {doc/introduction}
+
+\bibliographystyle {plain}
+\bibliography {/Users/junjianxu/Dropbox/projects/visualjs/documents/reference}
+
+\end {document}
