@@ -1,0 +1,14 @@
+\chapter {System Proposal}
+
+\section {Declarative language}
+
+\section {Animation Mechanism}
+To generate valid data structure animation, we must prove the consistency between the visualization and program. A program is composed of a series of instructions which are executed orderly. Under the control of debugger, program is being paused until step requests come. Every time the program pauses, it represents a new program state. What we need to prove is that every time the new program state has been generated, the animation will respond to it correctly.
+
+Object graph details the relationships between objects. We can get one object graph \(G = (V, E)\) for a given object at certain program state. The vertex set $V_p$ is defined by objects which refer to that given object directly or indirectly, and the edge set $E$ is defined by reference relationships among those objects.
+
+By iterating the object graph using next actions, we will get a subgraph of it, \(G_p = (V_p, E_p)\). Visual nodes are defined based on this graph. 
+
+Visual nodes including two types, node and edge, are created by create actions. They are also a graph, \(G_v = (V_v, E_v)\). The vertex set is defined by visual nodes of node type. They are related to $V_p$. The relationships can be defined as a non-injective and surjective function \(f:V_p\rightarrow V_v\) (\textbf{\textit{TODO}}: illustration). The edge set is defined by visual nodes of edge type.
+
+\section {Data Structure Visualization and Animation}
