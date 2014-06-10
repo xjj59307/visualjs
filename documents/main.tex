@@ -1,6 +1,34 @@
 \documentclass [a4paper,11pt,fleqn]{report}
 
+\usepackage {listings}
+\lstdefinelanguage {JavaScript}{
+  keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
+  ndkeywords={class, export, boolean, throw, implements, import, this},
+  sensitive=false,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]"
+}
+\lstset {
+   language=JavaScript,
+   extendedchars=true,
+   basicstyle=\footnotesize\ttfamily,
+   showstringspaces=false,
+   showspaces=false,
+   tabsize=2,
+   breaklines=true,
+   showtabs=false,
+   captionpos=b
+}
+
+\usepackage {parskip}
+
 \usepackage {fancyhdr}
+\fancyhf{}
+\fancyfoot[CO,CE]{\thepage}
+\fancyhead[LO]{\leftmark}
+\fancyhead[RE]{\rightmark}
 \pagestyle {fancy}
 
 \usepackage {amsmath, amsfonts}
