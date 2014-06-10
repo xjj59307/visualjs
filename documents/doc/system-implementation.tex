@@ -1,10 +1,10 @@
 \chapter {System Implementation}
 
 \section {V8 Debugger Protocol}
-V8 is able to debug the JavaScript code running in it. The debugger related API can be used in two ways, a function based API using JavaScript objects and a message based API using a JSON base protocol. The function based API is for in-process usage, while the message based API is for out-process usage. This system is implemented with message based API. Each protocol packet is defined in JSON format and can to be converted to string.
+V8 is able to debug the JavaScript code running in it. The debugger related API can be used in two ways, a function based API using JavaScript objects and a message based API using JSON based protocol. The function based API is for in-process usage, while the message based API is for out-process usage. This system is implemented with message based API. The protocol packet is defined in JSON format and can to be converted to string.
 
 \subsection {Protocol Packet Format}
-All packets have two basic elements called seq and type. The seq field holds the consecutive allocated sequence number of the packet. And type field is a string value representing the packet is request, response or event.
+All packets have two basic elements called seq and type. The seq field holds the consecutive allocated sequence number of the packet. And type field is a string value representing the packet is request, response or event. Each request will receive a response with the same request seq number as long as the connection still works. And additional events will be generated on account of particular requests or system errors. Each packet has the following structure.
 
 \begin{lstlisting}[language=JavaScript]
 {
@@ -20,18 +20,18 @@ A request packet has the following structure.
 	"seq"      : <number>,
 	"type"     : "request",
 	"command"  : <command>,
-	"arguments": ...
+	"arguments": { ... }
 }
 \end{lstlisting}
 
-A response packet has the following structure. If command failed, the success field will be set as false and message field will contain an error message.
+A response packet has the following structure. If command fails, the success field will be set as false and message field will contain an error message.
 \begin{lstlisting}[language=JavaScript]
 {
 	"seq"        : <number>,
 	"type"       : "response",
 	"request_seq": <number>,
 	"command"    : <command>,
-	"body"       : ...,
+	"body"       : { ... },
 	"running"    : <is the VM running after sending the message>,
 	"success"    : <boolean indicating success>,
 	"message"    : <error message>
@@ -49,7 +49,7 @@ An event packet has the following structure.
 \end{lstlisting}
 
 \subsection {V8 Debugger Protocol Features}
-V8 debugger provides various commands and events for us to better understand runtime situation. However, this research focus on data structure visualization. Only following features are used in order to implement basic debugger features.
+V8 debugger has various commands and events providing detailed runtime information. However, this research focus on the data structure visualization. Only following features are used in order to implement basic debugger features.
 
 \begin {itemize}
 \item \textbf{Request} continue
@@ -62,7 +62,13 @@ V8 debugger provides various commands and events for us to better understand run
 \item \textbf{Event} exception
 \end {itemize} 
 
-The request continue makes V8 start running. It also can be used to make V8 step forward, including step in, step over, and step out. The request evaluate is used to evaluate a expression with depth one. If the result is object type and still contains object type field, the object handle will be returned. Here request lookup can be used to lookup objects based on their handle. By recursively using lookup, we can get the deep copy of the target object. Request source is used to retrieve source code for a frame by indicating the frame and range. Each script running on Node.js will be wrapped within a wrapper function. We have to remove the header and tail of Node.js wrapper manually. Request setbreakpoint is used to add breakpoint. Target script and line number have to be indicated in the request. And clearbreakpoint is used to remove breakpoint set by request setbreakpoint. Breakpoint number required from request setbreakpoint have to be indicated in the request. There also exists other kinds of requests like backtrace to require stacktrace from the current execution state, and frame, scope to require related information.
+Request "continue" makes V8 start running or stepping forward, including stepping in, stepping over, and stepping out. Although step count can be indicated in the arguments, we always set it as 1.
+
+Request "evaluate" is used to evaluate a expression. However, if the result is object type and still contains object type field, the field will be represented as its object handle. Hence we have to use request "lookup" to lookup objects based on their handle. As a result, we can get the deep copy of any object by recursively using request "lookup".
+
+Request "source" is used to retrieve source code for a frame. Frame and code range have to be indicated in the arguments. Note here that each script file running on Node.js is wrapped within a wrapper function. Hence we have to remove the header and tail before showing it to users.
+
+Request "setbreakpoint" is used to add breakpoint. Target file/function and line number are essential here. Request "clearbreakpoint" is used to remove breakpoint set by request "setbreakpoint". Breakpoint number which can be received from request "setbreakpoint" has to be indicated in the arguments. There also exists other kinds of requests like request "backtrace" which is used to require stacktrace information, request "frame" which is used to require frame information and so on.
 
 \subsection {Use Cases of V8 Debugger Protocol}
 
