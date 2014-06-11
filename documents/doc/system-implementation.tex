@@ -4,7 +4,7 @@
 V8 is able to debug the JavaScript code running in it. The debugger related API can be used in two ways, a function based API using JavaScript objects and a message based API using JSON based protocol. The function based API is for in-process usage, while the message based API is for out-process usage. This system is implemented with message based API. The protocol packet is defined in JSON format and can to be converted to string.
 
 \subsection {Protocol Packet Format}
-All packets have two basic elements called seq and type. The seq field holds the consecutive allocated sequence number of the packet. And type field is a string value representing the packet is request, response or event. Each request will receive a response with the same request seq number as long as the connection still works. And additional events will be generated on account of particular requests or system errors. Each packet has the following structure.
+All packets have two basic elements called seq and type. The seq field holds the consecutive assigned sequence number of the packet. And type field is a string value representing the packet is request, response or event. Each request will receive a response with the same request seq number as long as the connection still works. And additional events will be generated on account of particular requests or system errors. Each packet has the following structure.
 
 \begin{lstlisting}[language=JavaScript]
 {
@@ -15,6 +15,7 @@ All packets have two basic elements called seq and type. The seq field holds the
 \end{lstlisting}
 
 A request packet has the following structure.
+
 \begin{lstlisting}[language=JavaScript]
 {
 	"seq"      : <number>,
@@ -25,6 +26,7 @@ A request packet has the following structure.
 \end{lstlisting}
 
 A response packet has the following structure. If command fails, the success field will be set as false and message field will contain an error message.
+
 \begin{lstlisting}[language=JavaScript]
 {
 	"seq"        : <number>,
@@ -39,6 +41,7 @@ A response packet has the following structure. If command fails, the success fie
 \end{lstlisting}
 
 An event packet has the following structure.
+
 \begin{lstlisting}[language=JavaScript]
 {
 	"seq"  : <number>,
@@ -64,13 +67,110 @@ V8 debugger has various commands and events providing detailed runtime informati
 
 Request "continue" makes V8 start running or stepping forward, including stepping in, stepping over, and stepping out. Although step count can be indicated in the arguments, we always set it as 1.
 
-Request "evaluate" is used to evaluate a expression. However, if the result is object type and still contains object type field, the field will be represented as its object handle. Hence we have to use request "lookup" to lookup objects based on their handle. As a result, we can get the deep copy of any object by recursively using request "lookup".
+Request "evaluate" is used to evaluate a expression. However, if the result is object type that contains other fields, all fields will be represented as their object handle. Hence we have to use request "lookup" to lookup objects based on their handle. As a result, we can get the deep copy of any object by recursively using request "lookup".
 
 Request "source" is used to retrieve source code for a frame. Frame and code range have to be indicated in the arguments. Note here that each script file running on Node.js is wrapped within a wrapper function. Hence we have to remove the header and tail before showing it to users.
 
 Request "setbreakpoint" is used to add breakpoint. Target file/function and line number are essential here. Request "clearbreakpoint" is used to remove breakpoint set by request "setbreakpoint". Breakpoint number which can be received from request "setbreakpoint" has to be indicated in the arguments. There also exists other kinds of requests like request "backtrace" which is used to require stacktrace information, request "frame" which is used to require frame information and so on.
 
-\subsection {Use Cases of V8 Debugger Protocol}
+\subsection {Response Object Serialization}
+As discussed in 4.1.2, request "evaluate" and "lookup" may contain objects as part of the body. All objects are assigned with an ID called handle. Object identity\cite{Khoshafian:1986:OI:960112.28739} is that property of an object which distinguishes each object from all others. Although the handle can be used to identify objects here, it has a certain lifetime after which it will no longer refer to the same object. The lifetime of handles are recycled for each debug event.
+
+For objects serialized they all contains two basic elements, handle and type. Each object has following the structure.
+
+\begin{lstlisting}[language=JavaScript]
+{
+	"handle": <number>,
+  "type"  : <"undefined", "null", "boolean", "number",
+  					"string", "object", "function">,
+  ...
+}
+\end{lstlisting}
+
+For primitive JavaScript types, the value is part of the result.
+
+\begin {itemize}
+\item 0 \(\rightarrow\)
+\begin{lstlisting}[language=JavaScript]
+{
+	"handle": <number>,
+  "type"  : "number",
+  "value" : 0
+}
+\end{lstlisting}
+\item "hello" \(\rightarrow\)
+\begin{lstlisting}[language=JavaScript]
+{
+	"handle": <number>,
+  "type"  : "string",
+  "value" : "hello"
+}
+\end{lstlisting}
+\item true \(\rightarrow\)
+\begin{lstlisting}[language=JavaScript]
+{
+	"handle": <number>,
+  "type"  : "boolean",
+  "value" : true
+}
+\end{lstlisting}
+\item null \(\rightarrow\)
+\begin{lstlisting}[language=JavaScript]
+{
+	"handle": <number>,
+  "type"  : "null",
+}
+\end{lstlisting}
+\item undefined \(\rightarrow\)
+\begin{lstlisting}[language=JavaScript]
+{
+	"handle": <number>,
+  "type"  : "undefined",
+}
+\end{lstlisting}
+\end {itemize}
+
+An object is encoded with additional information.
+
+\{a:1,b:2\} \(\rightarrow\)
+\begin{lstlisting}[language=JavaScript]
+{
+	"className"          : "Object"
+	"constructorFunction": { "ref": <number> },
+	"handle"             : <number>,
+	"properties"         : [{ "ref": <number> }, ...],
+	"protoObject"        : { "ref": <number> },
+	"prototypeObject"    : { "ref": <number> },
+	"text"               : "#<Object>",
+	"type"               : "object"
+}
+\end{lstlisting}
+
+An function is encoded as an object with additional information in the properties name, inferredName, source and script.
+
+function()\{\} \(\rightarrow\)
+\begin{lstlisting}[language=JavaScript]
+{
+	"handle"             : <number>,
+	"type"               : "function",
+	"className"          : "Function",
+	"constructorFunction": { "ref": <number> },
+	"protoObject"        : { "ref": <number> },
+	"prototypeObject"    : { "ref": <number> },
+	"name"               : "",
+	"inferredName"       : "",
+	"source"             : "function(){}",
+	"script"             : { "ref": <number> },
+	"scriptId"           : <number>,
+	"position"           : <number>,
+	"line"               : <number>,
+	"column"             : <number>,
+	"properties"         : [{
+														"name": <string>,
+														"ref" : <number>
+													}, ...]
+}
+\end{lstlisting}
 
 \section {System Architecture}
 
