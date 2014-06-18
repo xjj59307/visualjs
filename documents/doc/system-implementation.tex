@@ -69,7 +69,7 @@ Request "continue" makes V8 start running or stepping forward, including steppin
 
 Request "evaluate" is used to evaluate a expression. However, if the result is object type that contains other fields, all fields will be represented as their object handle. Hence we have to use request "lookup" to lookup objects based on their handle. As a result, we can get the deep copy of any object by recursively using request "lookup".
 
-Request "source" is used to retrieve source code for a frame. Frame and code range have to be indicated in the arguments. Note here that each script file running on Node.js is wrapped within a wrapper function. Hence we have to remove the header and tail before showing it to users.
+Request "source" is used to retrieve source code for a frame. Frame and code range have to be indicated in the arguments. Note here that each script file running on node.js is wrapped within a wrapper function. Hence we have to remove the header and tail before showing it to users.
 
 Request "setbreakpoint" is used to add breakpoint. Target file/function and line number are essential here. Request "clearbreakpoint" is used to remove breakpoint set by request "setbreakpoint". Breakpoint number which can be received from request "setbreakpoint" has to be indicated in the arguments. There also exists other kinds of requests like request "backtrace" which is used to require stacktrace information, request "frame" which is used to require frame information and so on.
 
@@ -173,8 +173,31 @@ function()\{\} \(\rightarrow\)
 \end{lstlisting}
 
 \section {System Architecture}
+This is a full-stack JavaScript system which consists of three components.
 
-\section {Asynchronized Communication Model}
+\begin{enumerate}
+	\item The debuggee node.js program is running on V8.
+	\item Server is also running on node.js.
+	\item Client is running on browser. 
+\end{enumerate}
+
+Server side is responsible for starting running debuggee program along with V8 debugger and communicate with it using V8 debugger protocol. It responds to the client and require according information from V8 debugger. When response arrives, this component is also responsible for informing client to update along with required information. Because the communication with V8 debugger is an asynchronized process whereas the system logic is basically synchronized, this component must be able to handle it carefully. Client side provides IDE-like debugging experience with an embedded editor to show the source code of the debuggee program, breakpoint management and series of stepping buttons. It also be responsible for visualization work. Figure\ref{fig: System Architecture} shows the system architecture.
+
+\begin {figure} \centering
+  \includegraphics [width=1.0\linewidth] {img/system}
+  \caption {System Architecture}
+  \label {fig: System Architecture}
+\end {figure}
+
+\subsection {Implementation Technique}
+Protocol.js ensures data integrity in that some responses may be separated into several chunks. Client.js is provides basic features by encapsulating the communication with V8 debugger. Animator module generates and updates graph for target object with the given script. It is feasible to build different interfaces, like command interface or GUI interface.
+
+On the client side, we used bootstrap for faster and easier web GUI development. Visualization related work is finished by D3.js which is an open-source project about visualizing. D3.js is a JavaScript library for manipulating documents based on data. D3 helps you bring data to life using HTML, SVG and CSS. D3’s emphasizes on combining powerful visualization components with a data-driven approach to DOM manipulation.
+
+We also used other open-source libraries and tools like underscore, async.js, jquery, require.js, buckets, grunt, jasmine to help the development work on both sides.
+
+\subsection {Asynchronized Communication Mechanism}
+Another mentionable implementation technique used here is the asynchronized communication mechanism. Most I/O-related API containing TCP/IP communication provided by node.js is in asynchronized way. On the other hand, all requests sent from client via websocket is also in asynchronized way. As a result, it is very complicated to keep program running correctly because the overall control flow across three components is based on synchronization logic. Firstly, blocking message queue is used to handle the requests from client. All requests are stored in the queue and will be handled one by one. On the server side, Async.js is used to help manage asynchronized code. Although node.js is famous for its speed and single-thread model, its coding style is difficult to maintain on account of endless nested callback. Async.js is a tool to help alleviate this problem.
 
 \section {Declarative Language Parser}
 

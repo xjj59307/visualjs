@@ -1,14 +1,37 @@
 \chapter {System Proposal}
+To solve the problems mentioned in last chapter, our system used traversal-based method proposed by \cite{729554} to traverse object to design a new declarative language oriented for JavaScript. On top of this, we proposed a mapping mechanism to generate the mapping relationship from object graph to visual nodes. Making use of the mapping relationship, the system is able to generate visualization and animate it automatically while stepping through program. Instead of providing rich kinds of data structure visualization, our research focuses on how users can display and animate the objects they are interested in handily and how the system works in the background.
 
-\section {Declarative language}
+\section {From Object to Visual Shapes}
+To generate valid data structure visualization and animation, we must at first prove the consistency between the program and visualization. A program is composed of a series of instructions which are executed orderly. Under the control of debugger, program is being paused until step requests come. Every time the program pauses, it represents a new program state. 
 
-\section {Animation Mechanism}
-To generate valid data structure animation, we must prove the consistency between the visualization and program. A program is composed of a series of instructions which are executed orderly. Under the control of debugger, program is being paused until step requests come. Every time the program pauses, it represents a new program state. What we need to prove is that every time the new program state has been generated, the animation will respond to it correctly.
+What need to be proved is that the initial program state is being correctly visualized and every time the new program state is generated, the animation will respond to it correctly. However, program state contains too much information. A computer program stores data in variables, which represent storage locations in the computer's memory. Program state contains all contents of these memory locations. In contrast, users always have limited interest and perception at a time. We intend to help users understand the program from any angel he is interested in. Instead of visualizing the whole program state like Heapviz \cite{Aftandilian:2010:HIH:1879211.1879222}, this system always focuses on visualizing one object but allows switching targets at any time. 
 
+We have confirmed that the target to be visualized is an object. This seems trivially different from previous research like prestigious data structure visualization system, jGRASP \cite{Cross:2007:DOV:1227310.1227316} that always uses variable name as the target of visualization. Although there is no problem using variable name previously because they are all about static visualization. Our research introduces animation hence the problem has tremendously changed. The fundamental difference is whether there exists substantive relationship between two consecutive states. Animation is visualizing the changes between two consecutive states, so it have to proceed on the former state. That is why variable name can not be used here as the target of visualization in that even the variable with the same name may refer to a different object or even an empty object in different program state. Both situations may lead to meaningless visualization because original mapping relationship can not be adapted for new object with different structure.
+
+\subsection {Mapping Mechanism}
 Object graph details the relationships between objects. We can get one object graph \(G = (V, E)\) for a given object at certain program state. The vertex set $V_p$ is defined by objects which refer to that given object directly or indirectly, and the edge set $E$ is defined by reference relationships among those objects.
 
 By iterating the object graph using next actions, we will get a subgraph of it, \(G_p = (V_p, E_p)\). Visual nodes are defined based on this graph. 
 
 Visual nodes including two types, node and edge, are created by create actions. They are also a graph, \(G_v = (V_v, E_v)\). The vertex set is defined by visual nodes of node type. They are related to $V_p$. The relationships can be defined as a non-injective and surjective function \(f:V_p\rightarrow V_v\) (\textbf{\textit{TODO}}: illustration). The edge set is defined by visual nodes of edge type.
+
+\subsection {Animation Semantics}
+
+\section {Declarative language}
+The declarative language is used to generate visual 
+
+The principles that were considered when we designed this system are as follows:
+\begin {enumerate}
+\item \textbf {Expression Ability}
+\item \textbf {Flexibility}
+\end {enumerate}
+
+\subsection {Data Model}
+Although this system is constructed based on JavaScript, it theoretically suits all object-oriented programming languages like C++ and Java and any other programming language in which an object is constructed in a recursive way, which means an object is composed of other primitive type values or objects. Hence the object can be traversed and matching actions can be executed to generate the topology of visual nodes.
+
+\subsection {Patterns}
+A pattern aligns a series of predicates to be matched when object comes. The first action whose predicate is matched will be executed.
+
+\subsection {Actions}
 
 \section {Data Structure Visualization and Animation}
