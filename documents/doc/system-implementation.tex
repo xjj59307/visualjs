@@ -181,12 +181,12 @@ This is a full-stack JavaScript system which consists of three components.
 	\item Client is running on browser. 
 \end{enumerate}
 
-Server side is responsible for starting running debuggee program along with V8 debugger and communicate with it using V8 debugger protocol. It responds to the client and require according information from V8 debugger. When response arrives, this component is also responsible for informing client to update along with required information. Because the communication with V8 debugger is an asynchronized process whereas the system logic is basically synchronized, this component must be able to handle it carefully. Client side provides IDE-like debugging experience with an embedded editor to show the source code of the debuggee program, breakpoint management and series of stepping buttons. It also be responsible for visualization work. Figure\ref{fig: System Architecture} shows the system architecture.
+Server side is responsible for starting running debuggee program along with V8 debugger and communicate with it using V8 debugger protocol. It responds to the client and require according information from V8 debugger. When response arrives, this component is also responsible for informing client to update along with required information. Because the communication with V8 debugger is an asynchronized process whereas the system logic is basically synchronized, this component must be able to handle it carefully. Client side provides IDE-like debugging experience with an embedded editor to show the source code of the debuggee program, breakpoint management and series of stepping buttons. It also be responsible for visualization work. Figure \ref{fig: System Architecture} shows the system architecture.
 
 \begin {figure} \centering
   \includegraphics [width=1.0\linewidth] {img/system}
-  \caption {System Architecture}
-  \label {fig: System Architecture}
+  \caption {System architecture}
+  \label {fig: System architecture}
 \end {figure}
 
 \subsection {Implementation Technique}

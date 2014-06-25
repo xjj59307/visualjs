@@ -4,16 +4,47 @@ To solve the problems mentioned in last chapter, our system used traversal-based
 \section {From Object to Visual Shapes}
 To generate valid data structure visualization and animation, we must at first prove the consistency between the program and visualization. A program is composed of a series of instructions which are executed orderly. Under the control of debugger, program is being paused until step requests come. Every time the program pauses, it represents a new program state. 
 
-What need to be proved is that the initial program state is being correctly visualized and every time the new program state is generated, the animation will respond to it correctly. However, program state contains too much information. A computer program stores data in variables, which represent storage locations in the computer's memory. Program state contains all contents of these memory locations. In contrast, users always have limited interest and perception at a time. We intend to help users understand the program from any angel he is interested in. Instead of visualizing the whole program state like Heapviz \cite{Aftandilian:2010:HIH:1879211.1879222}, this system always focuses on visualizing one object but allows switching targets at any time. 
+What need to be proved is that the initial program state is being correctly visualized and every time the new program state is generated, the animation will respond to it correctly. However, program state contains too much information. A computer program stores data in variables, which represent storage locations in the computer's memory. Program state contains all contents of these memory locations. In contrast, users always have limited interest and perception at a time. We intend to help users understand the program from any angel he is interested in. Instead of visualizing the whole program state like Heapviz \cite{Aftandilian:2010:HIH:1879211.1879222}, this system always focuses on visualizing one object but allows switching targets at any time.
 
-\subsection {Variable Name And Object}
+\subsection {Variable and Object}
 In JavaScript, a variable is a storage location and an associated symbolic name which contains a value. JavaScript: The Definitive Guide \cite{Flanagan:1998:JDG:551216} introduces about data types in JavaScript. JavaScript allows you to work with three primitive data types: numbers, strings of text, and boolean truth values. JavaScript also defines two trivial data types, null and undefined, each of which defines only a single value.
 
 In addition to these primitive types, JavaScript also supports a composite data type known as object. Just like other object-oriented programming languages, an object in JavaScript is composed of a collection of values with either primitive values or objects. An object can represent an unordered collection of named values or an ordered collection of numbered values. The latter case is called an array. Although array is also an object, it behaves quite differently and have to be considered specially throughout the paper.
 
 JavaScript also defines a few other specialized kinds of objects. \textbf{Function} is a subprogram that can be called externally or internally in case of recursion. \textbf{Date} creates a object that represents a single moment in time. \textbf{RegExp} creates a object that represents a regular expression for matching text with a pattern. \textbf{Error} creates a object that represent syntax or runtime errors that can occur in a JavaScript program. Because this research focuses on user-customized data structures, these four types of objects have their own specific data structures hence will not be considered any specially.
 
-We selected object as the target to be visualized. This seems trivially different from previous research like prestigious data structure visualization system, jGRASP \cite{Cross:2007:DOV:1227310.1227316} that always uses variable name as the target of visualization. Although there is no problem using variable name previously because they are all about static visualization. Our research introduces animation hence the problem has tremendously changed. The fundamental difference is whether there exists substantive relationship between two consecutive states. Animation is visualizing the changes between two consecutive states, so it have to proceed on the former state. That is why variable name can not be used here as the target of visualization in that even the variables with the same name may refer to different objects or go out of scope after stepping through the program. Both situations may lead to meaningless animation because original mapping relationship can not be adapted for new object with different structure. However, variable name still need to be used as an entry to start watching certain object in that users' interest focus on text code rather than memory content.
+We selected object as the target to visualize. This seems trivially different from previous research like prestigious data structure visualization system, jGRASP \cite{Cross:2007:DOV:1227310.1227316} who uses variable as the target of visualization. Although there is no problem using variable in jGRASP because it is static visualization without any animation. Our research introduces animation hence the problem has tremendously changed. The fundamental difference is whether there exists substantive relationship between two consecutive states. Animation is visualizing the changes between two consecutive states, so it have to proceed on the former state. That is why variable can not be used here as the target of visualization in that even the variables with the same name may refer to different objects or go out of scope after stepping through the program. Both situations may lead to meaningless animation because original mapping relationship can not be adapted for new object with different structure.
+
+However, variable is still used as the entry to start watching certain object. Modern debugger offers many sophisticated features such as stepping through the program, stopping at some event by means of breakpoint and examining the current state such as tracking the values of variables and stack trace. We can find that typical debugging prefer examining variable values to exploring snapshot of the heap. Therefore, we choose variable as the entry and the object referred by the variable will drive the following animation.
+
+\begin {figure} \centering
+  \includegraphics [width=1.0\linewidth] {img/select-object}
+  \caption {Select variable named array to visualize}
+  \label {fig: Select variable named array to visualize}
+\end {figure}
+
+\begin {figure} \centering
+  \includegraphics [width=1.0\linewidth] {img/select-object-after}
+  \caption {Variable named array has been visualized}
+  \label {fig: Variable named array has been visualized}
+\end {figure}
+
+Figure \ref{fig: Select variable named array to visualize} shows the system interface. The left half is the visualization view. Users can select some object to visualize by means of inputting its variable name and click the button with add icon on the top right corner and then you can see that object has been visualized as a bar chart in Figure \ref{fig: Variable named array has been visualized}.
+
+\subsection {Visible Variables}
+As Niklaus Wirth said in his book \cite{Wirth:1978:ADS:540029}, Algorithm + Data Structures = Programs. One has to understand the algorithm and data structure before he understands the program. Although our research is based on data structure visualization, we also intend to help users understand the algorithm as far as possible. Since attention has to be focused on one object, what we can provide users with about algorithm comes to two aspects:
+\begin {enumerate}
+\item How algorithm affects the object is displayed by animation
+\item How other visible variables affect the object is displayed by highlighted shapes
+\end {enumerate}
+
+In Figure \ref{fig: Context Visualization}, we can see that two bars are highlighted with red border against Figure \ref{fig: Variable named array has been visualized}. Users can input arbitrary number of variables split by commas in the top left corner of the visualization view. Any object referred by any inputted variable and possessing the same handle with any visual object will be highlighted with red border. Unlike that the target object being visualized is always traced, these variables will be evaluated each step because they stand for how current environment relates with the target object.
+
+\begin {figure} \centering
+  \includegraphics [width=1.0\linewidth] {img/context-visualization}
+  \caption {Context Visualization}
+  \label {fig: Context Visualization}
+\end {figure}
 
 \subsection {Mapping Mechanism}
 Object graph details the relationships of objects. We can get one object graph \(G = (V, E)\) for a given object at certain program state. The vertex set $V_p$ is defined by objects which refer to that given object directly or indirectly, and the edge set $E$ is defined by reference relationships among those objects.
