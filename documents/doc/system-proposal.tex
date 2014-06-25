@@ -47,6 +47,7 @@ In Figure \ref{fig: Context Visualization}, we can see that two bars are highlig
 \end {figure}
 
 \subsection {Mapping Mechanism}
+\label {Mapping Mechanism}
 Object graph details the relationships of objects. We can get one object graph \(G = (V, E)\) for a given object at certain program state. The vertex set $V_p$ is defined by objects which refer to that given object directly or indirectly, and the edge set $E$ is defined by reference relationships among those objects.
 
 By iterating the object graph using next actions, we will get a subgraph of it, \(G_p = (V_p, E_p)\). Visual nodes are defined based on this graph. 
@@ -56,7 +57,11 @@ Visual nodes including two types, node and edge, are created by create actions. 
 \subsection {Animation Semantics}
 
 \section {Declarative language}
-The declarative language is used to implement the mapping work. The principles that were considered when we designed this system are as follows:
+The declarative language is for implementing the mapping work described in Chapter \ref{Mapping Mechanism}. Traversal-based approach take a root object and traverse the objects by following any other objects referenced by the root. A set of predicates aligned in a pattern will be applied to the object and decide which action to execute. Each action describes its rules about how to generate visual nodes and which objects to traverse as follows.
+
+The declarative language is written in text file. Each file describes only one data structure, which means you have to write code for objects with different structures in respective files. Each file is made up of one pattern and several actions.
+
+The guiding principles that were considered when we designed this system are as follows:
 \begin {enumerate}
 \item \textbf {Expression Power:} The topology relationship of visual shapes should be specified clearly, naturally, intuitively, and concisely.
 \item \textbf {Flexibility:} Flexibility provides the design with root to extend. More data structures and sophisticated visual attributes would be supported in the future. All these requirement changes should be considered in initial design. 
@@ -65,9 +70,49 @@ The declarative language is used to implement the mapping work. The principles t
 \subsection {Data Model}
 Although this system is constructed based on JavaScript, it theoretically suits all object-oriented programming languages like C++ and Java and any other programming language in which an object is constructed in a recursive way, which means an object is composed of other primitive type values or objects. Hence the object can be traversed and matching actions can be executed to generate the topology of visual nodes.
 
-\subsection {Patterns}
-A pattern aligns a series of predicates to be matched when object comes. The first action whose predicate is matched will be executed.
+\subsection {Pattern}
+A pattern aligns a series of predicates to be matched when object comes. Each predicate has its pair action. The first action whose predicate is matched will be executed. We will elaborate pattern by showing its grammar in EBNF as follows:
+
+\begin{center}
+  \begin{minipage}{0.8\linewidth}
+    \begin{grammar}
+      <pattern> ::= pattern-name \textbf{: pattern \{} <pattern-body> \textbf{\}}
+
+      <pattern-body> ::= <exec-clause> \{\textbf{,} <exec-clause>\}
+
+      <exec-clause> ::= \textbf{exec} action-name [<when-clause>]
+
+      <when-clause> ::= \textbf{when (} expression \textbf{)}
+    \end{grammar}
+  \end{minipage}
+\end{center}
+
+Each pattern starts with a name and a pattern keyword split by a colon, where the keyword is used to differentiate from action in that there is no decided order. After the pattern keyword, a pattern-body surrounded by a pair of braces aligns several exec-clauses. Each exec-clause describes a predicate statement to evaluate and which action will be executed when the predicate passed. 
 
 \subsection {Actions}
+
+\begin{center}
+  \begin{minipage}{0.8\linewidth}
+    \begin{grammar}
+      <action> ::= action-name \textbf{: action \{} <action-body> \textbf{\}}
+
+      <action-body> ::= <action-clause> \{\textbf{,} <action-clause>\}
+
+      <action-clause> ::= <create-clause> | <next-clause>
+
+      <create-clause> ::= \textbf{create} [environment-var \textbf{=}] node-name \textbf{(} <attribute-clause> \{\textbf{,} <attribute-clause>\} \textbf{)}
+
+      <attribute-clause> ::= attribute \textbf{=} expression
+
+      <next-clause> ::= <object-clause> | <foreach-clause>
+
+      <object-clause> ::= \textbf{next} expression \textbf{(} <environment-clause> \{\textbf{,} <environment-clause>\} \textbf{)}
+
+      <foreach-clause> ::= \textbf{foreach\_next} \textbf{(} <environment-clause> \{\textbf{,} <environment-clause>\} \textbf{)}
+
+      <environment-clause> ::= environment-var \textbf{=} expression
+    \end{grammar}
+  \end{minipage}
+\end{center}
 
 \section {Data Structure Visualization and Animation}
