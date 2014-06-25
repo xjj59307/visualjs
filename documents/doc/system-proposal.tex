@@ -38,7 +38,7 @@ As Niklaus Wirth said in his book \cite{Wirth:1978:ADS:540029}, Algorithm + Data
 \item How other visible variables affect the object is displayed by highlighted shapes
 \end {enumerate}
 
-In Figure \ref{fig: Context Visualization}, we can see that two bars are highlighted with red border against Figure \ref{fig: Variable named array has been visualized}. Users can input arbitrary number of variables split by commas in the top left corner of the visualization view. Any object referred by any inputted variable and possessing the same handle with any visual object will be highlighted with red border. Unlike that the target object being visualized is always traced, these variables will be evaluated each step because they stand for how current environment relates with the target object.
+In Figure \ref{fig: Context Visualization}, we can see that two bars are highlighted with red border against Figure \ref{fig: Variable named array has been visualized}. Users can input arbitrary number of variables split by commas in the top left corner of the visualization view. Any object referred by any inputted variable and possessing the same handle with any visual object will be highlighted with red border. Unlike that the target object being visualized is locked, these variables will be evaluated each step because they stand for how current environment relates with the target object.
 
 \begin {figure} \centering
   \includegraphics [width=1.0\linewidth] {img/context-visualization}
@@ -56,12 +56,10 @@ Visual nodes including two types, node and edge, are created by create actions. 
 \subsection {Animation Semantics}
 
 \section {Declarative language}
-The declarative language is used to generate visual 
-
-The principles that were considered when we designed this system are as follows:
+The declarative language is used to implement the mapping work. The principles that were considered when we designed this system are as follows:
 \begin {enumerate}
-\item \textbf {Expression Ability}
-\item \textbf {Flexibility}
+\item \textbf {Expression Power:} The topology relationship of visual shapes should be specified clearly, naturally, intuitively, and concisely.
+\item \textbf {Flexibility:} Flexibility provides the design with root to extend. More data structures and sophisticated visual attributes would be supported in the future. All these requirement changes should be considered in initial design. 
 \end {enumerate}
 
 \subsection {Data Model}
