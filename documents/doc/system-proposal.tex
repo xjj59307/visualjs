@@ -1,12 +1,12 @@
 \chapter {System Proposal}
-To solve the problems mentioned in last chapter, our system used traversal-based method proposed by \cite{729554} to traverse object to design a new declarative language oriented for JavaScript. On top of this, we proposed a mapping mechanism to generate the mapping relationship from object graph to visual nodes. Making use of the mapping relationship, the system is able to generate visualization and animate it automatically while stepping through program. Instead of providing rich kinds of data structure visualization, our research focuses on how users can display and animate the objects they are interested in handily and how the system works in the background.
+To solve the problems mentioned in last chapter, our system used traversal-based method \cite{729554} to traverse the object. A new declarative language called visualjs is created so that this approach can be oriented to JavaScript. On top of this, we proposed a mapping mechanism from an object to visual shapes. Making use of the mapping relationship, our system is able to visualize the object in kinds of shapes and animate these visual shapes automatically while stepping through program. Note that instead of providing rich kinds of data structure visualizations, our research intends to help users visualize and animate the objects that they are interested in.
 
-\section {From Object to Visual Shapes}
+\section {From An Object to Visual Shapes}
 To generate valid data structure visualization and animation, we must at first prove the consistency between the program and visualization. A program is composed of a series of instructions which are executed orderly. Under the control of debugger, program is being paused until step requests come. Every time the program pauses, it represents a new program state. 
 
 What need to be proved is that the initial program state is being correctly visualized and every time the new program state is generated, the animation will respond to it correctly. However, program state contains too much information. A computer program stores data in variables, which represent storage locations in the computer's memory. Program state contains all contents of these memory locations. In contrast, users always have limited interest and perception at a time. We intend to help users understand the program from any angel he is interested in. Instead of visualizing the whole program state like Heapviz \cite{Aftandilian:2010:HIH:1879211.1879222}, this system always focuses on visualizing one object but allows switching targets at any time.
 
-\subsection {Variable and Object}
+\subsection {Variables versus Objects}
 In JavaScript, a variable is a storage location and an associated symbolic name which contains a value. JavaScript: The Definitive Guide \cite{Flanagan:1998:JDG:551216} introduces about data types in JavaScript. JavaScript allows you to work with three primitive data types: numbers, strings of text, and boolean truth values. JavaScript also defines two trivial data types, null and undefined, each of which defines only a single value.
 
 In addition to these primitive types, JavaScript also supports a composite data type known as object. Just like other object-oriented programming languages, an object in JavaScript is composed of a collection of values with either primitive values or objects. An object can represent an unordered collection of named values or an ordered collection of numbered values. The latter case is called an array. Although array is also an object, it behaves quite differently and have to be considered specially throughout the paper.
@@ -31,11 +31,11 @@ However, variable is still used as the entry to start watching certain object. M
 
 Figure \ref{fig: Select variable named array to visualize} shows the system interface. The left half is the visualization view. Users can select some object to visualize by means of inputting its variable name and click the button with add icon on the top right corner and then you can see that object has been visualized as a bar chart in Figure \ref{fig: Variable named array has been visualized}.
 
-\subsection {Visible Variables}
-As Niklaus Wirth said in his book \cite{Wirth:1978:ADS:540029}, Algorithm + Data Structures = Programs. One has to understand the algorithm and data structure before he understands the program. Although our research is based on data structure visualization, we also intend to help users understand the algorithm as far as possible. Since attention has to be focused on one object, what we can provide users with about algorithm comes to two aspects:
+\subsection {User Interest}
+As Niklaus Wirth said in his book \cite{Wirth:1978:ADS:540029}, Algorithms + Data Structures = Programs, which means that we have to understand algorithms and data structures before understanding programs. Although our research is based on data structure visualization, we also intend to help users understand algorithms as far as possible. Although the attention has to be focused on one object, we still can help users understand algorithms from two aspects:
 \begin {enumerate}
-\item How algorithm affects the object is displayed by animation
-\item How other visible variables affect the object is displayed by highlighted shapes
+\item \textbf{Animation} displays how algorithms contribute to the object modification
+\item \textbf{Highlighted shapes} represent the objects that users are interested in
 \end {enumerate}
 
 In Figure \ref{fig: Context Visualization}, we can see that two bars are highlighted with red border against Figure \ref{fig: Variable named array has been visualized}. Users can input arbitrary number of variables split by commas in the top left corner of the visualization view. Any object referred by any inputted variable and possessing the same handle with any visual object will be highlighted with red border. Unlike that the target object being visualized is locked, these variables will be evaluated each step because they stand for how current environment relates with the target object.
@@ -48,15 +48,37 @@ In Figure \ref{fig: Context Visualization}, we can see that two bars are highlig
 
 \subsection {Mapping Mechanism}
 \label {Mapping Mechanism}
-Object graph details the relationships of objects. We can get one object graph \(G = (V, E)\) for a given object at certain program state. The vertex set $V_p$ is defined by objects which refer to that given object directly or indirectly, and the edge set $E$ is defined by reference relationships among those objects.
+Object graph details the relationships between objects. The object graph of the root object is defined as \(G = (V, E)\). Here, the vertex set $V$ represents all objects referred by the root object either directly or indirectly, and the edge set $E$ represents the reference relationships between those objects. Figure \ref{fig: JavaScript Object Graph} shows an example of JavaScript object graph.
 
-By iterating the object graph using next actions, we will get a subgraph of it, \(G_p = (V_p, E_p)\). Visual nodes are defined based on this graph. 
+\begin {figure} \centering
+  \includegraphics [width=1.0\linewidth] {img/object-graph}
+  \caption {JavaScript Object Graph}
+  \label {fig: JavaScript Object Graph}
+\end {figure}
 
-Visual nodes including two types, node and edge, are created by create actions. They are also a graph, \(G_v = (V_v, E_v)\). The vertex set is defined by visual nodes of node type. They are related to $V_p$. The relationships can be defined as a non-injective and surjective function \(f:V_p\rightarrow V_v\). The edge set is defined by visual nodes of edge type.
+Traversing the object graph according to the next actions, we will get a subgraph of it, \(G_s = (V_s, E_s)\). The whole object graph probably contains much information that users are not interested in, hence we extract a subgraph from the whole object graph. All of the objects in the subgraph serve the visualization work, so we call them visual objects here.
+
+After, each visual object is responsible to create its own visual shapes. We called them visual nodes here. Visual nodes are differentiated by data structure. For instance, tree data structure contains two kinds of visual nodes, tree node and tree edge. It is defined as a graph, \(G^\prime = (V^\prime, E^\prime)\). The vertex set represents all visual nodes of tree node. \(V_s\) can be mapped to \(V^\prime\) by a bijective function \(f:V_s\rightarrow V^\prime\). The edge set represents all visual nodes of tree edge. \(E_s\) also can be mapped to \(E^\prime\) by a bijective function \(f:E_s\rightarrow E^\prime\). Figure \ref{fig: Mapping Process} shows the whole mapping process starting from the root object.
+
+\begin {figure} \centering
+  \includegraphics [width=1.0\linewidth] {img/mapping-mechanism}
+  \caption {Mapping Process}
+  \label {fig: Mapping Process}
+\end {figure}
 
 \subsection {Animation Semantics}
 
-\section {Declarative language}
+After establishing the mapping relationship, we will be able to generate the animation. Animation is driven by data modification, which is contributed by JavaScript program execution. Therefore, what we need to prove is the consistency between JavaScript semantics and animation.
+
+Figure \ref{fig: Animation Generation Process} shows the whole process of animation generation.
+
+\begin {figure} \centering
+  \includegraphics [width=1.0\linewidth] {img/consistency}
+  \caption {Animation Generation Process}
+  \label {fig: Animation Generation Process}
+\end {figure}
+
+\section {The Design of VisualJS}
 The declarative language is for implementing the mapping work described in Chapter \ref{Mapping Mechanism}. Traversal-based approach take a root object and traverse the objects by following any other objects referenced by the root. A set of predicates aligned in a pattern will be applied to the object and decide which action to execute. Each action describes its rules about how to generate visual nodes and which objects to traverse as follows.
 
 The declarative language is written in text file. Each file describes only one data structure, which means you have to write code for objects with different structures in respective files. Each file is made up of one pattern and several actions.
@@ -114,5 +136,3 @@ Each pattern starts with a name and a pattern keyword split by a colon, where th
     \end{grammar}
   \end{minipage}
 \end{center}
-
-\section {Data Structure Visualization and Animation}
