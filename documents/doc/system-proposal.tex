@@ -165,15 +165,41 @@ Figure \ref{fig: Mapping Process} shows the whole mapping process starting from 
 
 \subsection {Animate Data Structures}
 
-After establishing the mapping relationship, we will be able to generate the animation. Animation is driven by data modifications, which is contributed by JavaScript program execution. Therefore, what we need to prove is the consistency between data modifications and animation.
-
-The first step is to enumerate all of the situations of data modifications and animation, and then data modifications can be translated to animation.
-
-Figure \ref{fig: Animation Generation Process} shows the whole process of animation generation.
+After establishing the mapping relationship, we will be able to generate the animation. Animation is driven by data modifications, which is contributed by JavaScript program execution. Therefore, what we need to prove is the consistency between data modifications and animation. Figure \ref{fig: Animation Generation Process} shows the whole process of animation generation.
 
 \begin {figure} \centering
   \includegraphics [width=1.0\linewidth] {img/consistency}
   \caption {Animation Generation Process}
   \label {fig: Animation Generation Process}
 \end {figure}
+
+The first step of proof is to enumerate all of the situations of data modifications and animation, and then data modifications can be translated to animation. Here, data is the visual nodes that have been explained above.
+
+Data structure bar chart has following situations of data modifications:
+\begin {enumerate}
+\item A visual node with a new id was added to the list.
+\item The index of some visual node with an existed id was updated.
+\item A visual node with an existed id was removed from the list.
+\item The property value of some visual node with an existed id was updated.
+\end {enumerate}
+
+They can be translated to following animations on the bar chart representation:
+\begin {enumerate}
+\item The former three situations will contribute to recalculation of the layout. Those bars with either new size or position will be resized and translated smoothly.
+\item The last situation will contribute to the update of bar height.
+\end {enumerate}
+
+Data structure tree has following situations of data modifications:
+\begin {enumerate}
+\item A node type visual node with a new id was added.
+\item A node type visual node with an existed id was removed.
+\item Either the property from or to of some edge type visual node with an existed id was updated.
+\item The property label of some node type visual node with an existed id was updated.
+\end {enumerate}
+
+They can be translated to following animations on the tree representation:
+\begin {enumerate}
+\item The former three situations will contribute to recalculation of the layout. Those nodes and edges with new positions will be translated smoothly.
+\item The last situation will contribute to the update of label text.
+\end {enumerate}
 
