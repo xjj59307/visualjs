@@ -1,85 +1,8 @@
 \chapter {System Proposal}
 To solve the problems mentioned in last chapter, our system used traversal-based method \cite{729554} to traverse the object. A new declarative language called visualjs is created so that this approach can be oriented to JavaScript. On top of this, we proposed a mapping mechanism from an object to visual shapes. Making use of the mapping relationship, our system is able to visualize the object in kinds of shapes and animate these visual shapes automatically while stepping through program. Note that instead of providing rich kinds of data structure visualizations, our research intends to help users visualize and animate the objects that they are interested in.
 
-\section {From An Object to Visual Shapes}
-To generate valid data structure visualization and animation, we must at first prove the consistency between the program and visualization. A program is composed of a series of instructions which are executed orderly. Under the control of debugger, program is being paused until step requests come. Every time the program pauses, it represents a new program state. 
-
-What need to be proved is that the initial program state is being correctly visualized and every time the new program state is generated, the animation will respond to it correctly. However, program state contains too much information. A computer program stores data in variables, which represent storage locations in the computer's memory. Program state contains all contents of these memory locations. In contrast, users always have limited interest and perception at a time. We intend to help users understand the program from any angel he is interested in. Instead of visualizing the whole program state like Heapviz \cite{Aftandilian:2010:HIH:1879211.1879222}, this system always focuses on visualizing one object but allows switching targets at any time.
-
-\subsection {Variables versus Objects}
-In JavaScript, a variable is a storage location and an associated symbolic name which contains a value. JavaScript: The Definitive Guide \cite{Flanagan:1998:JDG:551216} introduces about data types in JavaScript. JavaScript allows you to work with three primitive data types: numbers, strings of text, and boolean truth values. JavaScript also defines two trivial data types, null and undefined, each of which defines only a single value.
-
-In addition to these primitive types, JavaScript also supports a composite data type known as object. Just like other object-oriented programming languages, an object in JavaScript is composed of a collection of values with either primitive values or objects. An object can represent an unordered collection of named values or an ordered collection of numbered values. The latter case is called an array. Although array is also an object, it behaves quite differently and have to be considered specially throughout the paper.
-
-JavaScript also defines a few other specialized kinds of objects. \textbf{Function} is a subprogram that can be called externally or internally in case of recursion. \textbf{Date} creates a object that represents a single moment in time. \textbf{RegExp} creates a object that represents a regular expression for matching text with a pattern. \textbf{Error} creates a object that represent syntax or runtime errors that can occur in a JavaScript program. Because this research focuses on user-customized data structures, these four types of objects have their own specific data structures hence will not be considered any specially.
-
-We selected object as the target to visualize. This seems trivially different from previous research like prestigious data structure visualization system, jGRASP \cite{Cross:2007:DOV:1227310.1227316} who uses variable as the target of visualization. Although there is no problem using variable in jGRASP because it is static visualization without any animation. Our research introduces animation hence the problem has tremendously changed. The fundamental difference is whether there exists substantive relationship between two consecutive states. Animation is visualizing the changes between two consecutive states, so it have to proceed on the former state. That is why variable can not be used here as the target of visualization in that even the variables with the same name may refer to different objects or go out of scope after stepping through the program. Both situations may lead to meaningless animation because original mapping relationship can not be adapted for new object with different structure.
-
-However, variable is still used as the entry to start watching certain object. Modern debugger offers many sophisticated features such as stepping through the program, stopping at some event by means of breakpoint and examining the current state such as tracking the values of variables and stack trace. We can find that typical debugging prefer examining variable values to exploring snapshot of the heap. Therefore, we choose variable as the entry and the object referred by the variable will drive the following animation.
-
-\begin {figure} \centering
-  \includegraphics [width=1.0\linewidth] {img/select-object}
-  \caption {Select variable named array to visualize}
-  \label {fig: Select variable named array to visualize}
-\end {figure}
-
-\begin {figure} \centering
-  \includegraphics [width=1.0\linewidth] {img/select-object-after}
-  \caption {Variable named array has been visualized}
-  \label {fig: Variable named array has been visualized}
-\end {figure}
-
-Figure \ref{fig: Select variable named array to visualize} shows the system interface. The left half is the visualization view. Users can select some object to visualize by means of inputting its variable name and click the button with add icon on the top right corner and then you can see that object has been visualized as a bar chart in Figure \ref{fig: Variable named array has been visualized}.
-
-\subsection {User Interest}
-As Niklaus Wirth said in his book \cite{Wirth:1978:ADS:540029}, Algorithms + Data Structures = Programs, which means that we have to understand algorithms and data structures before understanding programs. Although our research is based on data structure visualization, we also intend to help users understand algorithms as far as possible. Although the attention has to be focused on one object, we still can help users understand algorithms from two aspects:
-\begin {enumerate}
-\item \textbf{Animation} displays how algorithms contribute to the object modification
-\item \textbf{Highlighted shapes} represent the objects that users are interested in
-\end {enumerate}
-
-In Figure \ref{fig: Context Visualization}, we can see that two bars are highlighted with red border against Figure \ref{fig: Variable named array has been visualized}. Users can input arbitrary number of variables split by commas in the top left corner of the visualization view. Any object referred by any inputted variable and possessing the same handle with any visual object will be highlighted with red border. Unlike that the target object being visualized is locked, these variables will be evaluated each step because they stand for how current environment relates with the target object.
-
-\begin {figure} \centering
-  \includegraphics [width=1.0\linewidth] {img/context-visualization}
-  \caption {Context Visualization}
-  \label {fig: Context Visualization}
-\end {figure}
-
-\subsection {Mapping Mechanism}
-\label {Mapping Mechanism}
-Object graph details the relationships between objects. The object graph of the root object is defined as \(G = (V, E)\). Here, the vertex set $V$ represents all objects referred by the root object either directly or indirectly, and the edge set $E$ represents the reference relationships between those objects. Figure \ref{fig: JavaScript Object Graph} shows an example of JavaScript object graph.
-
-\begin {figure} \centering
-  \includegraphics [width=1.0\linewidth] {img/object-graph}
-  \caption {JavaScript Object Graph}
-  \label {fig: JavaScript Object Graph}
-\end {figure}
-
-Traversing the object graph according to the next actions, we will get a subgraph of it, \(G_s = (V_s, E_s)\). The whole object graph probably contains much information that users are not interested in, hence we extract a subgraph from the whole object graph. All of the objects in the subgraph serve the visualization work, so we call them visual objects here.
-
-After, each visual object is responsible to create its own visual shapes. We called them visual nodes here. Visual nodes are differentiated by data structure. For instance, tree data structure contains two kinds of visual nodes, tree node and tree edge. It is defined as a graph, \(G^\prime = (V^\prime, E^\prime)\). The vertex set represents all visual nodes of tree node. \(V_s\) can be mapped to \(V^\prime\) by a bijective function \(f:V_s\rightarrow V^\prime\). The edge set represents all visual nodes of tree edge. \(E_s\) also can be mapped to \(E^\prime\) by a bijective function \(f:E_s\rightarrow E^\prime\). Figure \ref{fig: Mapping Process} shows the whole mapping process starting from the root object.
-
-\begin {figure} \centering
-  \includegraphics [width=1.0\linewidth] {img/mapping-mechanism}
-  \caption {Mapping Process}
-  \label {fig: Mapping Process}
-\end {figure}
-
-\subsection {Animation Semantics}
-
-After establishing the mapping relationship, we will be able to generate the animation. Animation is driven by data modification, which is contributed by JavaScript program execution. Therefore, what we need to prove is the consistency between JavaScript semantics and animation.
-
-Figure \ref{fig: Animation Generation Process} shows the whole process of animation generation.
-
-\begin {figure} \centering
-  \includegraphics [width=1.0\linewidth] {img/consistency}
-  \caption {Animation Generation Process}
-  \label {fig: Animation Generation Process}
-\end {figure}
-
 \section {The Design of VisualJS}
-The declarative language is for implementing the mapping work described in Chapter \ref{Mapping Mechanism}. Traversal-based approach take a root object and traverse the objects by following any other objects referenced by the root. A set of predicates aligned in a pattern will be applied to the object and decide which action to execute. Each action describes its rules about how to generate visual nodes and which objects to traverse as follows.
+The traversal-based approach takes a root object and traverse the objects by following any other objects referenced by the root. A set of predicates aligned in a pattern will be applied to the object and decide which action to execute. Each action describes its rules about how to generate visual nodes and which objects to traverse as follows.
 
 The declarative language is written in text file. Each file describes only one data structure, which means you have to write code for objects with different structures in respective files. Each file is made up of one pattern and several actions.
 
@@ -136,3 +59,121 @@ Each pattern starts with a name and a pattern keyword split by a colon, where th
     \end{grammar}
   \end{minipage}
 \end{center}
+
+\section {From An Object to Visual Shapes}
+To generate valid data structure visualization and animation, we must at first prove the consistency between the program and visualization. A program is composed of a series of instructions which are executed orderly. Under the control of debugger, program is being paused until step requests come. Every time the program pauses, it represents a new program state. 
+
+What need to be proved is that the initial program state is being correctly visualized and every time the new program state is generated, the animation will respond to it correctly. However, program state contains too much information. A computer program stores data in variables, which represent storage locations in the computer's memory. Program state contains all contents of these memory locations. In contrast, users always have limited interest and perception at a time. We intend to help users understand the program from any angel he is interested in. Instead of visualizing the whole program state like Heapviz \cite{Aftandilian:2010:HIH:1879211.1879222}, this system always focuses on visualizing one object but allows switching targets at any time.
+
+\subsection {Variables versus Objects}
+In JavaScript, a variable is a storage location and an associated symbolic name which contains a value. JavaScript: The Definitive Guide \cite{Flanagan:1998:JDG:551216} introduces about data types in JavaScript. JavaScript allows you to work with three primitive data types: numbers, strings of text, and boolean truth values. JavaScript also defines two trivial data types, null and undefined, each of which defines only a single value.
+
+In addition to these primitive types, JavaScript also supports a composite data type known as object. Just like other object-oriented programming languages, an object in JavaScript is composed of a collection of values with either primitive values or objects. An object can represent an unordered collection of named values or an ordered collection of numbered values. The latter case is called an array. Although array is also an object, it behaves quite differently and have to be considered specially throughout the paper.
+
+JavaScript also defines a few other specialized kinds of objects. \textbf{Function} is a subprogram that can be called externally or internally in case of recursion. \textbf{Date} creates a object that represents a single moment in time. \textbf{RegExp} creates a object that represents a regular expression for matching text with a pattern. \textbf{Error} creates a object that represent syntax or runtime errors that can occur in a JavaScript program. Because this research focuses on user-customized data structures, these four types of objects have their own specific data structures hence will not be considered any specially.
+
+We selected object as the target to visualize. This seems trivially different from previous research like the famous data structure visualization system, jGRASP \cite{Cross:2007:DOV:1227310.1227316}, who uses variable as the target of visualization. Although there is no problem using variable in jGRASP because it is static visualization without any animation. Our research introduces animation hence the problem has tremendously changed. The fundamental difference is whether there exists substantive relationship between two consecutive states. Animation is visualizing the changes between two consecutive states, so it have to proceed on the former state. That is why variable can not be used here as the target of visualization in that even the variables with the same name may refer to different objects or go out of scope after stepping through the program. Both situations may lead to meaningless animation because original mapping relationship can not be adapted for new object with different structure.
+
+However, variable is still used as the entry to start watching certain object. Modern debugger offers many sophisticated features such as stepping through the program, stopping at some event by means of breakpoint and examining the current state such as tracking the values of variables and stack trace. We can find that typical debugging prefer examining variable values to exploring snapshot of the heap. Therefore, we choose variable as the entry and the object referred by the variable will drive the following animation.
+
+\begin {figure} \centering
+  \includegraphics [width=1.0\linewidth] {img/select-object}
+  \caption {Select variable named array to visualize}
+  \label {fig: Select variable named array to visualize}
+\end {figure}
+
+\begin {figure} \centering
+  \includegraphics [width=1.0\linewidth] {img/select-object-after}
+  \caption {Variable named array has been visualized}
+  \label {fig: Variable named array has been visualized}
+\end {figure}
+
+Figure \ref{fig: Select variable named array to visualize} shows the system interface. The left half is the visualization view. Users can select some object to visualize by means of inputting its variable name and click the button with add icon on the top right corner and then you can see that object has been visualized as a bar chart in Figure \ref{fig: Variable named array has been visualized}.
+
+\subsection {User Interest}
+As Niklaus Wirth said in his book \cite{Wirth:1978:ADS:540029}, Algorithms + Data Structures = Programs, which means that we have to understand algorithms and data structures before understanding programs. Although our research is based on data structure visualization, we also intend to help users understand algorithms as far as possible. Although the attention has to be focused on one object, we still can help users understand algorithms from two aspects:
+\begin {enumerate}
+\item \textbf{Animation} displays how algorithms contribute to the object modification
+\item \textbf{Highlighted shapes} represent the objects that users are interested in
+\end {enumerate}
+
+In Figure \ref{fig: Context Visualization}, we can see that two bars are highlighted with red border against Figure \ref{fig: Variable named array has been visualized}. Users can input arbitrary number of variables split by commas in the top left corner of the visualization view. Any object referred by any inputted variable and possessing the same handle with any visual object will be highlighted with red border. Unlike that the target object being visualized is locked, these variables will be evaluated each step because they stand for how current environment relates with the target object.
+
+\begin {figure} \centering
+  \includegraphics [width=1.0\linewidth] {img/context-visualization}
+  \caption {Context Visualization}
+  \label {fig: Context Visualization}
+\end {figure}
+
+\subsection {Mapping Mechanism}
+\label {Mapping Mechanism}
+Object graph details the relationships between objects. The object graph of the root object is defined as \(G = (V, E)\). Here, the vertex set $V$ represents all objects referred by the root object either directly or indirectly, and the edge set $E$ represents the reference relationships between those objects. Figure \ref{fig: JavaScript Object Graph} shows an example of JavaScript object graph.
+
+\begin {figure} \centering
+  \includegraphics [width=1.0\linewidth] {img/object-graph}
+  \caption {JavaScript Object Graph}
+  \label {fig: JavaScript Object Graph}
+\end {figure}
+
+Traversing the object graph according to the next actions, we will get a subgraph of it, \(G_s = (V_s, E_s)\). The whole object graph probably contains much information that users are not interested in, hence we extract a subgraph from the whole object graph. All of the objects in the subgraph serve the visualization work, so we call them visual objects here.
+
+After, each visual object is responsible to create its own visual shapes. We called them visual nodes here. Each data structure defines its own visual nodes. In this paper, we have implemented two data structures, bar chart and tree.
+
+Bar chart only has one type of visual node. All visual nodes are connected into one list. The bars will be displayed in the same order of the list elements. The data structure of the visual node is defined as follows:
+
+\begin{lstlisting}[language=JavaScript]
+{
+  "value": <number>,
+  "id"   : <string>
+}
+\end{lstlisting}
+
+Property value is displayed via the bar height. Property id is a GUID representing the identification of visual node. If the visual nodes are created by objects, their id is set as the object handle. As for the visual nodes created by primitive type values, their id is set as their index in the list. 
+
+Tree has two types of visual nodes, node and edge. Their data structure are defined as follows:
+
+\begin{lstlisting}[language=JavaScript]
+{
+  "label": <string>,
+  "id"   : <string>,
+  "type" : "node"
+}
+\end{lstlisting}
+
+Node type visual node is displayed as a rectangle and property label can be seen inside. Like the visual node defined above, property id is also a GUID representing the identification of the visual node. For the visual nodes created by objects, their id is set as the object handles. For the visual nodes created by primitive type values, they must be leaf nodes in that there is no objects to traverse further. Their id is made up of three parts: the id of the adjacent node, the value of property label, and their index in the children node list. When the sibling nodes are also created by primitive type values, the latter two parts can be used to distinguish the visual nodes from their sibling nodes.
+
+\begin{lstlisting}[language=JavaScript]
+{
+  "from": <node type visual node>,
+  "to"  : <node type visual node>,
+  "id"  : <string>,
+  "type": "edge"
+}
+\end{lstlisting}
+
+Edge type visual node is displayed as an undirected line linking two node type visual nodes, namely property from and property to. Property id has just the same meaning defined before. It is set as the id of the visual node expressed by property to in that the child node is always unique in a tree. 
+
+The visual nodes of the tree data structure can be defined as a graph, \(G^\prime = (V^\prime, E^\prime)\). The vertex set represents all visual nodes of tree node. \(V_s\) can be mapped to \(V^\prime\) by a bijective function \(f:V_s\rightarrow V^\prime\). The edge set represents all visual nodes of tree edge. \(E_s\) also can be mapped to \(E^\prime\) by a bijective function \(f:E_s\rightarrow E^\prime\).
+
+Figure \ref{fig: Mapping Process} shows the whole mapping process starting from the root object.
+
+\begin {figure} \centering
+  \includegraphics [width=1.0\linewidth] {img/mapping-mechanism}
+  \caption {Mapping Process}
+  \label {fig: Mapping Process}
+\end {figure}
+
+\subsection {Animate Data Structures}
+
+After establishing the mapping relationship, we will be able to generate the animation. Animation is driven by data modifications, which is contributed by JavaScript program execution. Therefore, what we need to prove is the consistency between data modifications and animation.
+
+The first step is to enumerate all of the situations of data modifications and animation, and then data modifications can be translated to animation.
+
+Figure \ref{fig: Animation Generation Process} shows the whole process of animation generation.
+
+\begin {figure} \centering
+  \includegraphics [width=1.0\linewidth] {img/consistency}
+  \caption {Animation Generation Process}
+  \label {fig: Animation Generation Process}
+\end {figure}
+
