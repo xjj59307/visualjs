@@ -36,7 +36,7 @@ Each pattern starts with a name and a pattern keyword split by a colon, where th
 
 The predicate statement is written in pure JavaScript, and variable self has been bound to the object being traversed. Pure JavaScript provides strong expression power. It enables users to match the object in rich means. For example, the object can be matched by its type:
 
-\begin{lstlisting}[language=JavaScript]
+\begin{lstlisting}
 primitive_value: pattern {
   exec number_action when (typeof self === 'number'),
   exec string_action when (typeof self === 'string'),
@@ -47,7 +47,7 @@ primitive_value: pattern {
 
 The object also can be matched by its class:
 
-\begin{lstlisting}[language=JavaScript]
+\begin{lstlisting}
 object: pattern {
   exec array_action when (self instanceof Array),
   exec tree_action when (self instanceof Tree),
@@ -58,7 +58,7 @@ object: pattern {
 
 Furthermore, users can specify arbitrary constraints on the fields. The predicate to match an instance of Point class where the the field x is positive and the field y is non-zero: 
 
-\begin{lstlisting}[language=JavaScript]
+\begin{lstlisting}
 point: pattern {
   exec point_action when (self instanceof Point &&
                           self.x > 0 &&
@@ -68,6 +68,8 @@ point: pattern {
 \end{lstlisting}
 
 \subsection {Actions}
+
+Along with a pattern, one must specify a series of actions to be executed when according predicate statement returns true. One action is made up of create actions and next actions. Create actions are used to create visual nodes. Each action creates only one visual node represented with a set of attributes, which are name and value pairs describing the node. For example, a node could be customized by label and shape. The specific types of visual nodes and their attributes will be described in the next section. Next actions are used to indicate the objects to be traversed next. Next actions have two modes to support both object literals and arrays. To traverse arrays, we provide foreach statement. The grammar of actions is showed in EBNF as follows:
 
 \begin{center}
   \begin{minipage}{0.8\linewidth}
@@ -93,7 +95,41 @@ point: pattern {
   \end{minipage}
 \end{center}
 
+The right side of the assignment statement in create-clause and next-clause can be either pure JavaScript code or other visual node created previously. For example, a binary tree can be visualized with pretty simple visualjs code. The data structure of the binary tree and the visualjs code is shown as follows:
+
+\begin{lstlisting}[language=JavaScript]
+{
+  "value": <number>,
+  "left" : <tree node>,
+  "right": <tree node>
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+tree: action {
+  create node=tree_node(label = self.value),
+  create tree_edge(from = parent, to = node),
+  next self.left(parent = node),
+  next self.right(parent = node)
+}
+\end{lstlisting}
+
+Besides those data structures defined in object literals, we could also visualize an array of integer elements in a bar chart. The visualjs code is shown as follows:
+
+\begin{lstlisting}
+array: action {
+  foreach_next()
+}
+
+element: action {
+  create bar(value = self)
+}
+\end{lstlisting}
+
+Two actions are defined here. The first one is for traversing the array, and the other one is for visualizing a separate element.
+
 \subsection {Environments}
+When traversing an object, it is often useful to pass along state information from one object to its descendant objects. Therefore, we introduced environments. 
 
 \subsection {Layouts}
 
