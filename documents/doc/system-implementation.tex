@@ -199,6 +199,93 @@ We also used other open-source libraries and tools like underscore, async.js, jq
 \subsection {Asynchronized Communication Mechanism}
 Another mentionable implementation technique used here is the asynchronized communication mechanism. Most I/O-related API containing TCP/IP communication provided by node.js is in asynchronized way. On the other hand, all requests sent from client via websocket is also in asynchronized way. As a result, it is very complicated to keep program running correctly because the overall control flow across three components is based on synchronization logic. Firstly, blocking message queue is used to handle the requests from client. All requests are stored in the queue and will be handled one by one. On the server side, Async.js is used to help manage asynchronized code. Although node.js is famous for its speed and single-thread model, its coding style is difficult to maintain on account of endless nested callback. Async.js is a tool to help alleviate this problem.
 
-\section {Declarative Language Parser}
+\section {VisualJS Parser}
+We use PEG.js here to parse VisualJS code. PEG.js is a simple parser generator based on parsing expression grammars \cite{Ford:2004:PEG:982962.964011} for JavaScript that produces fast parsers with excellent error reporting. It is used to process complex data or computer languages and build transformers, interpreters, compilers and other tools.
 
-\section {Visualization Generation and Updating}
+\subsection {Using the Parser}
+PEG.js generates parser from a grammar that describes expected input and can specify what the parser returns using semantic actions on matched parts of the input. Generated parser itself is a JavaScript object with a simple API.
+
+Generated parser can be used by calling the parse method with an input string as a parameter. The method called parse will return a parse result or throw an exception if the target is invalid. The exception contains location information and other detailed error messages.
+
+\subsection {Grammar Syntax and Semantics}
+The grammar syntax is similar to JavaScript in that it is not line-oriented and ignores whitespace between tokens.
+
+An example of parsing simple arithmetic expressions like 6/(1+2) is shown as follows. A parser generated from the grammar is able to calculate the expression results.
+
+\begin{lstlisting}
+start
+  = additive
+
+additive
+  = left:multiplicative "+" right:additive {
+  	return left + right;
+  }
+ 	/ multiplicative
+
+multiplicative
+  = left:primary "*" right:multiplicative {
+  	return left * right;
+  }
+  / primary
+
+primary
+  = "(" additive:additive ")" {
+  	return additive;
+  }
+  / integer
+
+integer
+  = digits:[0-9]+ {
+  	return parseInt(digits.join(""), 10);
+  }
+\end{lstlisting}
+
+\subsection {Parsing Expression Types}
+There are a series of parsing types, and some of them contain subexpressions forming a recursive structure:
+
+\begin{itemize}
+\item\textbf{"literal"}
+
+Match literal string and return it.
+\item\textbf{.}
+
+Match an arbitrary character and return it as a string.
+\item\textbf{[characters]}
+
+Match one character from a set and return it as a string. We can set a range on characters. For example, [a-z] means all lowercase letters. Preceding the characters with $^\wedge$ inverts the matched set. For example, [$^\wedge$a-z] means all character but lowercase letters.
+\item\textbf{( expression )}
+
+Match a subexpression and return its match result.
+\item\textbf{expression *}
+
+Match zero or more repetitions of the expression and return the match results in an array. The matching is greedy. The parser will match the expression as many times as possible.
+\item\textbf{expression +}
+
+Match one or more repetitions of the expression and return the match results in an array. The matching is greedy. The parser will match the expression as many times as possible.
+\item\textbf{expression ?}
+
+Try to match the expression. If the match succeeds, the match result will be returned, otherwise null will be returned.
+\item\textbf{$\&$ expression}
+
+Try to match the expression. If the match succeeds, just return undefined and do not advance the parser position, otherwise consider the match failed.
+\item\textbf{! expression}
+
+Try to match the expression. If the match does not succeed, just return undefined and do not advance the parser position, otherwise consider the match failed.
+\item\textbf{\$ expression}
+
+Try to match the expression. If the match succeeds, return the matched string instead of the match result.
+\item\textbf{label : expression}
+
+Match the expression and remember its match result under given label.
+\item\textbf{expression1 expression2 ... expressionn}
+
+Match a sequence of expressions and return their match results in an array.
+\item\textbf{expression \{ action \}}
+
+Match the expression. If the match is successful, run the action, otherwise consider the match failed. The action is a piece of JavaScript code that is executed as if it was inside a function. It gets the match results of labeled expressions in preceding expression as its arguments. The action should return some JavaScript value using the return statement. This value is considered match result of the preceding expression.
+\item\textbf{expression1 / expression2 / ... / expressionn}
+
+Try to match the first expression, if it does not succeed, try the second one, etc. Return the match result of the first successfully matched expression. If no expression matches, consider the match failed.
+\end{itemize}
+
+

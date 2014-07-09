@@ -34,7 +34,7 @@ A pattern aligns a series of predicates to be matched when object comes. Each pr
 
 Each pattern starts with a name and a pattern keyword split by a colon, where the keyword is used to differentiate from action in that there is no decided order. After the pattern keyword, a pattern-body surrounded by a pair of braces aligns several exec-clauses. Each exec-clause describes a predicate statement to evaluate and according action will be executed when the predicate is true. The when-clause is optional, and according action will be executed anyway if the when-clause is omitted. All clauses after the one without the when-clause will be ignored in that only the first action passing the predicate will be executed.
 
-The predicate statement is written in pure JavaScript, and variable self has been bound to the object being traversed. Pure JavaScript provides strong expression power. It enables users to match the object in rich means. For example, the object can be matched by its type:
+The predicates can be written in arbitrary expressions that can be evaluated in current program state of the target program, and a variable called self is created to reference the object being traversed. Predicates written in arbitrary JavaScript code provide strong expression power. It enables users to match the object in rich means. For example, the object can be matched by its type:
 
 \begin{lstlisting}
 primitive_value: pattern {
@@ -69,7 +69,7 @@ point: pattern {
 
 \subsection {Actions}
 
-Along with a pattern, one must specify a series of actions to be executed when according predicate statement returns true. One action is made up of create actions and next actions. Create actions are used to create visual nodes. Each action creates only one visual node represented with a set of attributes, which are name and value pairs describing the node. For example, a node could be customized by label and shape. The specific types of visual nodes and their attributes will be described in the next section. Next actions are used to indicate the objects to be traversed next. Next actions have two modes to support both object literals and arrays. To traverse arrays, we provide foreach statement. The grammar of actions is showed in EBNF as follows:
+Along with a pattern, one must specify a series of actions that can be executed when the evaluation result of according predicate is true. One action is made up of create actions and next actions. Create actions are used to create visual nodes. Each action creates only one visual node represented with a set of attributes, which are name and value pairs describing the node. For example, a node could be customized by label and shape. The specific types of visual nodes and their attributes will be described in the next section. Next actions are used to indicate the objects to be traversed next. Next actions have two modes to support both object literals and arrays. To traverse arrays, we provide foreach statement. The grammar of actions is showed in EBNF as follows:
 
 \begin{center}
   \begin{minipage}{0.8\linewidth}
@@ -95,7 +95,7 @@ Along with a pattern, one must specify a series of actions to be executed when a
   \end{minipage}
 \end{center}
 
-The right side of the assignment statement in create-clause and next-clause can be either pure JavaScript code or other visual node created previously. For example, a binary tree can be visualized with pretty simple visualjs code. The data structure of the binary tree and the visualjs code is shown as follows:
+Like predicates described in patterns, the values of attributes and environment variables can be either arbitrary expressions written in JavaScript or other visual nodes created previously. For example, a binary tree can be visualized with pretty simple visualjs code. The data structure of the binary tree and the visualjs code is shown as follows:
 
 \begin{lstlisting}[language=JavaScript]
 {
@@ -129,9 +129,12 @@ element: action {
 Two actions are defined here. The first one is for traversing the array, and the other one is for visualizing a separate element.
 
 \subsection {Environments}
-When traversing an object, it is often useful to pass along state information from one object to its descendant objects. Therefore, we introduced environments. 
+When traversing an object, it is often useful to pass along state information from one object to its descendant objects. Therefore, we introduced environments. Environments keep a set of variables storing visual nodes or primitive values. Environments can be created in next actions and passed along to subsequently traversed objects.
 
 \subsection {Layouts}
+Once a set of visual nodes is created from a traversal of an object. It will be sent to the client and rendered by a particular layout manager of provided by D3.js. The attributes like label and color will be displayed.
+
+Currently, the system only contains layout managers for trees and bar charts, with more are to be added. Each of these layout algorithms use default settings of D3.js, so we do not elaborate the layout algorithms in the paper.  
 
 \section {From An Object to Visual Shapes}
 To generate valid data structure visualization and animation, we must at first prove the consistency between the program and visualization. A program is composed of a series of instructions which are executed orderly. Under the control of debugger, program is being paused until step requests come. Every time the program pauses, it represents a new program state. 
