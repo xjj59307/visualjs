@@ -3,6 +3,91 @@ To best explain how VisualJS converts an object to visual shapes, some typical e
 
 \section {Quick Sort}
 
+The first example considers a quick sort implementation in JavaScript. The data to be sorted is stored in an array, and the data structure of the element is defined as follows:
+
+\begin{lstlisting}[language=JavaScript]
+{
+	value: <number>
+}
+\end{lstlisting}
+
+The data structure definition is enough to write VisualJS code. Because VisualJS is interpreted dynamically, users can modify the VisualJS code at any time. The VisualJS code used here is as follows:
+
+\begin{lstlisting}
+array: pattern {
+  exec array when (self instanceof Array),
+  exec element when (typeof self === 'object')
+}
+
+array: action {
+  foreach_next()
+}
+
+element: action {
+  create bar(value = self.value)
+}
+\end{lstlisting}
+
 \section {AVL Tree}
 
+The second example is about AVL tree.
+
+\begin{lstlisting}
+operator: pattern {
+  exec avltree_node
+}
+
+avltree_node: action {
+  create node=tree_node(label = self.node[self.attr]),
+  create tree_edge(from = parent, to = node),
+  next self.left(parent = node),
+  next self.right(parent = node)
+}
+\end{lstlisting}
+
 \section {Math Expression Tree}
+
+The third example is about math expression tree.
+
+\begin{lstlisting}
+operator: pattern {
+  exec plus when (self.op === 0),
+  exec minus when (self.op === 1),
+  exec times when (self.op === 2),
+  exec divide when (self.op === 3),
+  exec value when (typeof self.value === 'number')
+}
+
+plus: action {
+  create node=tree_node(label = '+'),
+  create tree_edge(from = parent, to = node),
+  next self.left(parent = node),
+  next self.right(parent = node)
+}
+
+minus: action {
+  create node=tree_node(label = '-'),
+  create tree_edge(from = parent, to = node),
+  next self.left(parent = node),
+  next self.right(parent = node)
+}
+
+times: action {
+  create node=tree_node(label = '*'),
+  create tree_edge(from = parent, to = node),
+  next self.left(parent = node),
+  next self.right(parent = node)
+}
+
+divide: action {
+  create node=tree_node(label = '/'),
+  create tree_edge(from = parent, to = node),
+  next self.left(parent = node),
+  next self.right(parent = node)
+}
+
+value: action {
+  create node=tree_node(label = self.value),
+  create tree_edge(from = parent, to = node)
+}
+\end{lstlisting}

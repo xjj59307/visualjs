@@ -1,7 +1,7 @@
 \chapter {System Implementation}
 
 \section {V8 Debugger Protocol}
-V8 is able to debug the JavaScript code running in it. The debugger related API can be used in two ways, a function based API using JavaScript objects and a message based API using JSON based protocol. The function based API is for in-process usage, while the message based API is for out-process usage. This system is implemented with message based API. The protocol packet is defined in JSON format and can to be converted to string.
+V8 is able to debug the JavaScript code running in it. The debugger related API can be used in two ways, a function based API using JavaScript objects and a message based API using JSON based protocol. The function based API is for in-process usage, while the message based API is for out-process usage. This system is implemented with message based API. The protocol packet is defined in JSON format and can to be converted to string \cite{V8}.
 
 \subsection {Protocol Packet Format}
 All packets have two basic elements called seq and type. The seq field holds the consecutive assigned sequence number of the packet. And type field is a string value representing the packet is request, response or event. Each request will receive a response with the same request seq number as long as the connection still works. And additional events will be generated on account of particular requests or system errors. Each packet has the following structure.
@@ -241,7 +241,7 @@ integer
 \end{lstlisting}
 
 \subsection {Parsing Expression Types}
-There are a series of parsing types, and some of them contain subexpressions forming a recursive structure:
+There are a series of parsing types, and some of them contain subexpressions forming a recursive structure \cite{pegjs}:
 
 \begin{itemize}
 \item\textbf{"literal"}

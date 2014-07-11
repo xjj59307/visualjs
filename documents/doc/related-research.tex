@@ -1,7 +1,38 @@
 \chapter {Related Research}
 
-Price et al. \cite{Price1993211} have defined software visualization as the use of the crafts of typography, graphic design, animation, and cinematography with modern human computer interaction technology to facilitate both the human understanding and effective use of computer software. This is a very abstract definition. 
+This chapter introduces several related research, and compares these research with ours.
 
-\section {Debugger}
+\section {Debuggers}
+Several typical debuggers are introduced as follows.
 
-\section {Visual Debugger}
+\subsection {GDB}
+The GNU Debugger \cite{gdb}, usually called GDB, is a debugger written in C and C++. Its usage is not strictly limited to the GNU operating system. It could run on many Unix-like systems for many programming languages, including Ada, C, C++, Objective-C, Free Pascal, Fortran, Java and so on. 
+
+GDB has not its own graphical user interface, but defaults to a command-line interface. Users have to remember various commands like stepping through, setting breakpoint, evaluating expressions and so on. However, character-based interaction lacks of insight into the target program.
+
+To solve the problems of command-line interface, debuggers are usually integrated into a comprehensive development environment, usually called IDE, to maximize programmer productivity by providing tight-knit components with an integrated user interface, such as Eclipse, IntelliJ IDEA, NetBeans, and Microsoft Visual Studio.
+
+\subsection {Chrome Developer Tools}
+The chrome developer tools \cite{devtools}, also called devtools, are a set of web authoring and debugging tools built into google chrome. Figure \ref{fig: Chrome Developer Tools Interface} is a screenshot of chrome developer tools when debugging JavaScript code.
+
+\begin {figure} \centering
+  \includegraphics [width=1.0\linewidth] {img/devtools}
+  \caption {Chrome Developer Tools Interface}
+  \label {fig: Chrome Developer Tools Interface}
+\end {figure}
+
+Devtools include a number of useful tools to help debug JavaScript. The screenshot shows the sources panel providing a graphical interface to the V8 debugger. The sources panel shows all the code of the inspected page. We can see standard controls to pause, resume, and step through program on the right side. Other runtime information such as watched variables, call stack, scope variables, and breakpoints are also visible one the right side below the standard controls.
+
+Our system provides users with similar debugging experience of devtools. However, devtools can not provide deeper insight into the runtime information in that all these information are still character-based. Our research intends to help programmers better understand the program via the visualization of data structure.
+
+\section {Visual Debuggers}
+
+\subsection {DDD}
+
+\subsection {jGRASP}
+
+\subsection {Online Python Tutor}
+
+\section {Algorithm Animation}
+
+\subsection {JSAV}
