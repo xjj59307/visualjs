@@ -3,9 +3,10 @@
 This chapter introduces several related research, and compares these research with ours.
 
 \section {Debuggers}
-Several typical debuggers are introduced as follows.
+In general, the purpose of using debuggers is to detect the existence of errors in a program, to locate their position or cause, and, finally fix them \cite{Diehl:2007:SVV:1209814}. Several typical debuggers are introduced as follows.
 
 \subsection {GDB}
+\label {GDB}
 The GNU Debugger \cite{gdb}, usually called GDB, is a debugger written in C and C++. Its usage is not strictly limited to the GNU operating system. It could run on many Unix-like systems for many programming languages, including Ada, C, C++, Objective-C, Free Pascal, Fortran, Java and so on. 
 
 GDB has not its own graphical user interface, but defaults to a command-line interface. Users have to remember various commands like stepping through, setting breakpoint, evaluating expressions and so on. However, character-based interaction lacks of insight into the target program.
@@ -26,12 +27,44 @@ Devtools include a number of useful tools to help debug JavaScript. The screensh
 Our system provides users with similar debugging experience of devtools. However, devtools can not provide deeper insight into the runtime information in that all these information are still character-based. Our research intends to help programmers better understand the program via the visualization of data structure.
 
 \section {Visual Debuggers}
+Visual debuggers are tools that reflect code-level aspects of program behavior, showing execution proceeding statement by statement and visualizing the stack frame and the contents of variables and are directed more toward program development rather than understanding program behavior \cite{Pears:2007:SLT:1345375.1345441}. Visual debuggers usually let users execute the program in steps while allowing them to simply understand the flow of data.
 
 \subsection {DDD}
+GNU DDD (Data Display Debugger) \cite{DDD} is a graphical front-end for command-line debuggers such as GDB described in Chapter \ref{GDB}. Besides usual front-end functions such as viewing source code, DDD also allows interactive data display. Data structures can be displayed as kinds of graphs like Figure \ref{fig: DDD Screenshot 1}.
+
+\begin {figure} \centering
+  \includegraphics [width=1.0\linewidth] {img/ddd-1}
+  \caption {DDD Screenshot: visualization of an one-dimensional array (above) and a two-dimensional array (below)}
+  \label {fig: DDD Screenshot 1}
+\end {figure}
 
 \subsection {jGRASP}
+jGRASP (Graphical Representation of Algorithms, Structures, and Processes) \cite{Cross:2007:DOV:1227310.1227316, Hendrix:2004:EFP:1028174.971433, 1158137, 1173088} is a lightweight development environment, created specifically to provide various visualizations to improve the program comprehension: syntax highlighting, control-structure-diagram, UML class diagrams and object viewers. jGRASP is implemented in Java and support for Java, C, C++, Objective-C, Python, Ada, and VHDL, but most advanced features are only available for Java.
+
+jGRASP object viewers are tightly integrated with the debugger. It can be used to automatically detect the data structure such as linked lists, binary trees, and array wrappers (lists, stacks, queues, etc.). For linked structures, the visual representations can be animated to show nodes being added and deleted form the data structure. Figure \ref{fig: jGRASP} shows two ArrayLists being visualized. 
+
+\begin {figure} \centering
+  \includegraphics [width=1.0\linewidth] {img/jgrasp}
+  \caption {jGRASP object viewer}
+  \label {fig: jGRASP}
+\end {figure}
 
 \subsection {Online Python Tutor}
+Python Tutor \cite{GuoSIGCSE2013} is a web-based program visualization tool for Python. Using this tool, teachers and students could write Python programs directly in the web browser, step forwards and backwards through execution to view the run-time state of data structures. Figure \ref{fig: Python Tutor} shows an example of visualizing an insertion sort program. Users can:
+\begin {enumerate}
+\item view the currently executing source code
+\item step forwards and backwards through execution
+\item view stack frames and variables
+\item view heap object contents and pointers
+\item view the program's text console output
+\item generate a sharable URL of the current visualization
+\end {enumerate}
+
+\begin {figure} \centering
+  \includegraphics [width=1.0\linewidth] {img/python-tutor}
+  \caption {Python Tutor: Visualization of an insertion sort program}
+  \label {fig: Python Tutor}
+\end {figure}
 
 \section {Algorithm Animation}
 
