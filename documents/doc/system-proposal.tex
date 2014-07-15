@@ -1,5 +1,7 @@
 \chapter {System Proposal}
-To solve the problems mentioned in last chapter, our system used traversal-based method \cite{729554} to traverse the object. A new declarative language called visualjs is created so that this approach can be oriented to JavaScript. On top of this, we proposed a mapping mechanism from an object to visual shapes. Making use of the mapping relationship, our system is able to visualize the object in kinds of shapes and animate these visual shapes automatically while stepping through program. Note that instead of providing rich kinds of data structure visualizations, our research intends to help users visualize and animate the objects that they are interested in.
+\label {System Proposal}
+
+To solve the problems mentioned in last chapter, our system used traversal-based method \cite{729554} to traverse the object. A new declarative language called VisualJS is created so that this approach can be oriented to JavaScript. On top of this, we proposed a mapping mechanism from an object to visual shapes. Making use of the mapping relationship, our system is able to visualize the object in kinds of shapes and animate these visual shapes automatically while stepping through program. Note that instead of providing rich kinds of data structure visualizations, our research intends to help users visualize and animate the objects that they are interested in.
 
 \section {The Design of VisualJS}
 The traversal-based approach takes a root object and traverse the objects by following any other objects referenced by the root. A set of predicates aligned in a pattern will be applied to the object and decide which action to execute. Each action describes its rules about how to generate visual nodes and which objects to traverse as follows.
@@ -177,7 +179,7 @@ In Figure \ref{fig: Context Visualization}, we can see that two bars are highlig
 
 \begin {figure} \centering
   \includegraphics [width=1.0\linewidth] {img/context-visualization}
-  \caption {Context Visualization}
+  \caption {Context visualization}
   \label {fig: Context Visualization}
 \end {figure}
 
@@ -187,7 +189,7 @@ Object graph details the relationships between objects. The object graph of the 
 
 \begin {figure} \centering
   \includegraphics [width=1.0\linewidth] {img/object-graph}
-  \caption {JavaScript Object Graph}
+  \caption {JavaScript object graph}
   \label {fig: JavaScript Object Graph}
 \end {figure}
 
@@ -235,7 +237,7 @@ Figure \ref{fig: Mapping Process} shows the whole mapping process starting from 
 
 \begin {figure} \centering
   \includegraphics [width=1.0\linewidth] {img/mapping-mechanism}
-  \caption {Mapping Process}
+  \caption {Mapping process}
   \label {fig: Mapping Process}
 \end {figure}
 
@@ -245,7 +247,7 @@ After establishing the mapping relationship, we will be able to generate the ani
 
 \begin {figure} \centering
   \includegraphics [width=1.0\linewidth] {img/consistency}
-  \caption {Animation Generation Process}
+  \caption {Animation generation process}
   \label {fig: Animation Generation Process}
 \end {figure}
 

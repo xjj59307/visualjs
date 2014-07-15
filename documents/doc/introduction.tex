@@ -7,8 +7,8 @@ A debugger is used to test and debug target programs. It offers many sophisticat
 
 However, such visualization still has deficiencies. Firstly, all of the objects are visualized in a tree-view table, and hence lack of important semantic information. Secondly, The whole view will be refreshed while stepping through the program. It is nearly impossible to check the modification parts and find the relevance between two succeeding states.
 
-This paper examines how a debugger can visualize data structure and generate smooth animation automatically while according object is modified via externally supplied semantic information. Instead of displaying object in a general way, we wish to produce more helpful and informative visualization.
-
 \section {Main Contribution}
+This paper examines how a debugger can visualize data structure and generate smooth animation automatically while according object is modified. The user has to write VisualJS, a new declarative language describing semantic information of the data structures, by himself. Instead of displaying object in a general way, we wish to produce more helpful and informative visualization.
 
 \section {Outline of the Thesis}
+The structure of the thesis is as follows. Chapter \ref{Related Research} gives an introduction to the visual debugging and program visualization as related research. We review a series of typical systems and compare them with our research. In Chapter \ref{System Proposal}, we introduce the design of a new declarative language called VisualJS, and explain how to make use of VisualJS to establish the mapping relationship between a object graph and visual representations. In Chapter \ref{System Implementation}, we discuss the implementation details of the system. In Chapter \ref{Examples}, we evaluate the system via several examples. Finally, Chapter \ref{Summary} concludes the thesis including a discussion of possible future work.

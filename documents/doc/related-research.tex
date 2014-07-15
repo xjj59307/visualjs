@@ -1,4 +1,5 @@
 \chapter {Related Research}
+\label {Related Research}
 
 This chapter introduces several related research, and compares these research with ours.
 
@@ -18,7 +19,7 @@ The chrome developer tools \cite{devtools}, also called devtools, are a set of w
 
 \begin {figure} \centering
   \includegraphics [width=1.0\linewidth] {img/devtools}
-  \caption {Chrome Developer Tools Interface}
+  \caption {A screenshot of debugging JavaScript code in chrome developer tools}
   \label {fig: Chrome Developer Tools Interface}
 \end {figure}
 
@@ -34,7 +35,7 @@ GNU DDD (Data Display Debugger) \cite{DDD} is a graphical front-end for command-
 
 \begin {figure} \centering
   \includegraphics [width=1.0\linewidth] {img/ddd-1}
-  \caption {DDD Screenshot: visualization of an one-dimensional array (above) and a two-dimensional array (below)}
+  \caption {A screenshot of DDD visualizing an one-dimensional array and a two-dimensional array}
   \label {fig: DDD Screenshot 1}
 \end {figure}
 
@@ -45,11 +46,12 @@ jGRASP object viewers are tightly integrated with the debugger. It can be used t
 
 \begin {figure} \centering
   \includegraphics [width=1.0\linewidth] {img/jgrasp}
-  \caption {jGRASP object viewer}
+  \caption {A screenshot of jGRASP object viewer}
   \label {fig: jGRASP}
 \end {figure}
 
 \subsection {Online Python Tutor}
+\label {Python Tutor}
 Python Tutor \cite{GuoSIGCSE2013} is a web-based program visualization tool for Python. Using this tool, teachers and students could write Python programs directly in the web browser, step forwards and backwards through execution to view the run-time state of data structures. Figure \ref{fig: Python Tutor} shows an example of visualizing an insertion sort program. Users can:
 \begin {enumerate}
 \item view the currently executing source code
@@ -62,10 +64,24 @@ Python Tutor \cite{GuoSIGCSE2013} is a web-based program visualization tool for 
 
 \begin {figure} \centering
   \includegraphics [width=1.0\linewidth] {img/python-tutor}
-  \caption {Python Tutor: Visualization of an insertion sort program}
+  \caption {A screenshot of Python Tutor visualizing an insertion sort program}
   \label {fig: Python Tutor}
 \end {figure}
 
+\subsection {JIVE}
+JIVE (Java interactive software visualization environment) \cite{Gestwicki:2005:MAJ:1056018.1056032, Gestwicki:2004:JJI:1028664.1028762} is a Java program visualization tool integrated within the Eclipse IDE. JIVE proposed a new notation to display runtime object structures as the environments of program execution. The object structures can be displayed in multiple views with different granularities, allowing the user to focus on his interest. JIVE shows the execution history with dynamically generated sequence diagram like those used in Unified Modeling Language. JIVE supports for forward and backward execution so that bugs can be reproduced. JIVE supports queries on the runtime state. A user can inquire of the system of when variables have changed, when variables have held certain values, when objects are created, and when methods are called. JIVE automatically generates clear layout for all diagrams.
+
+\subsection {Jype}
+Jype \cite{Helminen:2010:JPV:1879211.1879234} is an educational software tool to help students learn elementary programming. Unlike most existing systems focusing on a single aspect of learning. Jype implemented a combined system that closely integrates programming teaching with visualizations tools to help students understand how programs works on a conceptual level, and automatic assessment tools to give feedback on submitted assignments.
+
 \section {Algorithm Animation}
+The program state changes as stepping through the execution so the static visualization is not fixed any more. Instead of static visualization, we can use algorithm animation, a sequence of images which are shown on after another \cite{Diehl:2007:SVV:1209814}, here. The animation would better be smooth to help programmers understand the transition between two execution points.
 
 \subsection {JSAV}
+JSAV (JavaScript algorithm visualization) \cite{Karavirta:2013:JJA:2462476.2462487} is a JavaScript framework for creating engaging algorithm visualizations with active learning features. It is meant to be used in any web browser like Python Tutor described in Chapter \ref{Python Tutor}. JSAV supports different engagement levels. The simplest way is static visualization of data structures. Another way is called slideshows, which shows a series of steps of the algorithm animation. Figure \ref{fig: JSAV} shows an example of a JSAV visualization.
+
+\begin {figure} \centering
+  \includegraphics [width=1.0\linewidth] {img/jsav}
+  \caption {A screenshot of JSAV visualizing an insertion sort program}
+  \label {fig: JSAV}
+\end {figure}
