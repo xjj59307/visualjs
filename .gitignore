@@ -7,6 +7,7 @@ node_modules/*
 !node_modules/buckets.js
 documents/*
 !documents/img/*
+!documents/doc/*
 !documents/*.tex
 !documents/*.pdf
 !documents/*.bib
