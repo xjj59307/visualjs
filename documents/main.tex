@@ -1,7 +1,7 @@
 \documentclass [a4paper,11pt,fleqn]{report}
 
 \usepackage {listings}
-\lstdefinelanguage {JavaScript}{
+\lstdefinelanguage {javascript}{
   keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
   ndkeywords={class, export, boolean, throw, implements, import, this},
   sensitive=false,
@@ -11,7 +11,7 @@
   morestring=[b]"
 }
 \lstset {
-  language=JavaScript,
+  language=javascript,
   extendedchars=true,
   basicstyle=\footnotesize\ttfamily,
   showstringspaces=false,
@@ -23,6 +23,8 @@
 }
 
 \usepackage {parskip}
+
+\usepackage[toc]{appendix}
 
 \usepackage [nounderscore]{syntax}
 
@@ -67,6 +69,7 @@ Debugger is used to test and debug target programs by stepping through the progr
 \input {doc/examples}
 \input {doc/summary}
 \input {doc/acknowledgement}
+\input {doc/appendix}
 
 \bibliographystyle {plain}
 \bibliography {/Users/junjianxu/Dropbox/projects/visualjs/documents/reference}
