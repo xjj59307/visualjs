@@ -51,6 +51,7 @@ define(["lib/d3.v3", "lib/jquery-1.8.2", "lib/underscore"], function (d3, $, _) 
 
     _.each(treeNodes, function(treeNode, index) {
       treeNode.name = treeNode.attributes.label;
+      treeNode.color = treeNode.attributes.color || "#fff";
       delete treeNode.type;
       delete treeNode.attributes;
     });
@@ -92,8 +93,9 @@ define(["lib/d3.v3", "lib/jquery-1.8.2", "lib/underscore"], function (d3, $, _) 
       .style("stroke", function() { return "darkgreen"; })
       .style("stroke-width", function() { return 1.5; })
       .style("fill", function(d) {
-        return d._children ? "lightsteelblue" : "#fff";
-      });
+        return d._children ? "lightsteelblue" : d.color;
+      })
+      .style("fill-opacity", function() { return 0.5; });
 
     transition.filter(function(d) {
       return _.find(handles, function(handle) {
@@ -134,8 +136,9 @@ define(["lib/d3.v3", "lib/jquery-1.8.2", "lib/underscore"], function (d3, $, _) 
       .attr("width", 1e-6)
       .attr("height", 1e-6)
       .style("fill", function(d) {
-        return d._children ? "lightsteelblue" : "#fff";
-      });
+        return d._children ? "lightsteelblue" : d.color;
+      })
+      .style("fill-opacity", function() { return 0.5; });
 
     var labels = nodeEnter.append("text")
       .attr("text-anchor", "middle")
@@ -184,8 +187,9 @@ define(["lib/d3.v3", "lib/jquery-1.8.2", "lib/underscore"], function (d3, $, _) 
       .style("stroke", function() { return "darkgreen"; })
       .style("stroke-width", function() { return 1.5; })
       .style("fill", function(d) {
-        return d._children ? "lightsteelblue" : "#fff";
-      });
+        return d._children ? "lightsteelblue" : d.color;
+      })
+      .style("fill-opacity", function() { return 0.5; });
 
     // Highlight nodes related to objects being watched
     nodeUpdate.filter(function(d) {

@@ -35,6 +35,6 @@ divide: action {
 }
 
 value: action {
-  create node=tree_node(label = self.value),
+  create node=tree_node(label = self.value, color = "#FF00FF"),
   create tree_edge(from = parent, to = node)
 }
